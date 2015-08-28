@@ -1,0 +1,44 @@
+AA MACRO ASSEMBLER RTESTASM                                                                 22/02/13 11:33:41 PAGE     1
+
+
+MACRO ASSEMBLER AA V2.50
+OBJECT MODULE PLACED IN testASM.OBJ
+ASSEMBLER INVOKED BY: C:\Keil\ARM\BIN\AA.exe testASM.asm BROWSE DEBUG EP
+
+LOC      OBJ             LINE     SOURCE
+
+00000000                  1     AREA test, CODE, READONLY
+                          2     
+00000000                  3     ENTRY 
+00000000 E58F0000         4             STR r0,r1;
+*** ___________________________________________^
+*** ERROR #A20 IN 4 (testASM.asm, LINE 4): INVALID SIMPLE RELOCATABLE EXPRESSION
+00000004 E3A010FF         5                     MOV r1, #0xff;
+                          6                     LSL r1, #4;
+*** ____________________________________________^
+*** ERROR #A9 IN 6 (testASM.asm, LINE 6): SYNTAX ERROR
+00000008 E3A000FF         7     dly:    MOV r0, #0xff;
+                          8     
+0000000C E2400001         9     delay:  SUB r0, r0, #1;
+00000010 E3500000        10                 CMP r0, #0;
+00000014 1AFFFFFB        11             BNE delay;
+00000018 E2411001        12                     SUB r1, r1, #1;
+0000001C E3510000        13                 CMP r1, #0;
+00000020 1AFFFFF7        14                     BNE dly;
+                         15     END
+                         16     
+AA MACRO ASSEMBLER RTESTASM                                                                 22/02/13 11:33:41 PAGE     2
+
+SYMBOL TABLE LISTING
+------ ----- -------
+
+
+N A M E               T Y P E  V A L U E     ATTRIBUTES
+
+ENTRY. . . . . . . .  C  ADDR  0000H     R   SEG=test
+delay. . . . . . . .  C  ADDR  0008H     R   SEG=test
+dly. . . . . . . . .  C  ADDR  0004H     R   SEG=test
+test . . . . . . . .  C  SEG   0020H         REL=UNIT, ALN=BYTE
+
+
+ASSEMBLY COMPLETE.  0 WARNING(S), 2 ERROR(S).

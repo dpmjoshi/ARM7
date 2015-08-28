@@ -1,0 +1,777 @@
+ARM COMPILER V2.50a,  i2c_e2prom                                                           13/03/13  12:47:57  PAGE 1   
+
+
+ARM COMPILER V2.50a, COMPILATION OF MODULE i2c_e2prom
+OBJECT MODULE PLACED IN i2c_e2prom.OBJ
+COMPILER INVOKED BY: C:\Keil\ARM\BIN\CA.exe i2c_e2prom.c THUMB BROWSE DEBUG TABS(4) 
+
+stmt  level    source
+
+    1          /*
+    2                         -------------  
+    3                         |            |                 
+    4                         |    MSG     | 0028 - 0127
+    5                         |            |
+    6                         -------------  
+    7                         |    DLC     |    0027             
+    8                         -------------  
+    9                         |  Duration  | 0024 - 0026 
+   10                         -------------  
+   11                         | Reserved   | 0018 - 0023
+   12                         -------------  
+   13                         |status time | 0012 - 0017
+   14                         -------------
+   15                         | phone no   | 0002 - 0011 
+   16                         --------------
+   17                         |    ID      | 0000 - 0001
+   18                         ------------- 
+   19              
+   20              MEMORY MAP OF PAGES IN THE EXTERNAL MEMORY
+   21          
+   22          */
+   23          
+   24           
+   25          #include <LPC21XX.H>
+   26          #include "type.h"
+   27          #include "uart.h"
+   28          
+   29          #define I2C_CH_NO 9
+   30          
+   31          void init_I2C(void);
+   32          void I2C_isr(void) __irq;
+   33          void i2c_trans(U8* , U8 , U8  , U32 );
+   34          void i2c_read(U8* , U8 , U8  , U32 );
+   35          
+   36          U8 Uc_i2c_read_flag,addr_flag=0;
+   37          U8 *trans_data,*rec_data;
+   38          U8 tx_count,rx_count,Uc_i2c_count;
+   39          U8 Uc_dev_address;
+   40          U32 Ui_mem_address;
+   41          
+   42          void i2c_init(void)
+   43          {
+   44   1          PINSEL0|=0x50;
+   45   1          VICIntSelect=0;
+   46   1          VICIntEnable |= 1<<I2C_CH_NO;
+   47   1          VICVectAddr6  = (unsigned)I2C_isr;
+   48   1          VICVectCntl6  = 0x20|I2C_CH_NO;
+   49   1          I2SCLH=75;
+   50   1          I2SCLL=75;
+   51   1          I2CONSET=0x40;  
+   52   1      }
+   53          
+   54          void I2C_isr(void) __irq
+   55          {
+   56   1          if(Uc_i2c_read_flag==0)
+   57   1          {               
+   58   2              switch(I2STAT)
+   59   2              {
+ARM COMPILER V2.50a,  i2c_e2prom                                                           13/03/13  12:47:57  PAGE 2   
+
+   60   3                  case 0x08:
+   61   3                      I2DAT=Uc_dev_address;
+   62   3                      I2CONCLR=0x20;              
+   63   3                      break;
+   64   3      
+   65   3                  case 0x10:
+   66   3                      break;
+   67   3      
+   68   3                  case 0x18:
+   69   3                      I2DAT=((Ui_mem_address>>8) & 0xff);             
+   70   3                      break;
+   71   3                  case 0x20:
+   72   3                      break;
+   73   3                  case 0x28:
+   74   3                      if(addr_flag==0)
+   75   3                      {
+   76   4                          I2DAT=((Ui_mem_address) & 0xff);
+   77   4                          addr_flag=1;
+   78   4                          
+   79   4                      }
+   80   3                      else
+   81   3                      {
+   82   4                          if(tx_count<Uc_i2c_count)
+   83   4                          {
+   84   5                              I2DAT= *trans_data;
+   85   5                              trans_data++;
+   86   5                              tx_count++;
+   87   5                              
+   88   5                          }
+   89   4                          else
+   90   4                          {                           
+   91   5                              I2CONSET=0x10;
+   92   5                              tx_count = 0;
+   93   5                              addr_flag=0;
+   94   5                              Uc_i2c_read_flag=1;
+   95   5                          }
+   96   4                      }
+   97   3                      break;
+   98   3      
+   99   3                  case 0x30:
+  100   3                      break;
+  101   3              }
+  102   2           }
+  103   1           else
+  104   1           {
+  105   2              switch(I2STAT)
+  106   2              {
+  107   3                  case 0x08:
+  108   3                      I2DAT= 0xA0 ;//Uc_dev_address;
+  109   3                      I2CONCLR=0x20;
+  110   3                      break;
+  111   3      
+  112   3                  case 0x10:
+  113   3                      I2DAT=Uc_dev_address+1;
+  114   3                      I2CONSET=0x04;
+  115   3                      I2CONCLR=0x20;
+  116   3                      break;
+  117   3      
+  118   3                  case 0x18:
+  119   3                      I2DAT=((Ui_mem_address>>8) & 0xff);
+  120   3                      break;
+  121   3      
+  122   3                  case 0x20:
+  123   3                      break;
+  124   3      
+  125   3                  case 0x28:
+ARM COMPILER V2.50a,  i2c_e2prom                                                           13/03/13  12:47:57  PAGE 3   
+
+  126   3                      if(addr_flag==0)
+  127   3                      {
+  128   4                          I2DAT=((Ui_mem_address) & 0xff);
+  129   4                          addr_flag=1;
+  130   4                      }
+  131   3                      else
+  132   3                      {
+  133   4                          I2CONSET=0x20;
+  134   4                      }
+  135   3                      break;
+  136   3      
+  137   3                  case 0x38:
+  138   3                      break;
+  139   3                  case 0x40:
+  140   3                      if(Uc_i2c_count==1)
+  141   3                      {
+  142   4                          I2CONCLR=0x04;
+  143   4                      }               
+  144   3                      break;
+  145   3                  case 0x48:
+  146   3                      break;
+  147   3                  case 0x50:
+  148   3                      if(rx_count<(Uc_i2c_count)-2)
+  149   3                      {
+  150   4                          *rec_data=I2DAT;
+  151   4                          rec_data++;
+  152   4                          rx_count++;
+  153   4                      }
+  154   3                      else
+  155   3                      {
+  156   4                          *rec_data = I2DAT;
+  157   4                          rx_count++;
+  158   4                          rec_data++;
+  159   4                          I2CONCLR = 0x04;
+  160   4                      }
+  161   3                      break;
+  162   3                  case 0x58:
+  163   3                      *rec_data=I2DAT;
+  164   3                      I2CONSET=0x10;
+  165   3                      addr_flag = 0;
+  166   3                      Uc_i2c_read_flag=0;
+  167   3                      rx_count = 0;
+  168   3                      break;
+  169   3                      
+  170   3              }
+  171   2          }
+  172   1          I2CONCLR=0x08;
+  173   1          VICVectAddr=0;
+  174   1      }
+  175          
+  176          void i2c_trans(U8* data_write, U8 no_bytes, U8 dev_addr , U32 mem_addr)
+  177          {   
+  178   1          U32 ui_delay_count = 0;
+  179   1          trans_data         = data_write;
+  180   1          Uc_i2c_count   = no_bytes;
+  181   1          Uc_dev_address = dev_addr;
+  182   1          Ui_mem_address = mem_addr;
+  183   1          Uc_i2c_read_flag = 0;
+  184   1          I2CONSET |= 0x20 ;
+  185   1          tx_count = 0;
+  186   1          while(Uc_i2c_read_flag == 0 );
+  187   1          for(ui_delay_count = 0; ui_delay_count<50000 ; ui_delay_count++);
+  188   1      
+  189   1      
+  190   1      }
+  191          
+ARM COMPILER V2.50a,  i2c_e2prom                                                           13/03/13  12:47:57  PAGE 4   
+
+  192          void i2c_read(U8* data_read, U8 no_bytes, U8 dev_addr , U32 mem_addr)
+  193          {   
+  194   1          U32 ui_delay_count = 0;
+  195   1          rec_data           = data_read;
+  196   1          Uc_i2c_count   = no_bytes;
+  197   1          Uc_dev_address = dev_addr;
+  198   1          Ui_mem_address = mem_addr;
+  199   1          Uc_i2c_read_flag = 1;
+  200   1          I2CONSET |= 0x20;
+  201   1          rx_count = 0;
+  202   1          while(Uc_i2c_read_flag == 1 );
+  203   1          for(ui_delay_count = 0; ui_delay_count<50000 ; ui_delay_count++);
+  204   1      
+  205   1      }
+ARM COMPILER V2.50a,  i2c_e2prom                                                           13/03/13  12:47:57  PAGE 5   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+
+*** PUBLICS:
+ PUBLIC         I2C_isr?A
+ PUBLIC         i2c_trans?T
+ PUBLIC         i2c_read?T
+ PUBLIC         i2c_init?T
+ PUBLIC         Uc_i2c_read_flag
+ PUBLIC         addr_flag
+ PUBLIC         trans_data
+ PUBLIC         rec_data
+ PUBLIC         tx_count
+ PUBLIC         rx_count
+ PUBLIC         Uc_i2c_count
+ PUBLIC         Uc_dev_address
+ PUBLIC         Ui_mem_address
+
+
+
+*** DATA SEGMENT '?DT0?i2c_e2prom':
+ 00000000          trans_data:
+ 00000000            DS          4
+ 00000004          rec_data:
+ 00000004            DS          4
+ 00000008          Ui_mem_address:
+ 00000008            DS          4
+ 0000000C          Uc_i2c_read_flag:
+ 0000000C            DS          1
+ 0000000D          addr_flag:
+ 0000000D           BEGIN_INIT
+ 0000000D  00        DB          0x0
+ 0000000E           END_INIT
+ 0000000E          tx_count:
+ 0000000E            DS          1
+ 0000000F          rx_count:
+ 0000000F            DS          1
+ 00000010          Uc_i2c_count:
+ 00000010            DS          1
+ 00000011          Uc_dev_address:
+ 00000011            DS          1
+
+
+
+*** CODE SEGMENT '?PR?i2c_init?T?i2c_e2prom':
+   44:     PINSEL0|=0x50;
+ 00000000  2250      MOV         R2,#0x50
+ 00000002  4800      LDR         R0,=0xE002C000
+ 00000004  6801      LDR         R1,[R0,#0x0]
+ 00000006  4311      ORR         R1,R2
+ 00000008  6001      STR         R1,[R0,#0x0]
+   45:     VICIntSelect=0;
+ 0000000A  2100      MOV         R1,#0x0
+ 0000000C  4800      LDR         R0,=0xFFFFF00C
+ 0000000E  6001      STR         R1,[R0,#0x0]
+   46:     VICIntEnable |= 1<<I2C_CH_NO;
+ 00000010  4A80      LDR         R2,=0x200
+ 00000012  4800      LDR         R0,=0xFFFFF010
+ 00000014  6801      LDR         R1,[R0,#0x0]
+ 00000016  4311      ORR         R1,R2
+ 00000018  6001      STR         R1,[R0,#0x0]
+   47:     VICVectAddr6  = (unsigned)I2C_isr;
+ 0000001A  4900      LDR         R1,=I2C_isr?A ; I2C_isr?A
+ 0000001C  4800      LDR         R0,=0xFFFFF118
+ 0000001E  6001      STR         R1,[R0,#0x0]
+   48:     VICVectCntl6  = 0x20|I2C_CH_NO;
+ 00000020  2129      MOV         R1,#0x29
+ 00000022  4800      LDR         R0,=0xFFFFF218
+ 00000024  6001      STR         R1,[R0,#0x0]
+   49:     I2SCLH=75;
+ARM COMPILER V2.50a,  i2c_e2prom                                                           13/03/13  12:47:57  PAGE 6   
+
+ 00000026  214B      MOV         R1,#0x4B
+ 00000028  4800      LDR         R0,=0xE001C010
+ 0000002A  8001      STRH        R1,[R0,#0x0]
+   50:     I2SCLL=75;
+ 0000002C  4800      LDR         R0,=0xE001C014
+ 0000002E  8001      STRH        R1,[R0,#0x0]
+   51:     I2CONSET=0x40;  
+ 00000030  2140      MOV         R1,#0x40
+ 00000032  4800      LDR         R0,=0xE001C000
+ 00000034  7001      STRB        R1,[R0,#0x0]
+   52: }
+ 00000036  4770      BX          R14
+ 00000038          ENDP ; 'i2c_init?T'
+
+
+*** CODE SEGMENT '?PR?I2C_isr?A?i2c_e2prom':
+   54: void I2C_isr(void) __irq
+ 00000000  E92D000F  STMDB       R13!,{R0-R3}
+   56:     if(Uc_i2c_read_flag==0)
+ 00000004  E5100000  LDR         R0,=Uc_i2c_read_flag ; Uc_i2c_read_flag
+ 00000008  E5D00000  LDRB        R0,[R0,#0x0] ; Uc_i2c_read_flag
+ 0000000C  E3500000  CMP         R0,#0x0000
+ 00000010  1A00004D  BNE         L_1  ; Targ=0x14C
+   58:         switch(I2STAT)
+ 00000014  E5100000  LDR         R0,=0xE001C004
+ 00000018  E5D00000  LDRB        R0,[R0,#0x0]
+ 0000001C  E3500010  CMP         R0,#0x0010
+ 00000020  0A0000CF  BEQ         L_13  ; Targ=0x364
+ 00000024  E3500018  CMP         R0,#0x0018
+ 00000028  0A00000F  BEQ         L_5  ; Targ=0x6C
+ 0000002C  E3500020  CMP         R0,#0x0020
+ 00000030  0A0000CB  BEQ         L_13  ; Targ=0x364
+ 00000034  E3500028  CMP         R0,#0x0028
+ 00000038  0A000014  BEQ         L_7  ; Targ=0x90
+ 0000003C  E3500030  CMP         R0,#0x0030
+ 00000040  0A0000C7  BEQ         L_13  ; Targ=0x364
+ 00000044  E3500008  CMP         R0,#0x0008
+ 00000048  1A0000C5  BNE         L_13  ; Targ=0x364
+   60:             case 0x08:
+ 0000004C          L_3:
+   61:                 I2DAT=Uc_dev_address;
+ 0000004C  E5100000  LDR         R0,=Uc_dev_address ; Uc_dev_address
+ 00000050  E5D01000  LDRB        R1,[R0,#0x0] ; Uc_dev_address
+ 00000054  E5100000  LDR         R0,=0xE001C008
+ 00000058  E5C01000  STRB        R1,[R0,#0x0]
+   62:                 I2CONCLR=0x20;              
+ 0000005C  E3A01020  MOV         R1,#0x20
+ 00000060  E5100000  LDR         R0,=0xE001C018
+ 00000064  E5C01000  STRB        R1,[R0,#0x0]
+   63:                 break;
+ 00000068  EA0000BD  B           L_13  ; Targ=0x364
+   68:             case 0x18:
+ 0000006C          L_5:
+   69:                 I2DAT=((Ui_mem_address>>8) & 0xff);             
+ 0000006C  E5100000  LDR         R0,=Ui_mem_address ; Ui_mem_address
+ 00000070  E5901000  LDR         R1,[R0,#0x0] ; Ui_mem_address
+ 00000074  E1A01421  MOV         R1,R1,LSR #8
+ 00000078  E20110FF  AND         R1,R1,#0x00FF
+ 0000007C  E1A01C01  MOV         R1,R1,LSL #24
+ 00000080  E1A01C21  MOV         R1,R1,LSR #24
+ 00000084  E5100000  LDR         R0,=0xE001C008
+ 00000088  E5C01000  STRB        R1,[R0,#0x0]
+   70:                 break;
+ 0000008C  EA0000B4  B           L_13  ; Targ=0x364
+   73:             case 0x28:
+ 00000090          L_7:
+   74:                 if(addr_flag==0)
+ 00000090  E5100000  LDR         R0,=addr_flag ; addr_flag
+ARM COMPILER V2.50a,  i2c_e2prom                                                           13/03/13  12:47:57  PAGE 7   
+
+ 00000094  E5D00000  LDRB        R0,[R0,#0x0] ; addr_flag
+ 00000098  E3500000  CMP         R0,#0x0000
+ 0000009C  1A00000A  BNE         L_9  ; Targ=0xCC
+   76:                     I2DAT=((Ui_mem_address) & 0xff);
+ 000000A0  E5100000  LDR         R0,=Ui_mem_address ; Ui_mem_address
+ 000000A4  E5901000  LDR         R1,[R0,#0x0] ; Ui_mem_address
+ 000000A8  E20110FF  AND         R1,R1,#0x00FF
+ 000000AC  E1A01C01  MOV         R1,R1,LSL #24
+ 000000B0  E1A01C21  MOV         R1,R1,LSR #24
+ 000000B4  E5100000  LDR         R0,=0xE001C008
+ 000000B8  E5C01000  STRB        R1,[R0,#0x0]
+   77:                     addr_flag=1;
+ 000000BC  E3A01001  MOV         R1,#0x1
+ 000000C0  E5100000  LDR         R0,=addr_flag ; addr_flag
+ 000000C4  E5C01000  STRB        R1,[R0,#0x0] ; addr_flag
+   79:                 }
+ 000000C8  EA0000A5  B           L_13  ; Targ=0x364
+ 000000CC          L_9:
+   82:                     if(tx_count<Uc_i2c_count)
+ 000000CC  E5100000  LDR         R0,=Uc_i2c_count ; Uc_i2c_count
+ 000000D0  E5D00000  LDRB        R0,[R0,#0x0] ; Uc_i2c_count
+ 000000D4  E1A02000  MOV         R2,R0
+ 000000D8  E5100000  LDR         R0,=tx_count ; tx_count
+ 000000DC  E5D01000  LDRB        R1,[R0,#0x0] ; tx_count
+ 000000E0  E1A00001  MOV         R0,R1
+ 000000E4  E1500002  CMP         R0,R2
+ 000000E8  2A00000B  BCS         L_11  ; Targ=0x11C
+   84:                         I2DAT= *trans_data;
+ 000000EC  E5100000  LDR         R0,=trans_data ; trans_data
+ 000000F0  E5902000  LDR         R2,[R0,#0x0] ; trans_data
+ 000000F4  E5D23000  LDRB        R3,[R2,#0x0]
+ 000000F8  E5100000  LDR         R0,=0xE001C008
+ 000000FC  E5C03000  STRB        R3,[R0,#0x0]
+   85:                         trans_data++;
+ 00000100  E5100000  LDR         R0,=trans_data ; trans_data
+ 00000104  E2822001  ADD         R2,R2,#0x0001
+ 00000108  E5802000  STR         R2,[R0,#0x0] ; trans_data
+   86:                         tx_count++;
+ 0000010C  E5100000  LDR         R0,=tx_count ; tx_count
+ 00000110  E2811001  ADD         R1,R1,#0x0001
+ 00000114  E5C01000  STRB        R1,[R0,#0x0] ; tx_count
+   88:                     }
+ 00000118  EA000091  B           L_13  ; Targ=0x364
+ 0000011C          L_11:
+   91:                         I2CONSET=0x10;
+ 0000011C  E3A01010  MOV         R1,#0x10
+ 00000120  E5100000  LDR         R0,=0xE001C000
+ 00000124  E5C01000  STRB        R1,[R0,#0x0]
+   92:                         tx_count = 0;
+ 00000128  E3A01000  MOV         R1,#0x0
+ 0000012C  E5100000  LDR         R0,=tx_count ; tx_count
+ 00000130  E5C01000  STRB        R1,[R0,#0x0] ; tx_count
+   93:                         addr_flag=0;
+ 00000134  E5100000  LDR         R0,=addr_flag ; addr_flag
+ 00000138  E5C01000  STRB        R1,[R0,#0x0] ; addr_flag
+   94:                         Uc_i2c_read_flag=1;
+ 0000013C  E3A01001  MOV         R1,#0x1
+ 00000140  E5100000  LDR         R0,=Uc_i2c_read_flag ; Uc_i2c_read_flag
+ 00000144  E5C01000  STRB        R1,[R0,#0x0] ; Uc_i2c_read_flag
+   97:                 break;
+ 00000148  EA000085  B           L_13  ; Targ=0x364
+  102:      }
+ 0000014C          L_1:
+  105:         switch(I2STAT)
+ 0000014C  E5100000  LDR         R0,=0xE001C004
+ 00000150  E5D00000  LDRB        R0,[R0,#0x0]
+ARM COMPILER V2.50a,  i2c_e2prom                                                           13/03/13  12:47:57  PAGE 8   
+
+ 00000154  E3500010  CMP         R0,#0x0010
+ 00000158  0A000018  BEQ         L_16  ; Targ=0x1C0
+ 0000015C  E3500018  CMP         R0,#0x0018
+ 00000160  0A000025  BEQ         L_17  ; Targ=0x1FC
+ 00000164  E3500020  CMP         R0,#0x0020
+ 00000168  0A00007D  BEQ         L_13  ; Targ=0x364
+ 0000016C  E3500028  CMP         R0,#0x0028
+ 00000170  0A00002A  BEQ         L_19  ; Targ=0x220
+ 00000174  E3500038  CMP         R0,#0x0038
+ 00000178  0A000079  BEQ         L_13  ; Targ=0x364
+ 0000017C  E3500040  CMP         R0,#0x0040
+ 00000180  0A000039  BEQ         L_21  ; Targ=0x26C
+ 00000184  E3500048  CMP         R0,#0x0048
+ 00000188  0A000075  BEQ         L_13  ; Targ=0x364
+ 0000018C  E3500050  CMP         R0,#0x0050
+ 00000190  0A00003D  BEQ         L_23  ; Targ=0x28C
+ 00000194  E3500058  CMP         R0,#0x0058
+ 00000198  0A000062  BEQ         L_24  ; Targ=0x328
+ 0000019C  E3500008  CMP         R0,#0x0008
+ 000001A0  1A00006F  BNE         L_13  ; Targ=0x364
+  107:             case 0x08:
+ 000001A4          L_15:
+  108:                 I2DAT= 0xA0 ;//Uc_dev_address;
+ 000001A4  E3A010A0  MOV         R1,#0xA0
+ 000001A8  E5100000  LDR         R0,=0xE001C008
+ 000001AC  E5C01000  STRB        R1,[R0,#0x0]
+  109:                 I2CONCLR=0x20;
+ 000001B0  E3A01020  MOV         R1,#0x20
+ 000001B4  E5100000  LDR         R0,=0xE001C018
+ 000001B8  E5C01000  STRB        R1,[R0,#0x0]
+  110:                 break;
+ 000001BC  EA000068  B           L_13  ; Targ=0x364
+  112:             case 0x10:
+ 000001C0          L_16:
+  113:                 I2DAT=Uc_dev_address+1;
+ 000001C0  E5100000  LDR         R0,=Uc_dev_address ; Uc_dev_address
+ 000001C4  E5D00000  LDRB        R0,[R0,#0x0] ; Uc_dev_address
+ 000001C8  E1A01000  MOV         R1,R0
+ 000001CC  E2811001  ADD         R1,R1,#0x0001
+ 000001D0  E1A01C01  MOV         R1,R1,LSL #24
+ 000001D4  E1A01C21  MOV         R1,R1,LSR #24
+ 000001D8  E5100000  LDR         R0,=0xE001C008
+ 000001DC  E5C01000  STRB        R1,[R0,#0x0]
+  114:                 I2CONSET=0x04;
+ 000001E0  E3A01004  MOV         R1,#0x4
+ 000001E4  E5100000  LDR         R0,=0xE001C000
+ 000001E8  E5C01000  STRB        R1,[R0,#0x0]
+  115:                 I2CONCLR=0x20;
+ 000001EC  E3A01020  MOV         R1,#0x20
+ 000001F0  E5100000  LDR         R0,=0xE001C018
+ 000001F4  E5C01000  STRB        R1,[R0,#0x0]
+  116:                 break;
+ 000001F8  EA000059  B           L_13  ; Targ=0x364
+  118:             case 0x18:
+ 000001FC          L_17:
+  119:                 I2DAT=((Ui_mem_address>>8) & 0xff);
+ 000001FC  E5100000  LDR         R0,=Ui_mem_address ; Ui_mem_address
+ 00000200  E5901000  LDR         R1,[R0,#0x0] ; Ui_mem_address
+ 00000204  E1A01421  MOV         R1,R1,LSR #8
+ 00000208  E20110FF  AND         R1,R1,#0x00FF
+ 0000020C  E1A01C01  MOV         R1,R1,LSL #24
+ 00000210  E1A01C21  MOV         R1,R1,LSR #24
+ 00000214  E5100000  LDR         R0,=0xE001C008
+ 00000218  E5C01000  STRB        R1,[R0,#0x0]
+  120:                 break;
+ 0000021C  EA000050  B           L_13  ; Targ=0x364
+ARM COMPILER V2.50a,  i2c_e2prom                                                           13/03/13  12:47:57  PAGE 9   
+
+  125:             case 0x28:
+ 00000220          L_19:
+  126:                 if(addr_flag==0)
+ 00000220  E5100000  LDR         R0,=addr_flag ; addr_flag
+ 00000224  E5D00000  LDRB        R0,[R0,#0x0] ; addr_flag
+ 00000228  E3500000  CMP         R0,#0x0000
+ 0000022C  1A00000A  BNE         L_25  ; Targ=0x25C
+  128:                     I2DAT=((Ui_mem_address) & 0xff);
+ 00000230  E5100000  LDR         R0,=Ui_mem_address ; Ui_mem_address
+ 00000234  E5901000  LDR         R1,[R0,#0x0] ; Ui_mem_address
+ 00000238  E20110FF  AND         R1,R1,#0x00FF
+ 0000023C  E1A01C01  MOV         R1,R1,LSL #24
+ 00000240  E1A01C21  MOV         R1,R1,LSR #24
+ 00000244  E5100000  LDR         R0,=0xE001C008
+ 00000248  E5C01000  STRB        R1,[R0,#0x0]
+  129:                     addr_flag=1;
+ 0000024C  E3A01001  MOV         R1,#0x1
+ 00000250  E5100000  LDR         R0,=addr_flag ; addr_flag
+ 00000254  E5C01000  STRB        R1,[R0,#0x0] ; addr_flag
+  130:                 }
+ 00000258  EA000041  B           L_13  ; Targ=0x364
+ 0000025C          L_25:
+  133:                     I2CONSET=0x20;
+ 0000025C  E3A01020  MOV         R1,#0x20
+ 00000260  E5100000  LDR         R0,=0xE001C000
+ 00000264  E5C01000  STRB        R1,[R0,#0x0]
+  135:                 break;
+ 00000268  EA00003D  B           L_13  ; Targ=0x364
+  139:             case 0x40:
+ 0000026C          L_21:
+  140:                 if(Uc_i2c_count==1)
+ 0000026C  E5100000  LDR         R0,=Uc_i2c_count ; Uc_i2c_count
+ 00000270  E5D00000  LDRB        R0,[R0,#0x0] ; Uc_i2c_count
+ 00000274  E3500001  CMP         R0,#0x0001
+ 00000278  1A000039  BNE         L_13  ; Targ=0x364
+  142:                     I2CONCLR=0x04;
+ 0000027C  E3A01004  MOV         R1,#0x4
+ 00000280  E5100000  LDR         R0,=0xE001C018
+ 00000284  E5C01000  STRB        R1,[R0,#0x0]
+  144:                 break;
+ 00000288  EA000035  B           L_13  ; Targ=0x364
+  147:             case 0x50:
+ 0000028C          L_23:
+  148:                 if(rx_count<(Uc_i2c_count)-2)
+ 0000028C  E5100000  LDR         R0,=Uc_i2c_count ; Uc_i2c_count
+ 00000290  E5D00000  LDRB        R0,[R0,#0x0] ; Uc_i2c_count
+ 00000294  E1A01000  MOV         R1,R0
+ 00000298  E2411002  SUB         R1,R1,#0x0002
+ 0000029C  E5100000  LDR         R0,=rx_count ; rx_count
+ 000002A0  E5D00000  LDRB        R0,[R0,#0x0] ; rx_count
+ 000002A4  E1500001  CMP         R0,R1
+ 000002A8  AA00000D  BGE         L_28  ; Targ=0x2E4
+  150:                     *rec_data=I2DAT;
+ 000002AC  E5100000  LDR         R0,=0xE001C008
+ 000002B0  E5D01000  LDRB        R1,[R0,#0x0]
+ 000002B4  E5100000  LDR         R0,=rec_data ; rec_data
+ 000002B8  E5900000  LDR         R0,[R0,#0x0] ; rec_data
+ 000002BC  E5C01000  STRB        R1,[R0,#0x0]
+  151:                     rec_data++;
+ 000002C0  E5100000  LDR         R0,=rec_data ; rec_data
+ 000002C4  E5901000  LDR         R1,[R0,#0x0] ; rec_data
+ 000002C8  E2811001  ADD         R1,R1,#0x0001
+ 000002CC  E5801000  STR         R1,[R0,#0x0] ; rec_data
+  152:                     rx_count++;
+ 000002D0  E5100000  LDR         R0,=rx_count ; rx_count
+ 000002D4  E5D01000  LDRB        R1,[R0,#0x0] ; rx_count
+ARM COMPILER V2.50a,  i2c_e2prom                                                           13/03/13  12:47:57  PAGE 10  
+
+ 000002D8  E2811001  ADD         R1,R1,#0x0001
+ 000002DC  E5C01000  STRB        R1,[R0,#0x0] ; rx_count
+  153:                 }
+ 000002E0  EA00001F  B           L_13  ; Targ=0x364
+ 000002E4          L_28:
+  156:                     *rec_data = I2DAT;
+ 000002E4  E5100000  LDR         R0,=0xE001C008
+ 000002E8  E5D01000  LDRB        R1,[R0,#0x0]
+ 000002EC  E5100000  LDR         R0,=rec_data ; rec_data
+ 000002F0  E5900000  LDR         R0,[R0,#0x0] ; rec_data
+ 000002F4  E5C01000  STRB        R1,[R0,#0x0]
+  157:                     rx_count++;
+ 000002F8  E5100000  LDR         R0,=rx_count ; rx_count
+ 000002FC  E5D01000  LDRB        R1,[R0,#0x0] ; rx_count
+ 00000300  E2811001  ADD         R1,R1,#0x0001
+ 00000304  E5C01000  STRB        R1,[R0,#0x0] ; rx_count
+  158:                     rec_data++;
+ 00000308  E5100000  LDR         R0,=rec_data ; rec_data
+ 0000030C  E5901000  LDR         R1,[R0,#0x0] ; rec_data
+ 00000310  E2811001  ADD         R1,R1,#0x0001
+ 00000314  E5801000  STR         R1,[R0,#0x0] ; rec_data
+  159:                     I2CONCLR = 0x04;
+ 00000318  E3A01004  MOV         R1,#0x4
+ 0000031C  E5100000  LDR         R0,=0xE001C018
+ 00000320  E5C01000  STRB        R1,[R0,#0x0]
+  161:                 break;
+ 00000324  EA00000E  B           L_13  ; Targ=0x364
+  162:             case 0x58:
+ 00000328          L_24:
+  163:                 *rec_data=I2DAT;
+ 00000328  E5100000  LDR         R0,=0xE001C008
+ 0000032C  E5D01000  LDRB        R1,[R0,#0x0]
+ 00000330  E5100000  LDR         R0,=rec_data ; rec_data
+ 00000334  E5900000  LDR         R0,[R0,#0x0] ; rec_data
+ 00000338  E5C01000  STRB        R1,[R0,#0x0]
+  164:                 I2CONSET=0x10;
+ 0000033C  E3A01010  MOV         R1,#0x10
+ 00000340  E5100000  LDR         R0,=0xE001C000
+ 00000344  E5C01000  STRB        R1,[R0,#0x0]
+  165:                 addr_flag = 0;
+ 00000348  E3A01000  MOV         R1,#0x0
+ 0000034C  E5100000  LDR         R0,=addr_flag ; addr_flag
+ 00000350  E5C01000  STRB        R1,[R0,#0x0] ; addr_flag
+  166:                 Uc_i2c_read_flag=0;
+ 00000354  E5100000  LDR         R0,=Uc_i2c_read_flag ; Uc_i2c_read_flag
+ 00000358  E5C01000  STRB        R1,[R0,#0x0] ; Uc_i2c_read_flag
+  167:                 rx_count = 0;
+ 0000035C  E5100000  LDR         R0,=rx_count ; rx_count
+ 00000360  E5C01000  STRB        R1,[R0,#0x0] ; rx_count
+  171:     }
+ 00000364          L_13:
+  172:     I2CONCLR=0x08;
+ 00000364  E3A01008  MOV         R1,#0x8
+ 00000368  E5100000  LDR         R0,=0xE001C018
+ 0000036C  E5C01000  STRB        R1,[R0,#0x0]
+  173:     VICVectAddr=0;
+ 00000370  E3A01000  MOV         R1,#0x0
+ 00000374  E5100000  LDR         R0,=0xFFFFF030
+ 00000378  E5801000  STR         R1,[R0,#0x0]
+  174: }
+ 0000037C  E8BD000F  LDMIA       R13!,{R0-R3}
+ 00000380  E25EF004  SUBS        R15,R14,#0x0004
+ 00000384          ENDP ; 'I2C_isr?A'
+
+
+*** CODE SEGMENT '?PR?i2c_trans?T?i2c_e2prom':
+  176: void i2c_trans(U8* data_write, U8 no_bytes, U8 dev_addr , U32 mem_addr)
+ 00000000  B470      PUSH        {R4-R6}
+ARM COMPILER V2.50a,  i2c_e2prom                                                           13/03/13  12:47:57  PAGE 11  
+
+ 00000002  ---- Variable 'mem_addr' assigned to Register 'R3' ----
+ 00000002  ---- Variable 'dev_addr' assigned to Register 'R2' ----
+ 00000002  1C0D      MOV         R5,R1 ; no_bytes
+ 00000004  ---- Variable 'no_bytes' assigned to Register 'R5' ----
+ 00000004  1C06      MOV         R6,R0 ; data_write
+ 00000006  ---- Variable 'data_write' assigned to Register 'R6' ----
+  177: {    
+ 00000006            ; SCOPE-START
+  178:     U32 ui_delay_count = 0;
+ 00000006  2400      MOV         R4,#0x0
+ 00000008  ---- Variable 'ui_delay_count' assigned to Register 'R4' ----
+  179:     trans_data         = data_write;
+ 00000008  1C31      MOV         R1,R6 ; data_write
+ 0000000A  4800      LDR         R0,=trans_data ; trans_data
+ 0000000C  6001      STR         R1,[R0,#0x0] ; trans_data
+  180:     Uc_i2c_count   = no_bytes;
+ 0000000E  1C29      MOV         R1,R5 ; no_bytes
+ 00000010  4800      LDR         R0,=Uc_i2c_count ; Uc_i2c_count
+ 00000012  7001      STRB        R1,[R0,#0x0] ; Uc_i2c_count
+  181:     Uc_dev_address = dev_addr;
+ 00000014  1C11      MOV         R1,R2 ; dev_addr
+ 00000016  4800      LDR         R0,=Uc_dev_address ; Uc_dev_address
+ 00000018  7001      STRB        R1,[R0,#0x0] ; Uc_dev_address
+  182:     Ui_mem_address = mem_addr;
+ 0000001A  1C19      MOV         R1,R3 ; mem_addr
+ 0000001C  4800      LDR         R0,=Ui_mem_address ; Ui_mem_address
+ 0000001E  6001      STR         R1,[R0,#0x0] ; Ui_mem_address
+  183:     Uc_i2c_read_flag = 0;
+ 00000020  2100      MOV         R1,#0x0
+ 00000022  4800      LDR         R0,=Uc_i2c_read_flag ; Uc_i2c_read_flag
+ 00000024  7001      STRB        R1,[R0,#0x0] ; Uc_i2c_read_flag
+  184:     I2CONSET |= 0x20 ;
+ 00000026  2320      MOV         R3,#0x20
+ 00000028  4800      LDR         R0,=0xE001C000
+ 0000002A  7802      LDRB        R2,[R0,#0x0]
+ 0000002C  431A      ORR         R2,R3
+ 0000002E  7002      STRB        R2,[R0,#0x0]
+  185:     tx_count = 0;
+ 00000030  4800      LDR         R0,=tx_count ; tx_count
+ 00000032  7001      STRB        R1,[R0,#0x0] ; tx_count
+  186:     while(Uc_i2c_read_flag == 0 );
+ 00000034          L_30:
+ 00000034  4800      LDR         R0,=Uc_i2c_read_flag ; Uc_i2c_read_flag
+ 00000036  7800      LDRB        R0,[R0,#0x0] ; Uc_i2c_read_flag
+ 00000038  2800      CMP         R0,#0x0
+ 0000003A  D0FB      BEQ         L_30  ; T=0x00000034
+  187:     for(ui_delay_count = 0; ui_delay_count<50000 ; ui_delay_count++);
+ 0000003C  2400      MOV         R4,#0x0
+ 0000003E          L_34:
+ 0000003E  3401      ADD         R4,#0x1
+ 00000040  1C20      MOV         R0,R4 ; ui_delay_count
+ 00000042  4800      LDR         R1,=0xC350
+ 00000044  4288      CMP         R0,R1 ; ui_delay_count
+ 00000046  D3FA      BCC         L_34  ; T=0x0000003E
+ 00000048            ; SCOPE-END
+  190: }
+ 00000048  BC70      POP         {R4-R6}
+ 0000004A  4770      BX          R14
+ 0000004C          ENDP ; 'i2c_trans?T'
+
+
+*** CODE SEGMENT '?PR?i2c_read?T?i2c_e2prom':
+  192: void i2c_read(U8* data_read, U8 no_bytes, U8 dev_addr , U32 mem_addr)
+ 00000000  B470      PUSH        {R4-R6}
+ 00000002  ---- Variable 'mem_addr' assigned to Register 'R3' ----
+ 00000002  ---- Variable 'dev_addr' assigned to Register 'R2' ----
+ 00000002  1C0D      MOV         R5,R1 ; no_bytes
+ 00000004  ---- Variable 'no_bytes' assigned to Register 'R5' ----
+ARM COMPILER V2.50a,  i2c_e2prom                                                           13/03/13  12:47:57  PAGE 12  
+
+ 00000004  1C06      MOV         R6,R0 ; data_read
+ 00000006  ---- Variable 'data_read' assigned to Register 'R6' ----
+  193: {    
+ 00000006            ; SCOPE-START
+  194:     U32 ui_delay_count = 0;
+ 00000006  2400      MOV         R4,#0x0
+ 00000008  ---- Variable 'ui_delay_count' assigned to Register 'R4' ----
+  195:     rec_data           = data_read;
+ 00000008  1C31      MOV         R1,R6 ; data_read
+ 0000000A  4800      LDR         R0,=rec_data ; rec_data
+ 0000000C  6001      STR         R1,[R0,#0x0] ; rec_data
+  196:     Uc_i2c_count   = no_bytes;
+ 0000000E  1C29      MOV         R1,R5 ; no_bytes
+ 00000010  4800      LDR         R0,=Uc_i2c_count ; Uc_i2c_count
+ 00000012  7001      STRB        R1,[R0,#0x0] ; Uc_i2c_count
+  197:     Uc_dev_address = dev_addr;
+ 00000014  1C11      MOV         R1,R2 ; dev_addr
+ 00000016  4800      LDR         R0,=Uc_dev_address ; Uc_dev_address
+ 00000018  7001      STRB        R1,[R0,#0x0] ; Uc_dev_address
+  198:     Ui_mem_address = mem_addr;
+ 0000001A  1C19      MOV         R1,R3 ; mem_addr
+ 0000001C  4800      LDR         R0,=Ui_mem_address ; Ui_mem_address
+ 0000001E  6001      STR         R1,[R0,#0x0] ; Ui_mem_address
+  199:     Uc_i2c_read_flag = 1;
+ 00000020  2101      MOV         R1,#0x1
+ 00000022  4800      LDR         R0,=Uc_i2c_read_flag ; Uc_i2c_read_flag
+ 00000024  7001      STRB        R1,[R0,#0x0] ; Uc_i2c_read_flag
+  200:     I2CONSET |= 0x20;
+ 00000026  2220      MOV         R2,#0x20
+ 00000028  4800      LDR         R0,=0xE001C000
+ 0000002A  7801      LDRB        R1,[R0,#0x0]
+ 0000002C  4311      ORR         R1,R2
+ 0000002E  7001      STRB        R1,[R0,#0x0]
+  201:     rx_count = 0;
+ 00000030  2100      MOV         R1,#0x0
+ 00000032  4800      LDR         R0,=rx_count ; rx_count
+ 00000034  7001      STRB        R1,[R0,#0x0] ; rx_count
+  202:     while(Uc_i2c_read_flag == 1 );
+ 00000036          L_39:
+ 00000036  4800      LDR         R0,=Uc_i2c_read_flag ; Uc_i2c_read_flag
+ 00000038  7800      LDRB        R0,[R0,#0x0] ; Uc_i2c_read_flag
+ 0000003A  2801      CMP         R0,#0x1
+ 0000003C  D0FB      BEQ         L_39  ; T=0x00000036
+  203:     for(ui_delay_count = 0; ui_delay_count<50000 ; ui_delay_count++);
+ 0000003E  2400      MOV         R4,#0x0
+ 00000040          L_43:
+ 00000040  3401      ADD         R4,#0x1
+ 00000042  1C20      MOV         R0,R4 ; ui_delay_count
+ 00000044  4800      LDR         R1,=0xC350
+ 00000046  4288      CMP         R0,R1 ; ui_delay_count
+ 00000048  D3FA      BCC         L_43  ; T=0x00000040
+ 0000004A            ; SCOPE-END
+  205: }
+ 0000004A  BC70      POP         {R4-R6}
+ 0000004C  4770      BX          R14
+ 0000004E          ENDP ; 'i2c_read?T'
+
+
+
+Module Information          Static
+----------------------------------
+  code size            =    ------
+  data size            =        18
+  const size           =    ------
+End of Module Information.
+
+
+ARM COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

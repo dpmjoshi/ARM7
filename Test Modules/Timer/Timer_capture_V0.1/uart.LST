@@ -1,0 +1,557 @@
+ARM COMPILER V2.50a,  uart                                                                 03/01/13  17:10:56  PAGE 1   
+
+
+ARM COMPILER V2.50a, COMPILATION OF MODULE uart
+OBJECT MODULE PLACED IN uart.OBJ
+COMPILER INVOKED BY: C:\Keil\ARM\BIN\CA.exe uart.c THUMB BROWSE DEBUG TABS(4) 
+
+stmt  level    source
+
+    1          #include"includes.h"
+    2          
+    3          U8  Uc_recv_data[100];
+    4          U8  Uc_byte_count = 0;
+    5          
+    6          U8  Uc_eof = 0;
+    7          U8  Uc_sof = 0;
+    8          
+    9          void UART_init(void)
+   10          {
+   11   1       PINSEL0 |=0X00005005;
+   12   1       U1FCR=0X01;
+   13   1       U1LCR=0X83;        // Enable DLAB bit and selecting word length 8bit.
+   14   1       U1DLM=0X00;
+   15   1       U1DLL=0X62;       //TO SET BAUD RATE
+   16   1       U1LCR=0X03;       //disable DLAB bit.
+   17   1      
+   18   1       U0FCR=0X01;
+   19   1       U0LCR=0X83;        //
+   20   1       U0DLM=0X00;
+   21   1       U0DLL=0X62;       //TO SET BAUD RATE
+   22   1       U0LCR=0X03;
+   23   1      }
+   24          
+   25          //***************************************************
+   26          //Initialisation of ISR
+   27          //***************************************************
+   28          
+   29          void UART_init_irq(void)
+   30          {
+   31   1        PINSEL0 |=0X00005005;
+   32   1      
+   33   1        U1FCR=0X01;
+   34   1        U1LCR=0X83;       // Enable DLAB bit and selecting word length 8bit.
+   35   1        U1DLM=0X00;
+   36   1        U1DLL=0X62;      //TO SET BAUD RATE
+   37   1        U1LCR=0X03;      //disable DLAB bit.
+   38   1      
+   39   1        U0FCR=0X01;
+   40   1        U0LCR=0X83;       //
+   41   1        U0DLM=0X00;
+   42   1        U0DLL=0X62;      //TO SET BAUD RATE
+   43   1        U0LCR=0X03;
+   44   1        
+   45   1        VICVectAddr0 = (U32)&uart0_ISR;
+   46   1        VICVectCntl0 = 0x20 | 6;
+   47   1        VICIntEnable = 1 << 6;    
+   48   1        U0IER=0x1; 
+   49   1      
+   50   1        VICVectAddr1 = (U32)&uart1_ISR;
+   51   1        VICVectCntl1 = 0x20 | 7;
+   52   1        VICIntEnable = 1 << 7;    
+   53   1        U1IER=0x1;
+   54   1      
+   55   1      }
+   56          
+   57          //***************************************************
+   58          // ISR for UART0
+   59          //***************************************************
+ARM COMPILER V2.50a,  uart                                                                 03/01/13  17:10:56  PAGE 2   
+
+   60          void uart0_ISR(void)__irq
+   61          {
+   62   1          
+   63   1         VICVectAddr   = 0x00;
+   64   1      }  
+   65          //***************************************************
+   66          // ISR for UART1
+   67          //***************************************************
+   68          
+   69          void uart1_ISR(void)__irq
+   70          {
+   71   1         Uc_recv_data[Uc_byte_count] = U1RBR;
+   72   1         
+   73   1         uart1_send_byte(Uc_recv_data[Uc_byte_count]);
+   74   1      
+   75   1         if(Uc_recv_data[Uc_byte_count] == '$')
+   76   1         {
+   77   2             Uc_sof = 1;
+   78   2             Uc_eof = 0;
+   79   2             Uc_byte_count = 0;
+   80   2         }
+   81   1         else if((Uc_sof == 1) & (Uc_recv_data[Uc_byte_count] == '#'))
+   82   1         {
+   83   2             Uc_eof = 1;
+   84   2             Uc_sof = 0;
+   85   2             Uc_recv_data[Uc_byte_count] = '\0';
+   86   2         }
+   87   1         Uc_byte_count++;
+   88   1         
+   89   1         VICVectAddr = 0x00;
+   90   1      }
+   91          
+   92          
+   93          
+   94          // function sends a byte on UART0
+   95          void uart0_send_byte(unsigned char byte)
+   96          {
+   97   1        U0THR=byte;
+   98   1        while((U0LSR&0x20)==0);
+   99   1      }
+  100          
+  101          
+  102          // function sends a byte on UART1
+  103          void uart1_send_byte(unsigned char byte)
+  104          {
+  105   1        U1THR=byte;
+  106   1        while((U1LSR&0x20)==0);
+  107   1       
+  108   1      }
+  109          
+  110          
+  111          // function sends a string on UART0
+  112          void uart0_send_string(unsigned char *string)
+  113          {
+  114   1        unsigned char cnt;
+  115   1        
+  116   1        for (cnt=0; *string!='\0'; cnt++)
+  117   1        {
+  118   2          U0THR =*string;
+  119   2          while((U0LSR&0x20) == 0);
+  120   2          string++;
+  121   2        }
+  122   1      }
+  123          
+  124          // function sends a string on UART1
+  125          void uart1_send_string(unsigned char *string)
+ARM COMPILER V2.50a,  uart                                                                 03/01/13  17:10:56  PAGE 3   
+
+  126          {
+  127   1        unsigned char cnt;
+  128   1        
+  129   1        for (cnt=0; *string != '\0'; cnt++)
+  130   1        {
+  131   2          U1THR=*string;
+  132   2          while((U1LSR&0x20) == 0);
+  133   2          string++;
+  134   2        }
+  135   1      }
+  136          
+  137          
+ARM COMPILER V2.50a,  uart                                                                 03/01/13  17:10:56  PAGE 4   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+
+*** PUBLICS:
+ PUBLIC         UART_init?T
+ PUBLIC         UART_init_irq?T
+ PUBLIC         uart0_send_byte?T
+ PUBLIC         uart1_send_byte?T
+ PUBLIC         uart1_send_byte?A
+ PUBLIC         uart0_send_string?T
+ PUBLIC         uart1_send_string?T
+ PUBLIC         uart0_ISR?A
+ PUBLIC         uart1_ISR?A
+ PUBLIC         Uc_recv_data
+ PUBLIC         Uc_byte_count
+ PUBLIC         Uc_sof
+ PUBLIC         Uc_eof
+
+
+
+*** DATA SEGMENT '?DT0?uart':
+ 00000000          Uc_recv_data:
+ 00000000            DS          100
+ 00000064          Uc_byte_count:
+ 00000064           BEGIN_INIT
+ 00000064  00        DB          0x0
+ 00000065           END_INIT
+ 00000065          Uc_sof:
+ 00000065           BEGIN_INIT
+ 00000065  00        DB          0x0
+ 00000066           END_INIT
+ 00000066          Uc_eof:
+ 00000066           BEGIN_INIT
+ 00000066  00        DB          0x0
+ 00000067           END_INIT
+
+
+
+*** CODE SEGMENT '?PR?UART_init?T?uart':
+    9: void UART_init(void)
+ 00000000  B430      PUSH        {R4-R5}
+   11:  PINSEL0 |=0X00005005;
+ 00000002  4800      LDR         R2,=0x5005
+ 00000004  4800      LDR         R0,=0xE002C000
+ 00000006  6801      LDR         R1,[R0,#0x0]
+ 00000008  4311      ORR         R1,R2
+ 0000000A  6001      STR         R1,[R0,#0x0]
+   12:  U1FCR=0X01;
+ 0000000C  2501      MOV         R5,#0x1
+ 0000000E  4800      LDR         R0,=0xE0010008
+ 00000010  7005      STRB        R5,[R0,#0x0]
+   13:  U1LCR=0X83;        // Enable DLAB bit and selecting word length 8bit.
+ 00000012  2483      MOV         R4,#0x83
+ 00000014  4800      LDR         R0,=0xE001000C
+ 00000016  7004      STRB        R4,[R0,#0x0]
+   14:  U1DLM=0X00;
+ 00000018  2300      MOV         R3,#0x0
+ 0000001A  4800      LDR         R0,=0xE0010004
+ 0000001C  7003      STRB        R3,[R0,#0x0]
+   15:  U1DLL=0X62;       //TO SET BAUD RATE
+ 0000001E  2262      MOV         R2,#0x62
+ 00000020  4800      LDR         R0,=0xE0010000
+ 00000022  7002      STRB        R2,[R0,#0x0]
+   16:  U1LCR=0X03;       //disable DLAB bit.
+ 00000024  2103      MOV         R1,#0x3
+ 00000026  4800      LDR         R0,=0xE001000C
+ 00000028  7001      STRB        R1,[R0,#0x0]
+   18:  U0FCR=0X01;
+ 0000002A  4800      LDR         R0,=0xE000C008
+ 0000002C  7005      STRB        R5,[R0,#0x0]
+ARM COMPILER V2.50a,  uart                                                                 03/01/13  17:10:56  PAGE 5   
+
+   19:  U0LCR=0X83;        //
+ 0000002E  4800      LDR         R0,=0xE000C00C
+ 00000030  7004      STRB        R4,[R0,#0x0]
+   20:  U0DLM=0X00;
+ 00000032  4800      LDR         R0,=0xE000C004
+ 00000034  7003      STRB        R3,[R0,#0x0]
+   21:  U0DLL=0X62;       //TO SET BAUD RATE
+ 00000036  4800      LDR         R0,=0xE000C000
+ 00000038  7002      STRB        R2,[R0,#0x0]
+   22:  U0LCR=0X03;
+ 0000003A  4800      LDR         R0,=0xE000C00C
+ 0000003C  7001      STRB        R1,[R0,#0x0]
+   23: }
+ 0000003E  BC30      POP         {R4-R5}
+ 00000040  4770      BX          R14
+ 00000042          ENDP ; 'UART_init?T'
+
+
+*** CODE SEGMENT '?PR?UART_init_irq?T?uart':
+   29: void UART_init_irq(void)
+ 00000000  B430      PUSH        {R4-R5}
+   31:   PINSEL0 |=0X00005005;
+ 00000002  4800      LDR         R2,=0x5005
+ 00000004  4800      LDR         R0,=0xE002C000
+ 00000006  6801      LDR         R1,[R0,#0x0]
+ 00000008  4311      ORR         R1,R2
+ 0000000A  6001      STR         R1,[R0,#0x0]
+   33:   U1FCR=0X01;
+ 0000000C  2501      MOV         R5,#0x1
+ 0000000E  4800      LDR         R0,=0xE0010008
+ 00000010  7005      STRB        R5,[R0,#0x0]
+   34:   U1LCR=0X83;       // Enable DLAB bit and selecting word length 8bit.
+ 00000012  2483      MOV         R4,#0x83
+ 00000014  4800      LDR         R0,=0xE001000C
+ 00000016  7004      STRB        R4,[R0,#0x0]
+   35:   U1DLM=0X00;
+ 00000018  2300      MOV         R3,#0x0
+ 0000001A  4800      LDR         R0,=0xE0010004
+ 0000001C  7003      STRB        R3,[R0,#0x0]
+   36:   U1DLL=0X62;      //TO SET BAUD RATE
+ 0000001E  2262      MOV         R2,#0x62
+ 00000020  4800      LDR         R0,=0xE0010000
+ 00000022  7002      STRB        R2,[R0,#0x0]
+   37:   U1LCR=0X03;      //disable DLAB bit.
+ 00000024  2103      MOV         R1,#0x3
+ 00000026  4800      LDR         R0,=0xE001000C
+ 00000028  7001      STRB        R1,[R0,#0x0]
+   39:   U0FCR=0X01;
+ 0000002A  4800      LDR         R0,=0xE000C008
+ 0000002C  7005      STRB        R5,[R0,#0x0]
+   40:   U0LCR=0X83;       //
+ 0000002E  4800      LDR         R0,=0xE000C00C
+ 00000030  7004      STRB        R4,[R0,#0x0]
+   41:   U0DLM=0X00;
+ 00000032  4800      LDR         R0,=0xE000C004
+ 00000034  7003      STRB        R3,[R0,#0x0]
+   42:   U0DLL=0X62;      //TO SET BAUD RATE
+ 00000036  4800      LDR         R0,=0xE000C000
+ 00000038  7002      STRB        R2,[R0,#0x0]
+   43:   U0LCR=0X03;
+ 0000003A  4800      LDR         R0,=0xE000C00C
+ 0000003C  7001      STRB        R1,[R0,#0x0]
+   45:   VICVectAddr0 = (U32)&uart0_ISR;
+ 0000003E  4900      LDR         R1,=uart0_ISR?A ; uart0_ISR?A
+ 00000040  4800      LDR         R0,=0xFFFFF100
+ 00000042  6001      STR         R1,[R0,#0x0]
+   46:   VICVectCntl0 = 0x20 | 6;
+ 00000044  2126      MOV         R1,#0x26
+ARM COMPILER V2.50a,  uart                                                                 03/01/13  17:10:56  PAGE 6   
+
+ 00000046  4800      LDR         R0,=0xFFFFF200
+ 00000048  6001      STR         R1,[R0,#0x0]
+   47:   VICIntEnable = 1 << 6;    
+ 0000004A  2140      MOV         R1,#0x40
+ 0000004C  4800      LDR         R0,=0xFFFFF010
+ 0000004E  6001      STR         R1,[R0,#0x0]
+   48:   U0IER=0x1; 
+ 00000050  2101      MOV         R1,#0x1
+ 00000052  4800      LDR         R0,=0xE000C004
+ 00000054  6001      STR         R1,[R0,#0x0]
+   50:   VICVectAddr1 = (U32)&uart1_ISR;
+ 00000056  4A00      LDR         R2,=uart1_ISR?A ; uart1_ISR?A
+ 00000058  4800      LDR         R0,=0xFFFFF104
+ 0000005A  6002      STR         R2,[R0,#0x0]
+   51:   VICVectCntl1 = 0x20 | 7;
+ 0000005C  2227      MOV         R2,#0x27
+ 0000005E  4800      LDR         R0,=0xFFFFF204
+ 00000060  6002      STR         R2,[R0,#0x0]
+   52:   VICIntEnable = 1 << 7;    
+ 00000062  2280      MOV         R2,#0x80
+ 00000064  4800      LDR         R0,=0xFFFFF010
+ 00000066  6002      STR         R2,[R0,#0x0]
+   53:   U1IER=0x1;
+ 00000068  4800      LDR         R0,=0xE0010004
+ 0000006A  6001      STR         R1,[R0,#0x0]
+   55: }
+ 0000006C  BC30      POP         {R4-R5}
+ 0000006E  4770      BX          R14
+ 00000070          ENDP ; 'UART_init_irq?T'
+
+
+*** CODE SEGMENT '?PR?uart0_ISR?A?uart':
+   60: void uart0_ISR(void)__irq
+ 00000000  E92D0003  STMDB       R13!,{R0-R1}
+   63:    VICVectAddr   = 0x00;
+ 00000004  E3A01000  MOV         R1,#0x0
+ 00000008  E5100000  LDR         R0,=0xFFFFF030
+ 0000000C  E5801000  STR         R1,[R0,#0x0]
+   64: }  
+ 00000010  E8BD0003  LDMIA       R13!,{R0-R1}
+ 00000014  E25EF004  SUBS        R15,R14,#0x0004
+ 00000018          ENDP ; 'uart0_ISR?A'
+
+
+*** CODE SEGMENT '?PR?uart1_ISR?A?uart':
+   69: void uart1_ISR(void)__irq
+ 00000000  E92D5F0F  STMDB       R13!,{R0-R3,R8-R12,LR}
+   71:    Uc_recv_data[Uc_byte_count] = U1RBR;
+ 00000004  E5100000  LDR         R0,=0xE0010000
+ 00000008  E5D00000  LDRB        R0,[R0,#0x0]
+ 0000000C  E5101000  LDR         R1,=Uc_byte_count ; Uc_byte_count
+ 00000010  E5D11000  LDRB        R1,[R1,#0x0] ; Uc_byte_count
+ 00000014  E5102000  LDR         R2,=Uc_recv_data ; Uc_recv_data
+ 00000018  E7C20001  STRB        R0,[R2,+R1]
+   73:    uart1_send_byte(Uc_recv_data[Uc_byte_count]);
+ 0000001C  E5100000  LDR         R0,=Uc_recv_data ; Uc_recv_data
+ 00000020  E7D00001  LDRB        R0,[R0,+R1]
+ 00000024  EBFFFFF5  BL          uart1_send_byte?A  ; Targ=0x0
+   75:    if(Uc_recv_data[Uc_byte_count] == '$')
+ 00000028  E5100000  LDR         R0,=Uc_byte_count ; Uc_byte_count
+ 0000002C  E5D00000  LDRB        R0,[R0,#0x0] ; Uc_byte_count
+ 00000030  E1A02000  MOV         R2,R0
+ 00000034  E5100000  LDR         R0,=Uc_recv_data ; Uc_recv_data
+ 00000038  E7D00002  LDRB        R0,[R0,+R2]
+ 0000003C  E3500024  CMP         R0,#0x0024
+ 00000040  1A000008  BNE         L_1  ; Targ=0x68
+   77:        Uc_sof = 1;
+ 00000044  E3A03001  MOV         R3,#0x1
+ 00000048  E5101000  LDR         R1,=Uc_sof ; Uc_sof
+ 0000004C  E5C13000  STRB        R3,[R1,#0x0] ; Uc_sof
+ARM COMPILER V2.50a,  uart                                                                 03/01/13  17:10:56  PAGE 7   
+
+   78:        Uc_eof = 0;
+ 00000050  E3A03000  MOV         R3,#0x0
+ 00000054  E5101000  LDR         R1,=Uc_eof ; Uc_eof
+ 00000058  E5C13000  STRB        R3,[R1,#0x0] ; Uc_eof
+   79:        Uc_byte_count = 0;
+ 0000005C  E5101000  LDR         R1,=Uc_byte_count ; Uc_byte_count
+ 00000060  E5C13000  STRB        R3,[R1,#0x0] ; Uc_byte_count
+   80:    }
+ 00000064  EA000016  B           L_2  ; Targ=0xC4
+ 00000068          L_1:
+   81:    else if((Uc_sof == 1) & (Uc_recv_data[Uc_byte_count] == '#'))
+ 00000068  E3500023  CMP         R0,#0x0023
+ 0000006C  1A000001  BNE         L_4  ; Targ=0x78
+ 00000070  E3A01001  MOV         R1,#0x1
+ 00000074  EA000000  B           L_5  ; Targ=0x7C
+ 00000078          L_4:
+ 00000078  E3A01000  MOV         R1,#0x0
+ 0000007C          L_5:
+ 0000007C  E5100000  LDR         R0,=Uc_sof ; Uc_sof
+ 00000080  E5D00000  LDRB        R0,[R0,#0x0] ; Uc_sof
+ 00000084  E3500001  CMP         R0,#0x0001
+ 00000088  1A000001  BNE         L_6  ; Targ=0x94
+ 0000008C  E3A00001  MOV         R0,#0x1
+ 00000090  EA000000  B           L_7  ; Targ=0x98
+ 00000094          L_6:
+ 00000094  E3A00000  MOV         R0,#0x0
+ 00000098          L_7:
+ 00000098  E0000001  AND         R0,R0,R1
+ 0000009C  E3500000  CMP         R0,#0x0000
+ 000000A0  0A000007  BEQ         L_2  ; Targ=0xC4
+   83:        Uc_eof = 1;
+ 000000A4  E3A01001  MOV         R1,#0x1
+ 000000A8  E5100000  LDR         R0,=Uc_eof ; Uc_eof
+ 000000AC  E5C01000  STRB        R1,[R0,#0x0] ; Uc_eof
+   84:        Uc_sof = 0;
+ 000000B0  E3A00000  MOV         R0,#0x0
+ 000000B4  E5101000  LDR         R1,=Uc_sof ; Uc_sof
+ 000000B8  E5C10000  STRB        R0,[R1,#0x0] ; Uc_sof
+   85:        Uc_recv_data[Uc_byte_count] = '\0';
+ 000000BC  E5101000  LDR         R1,=Uc_recv_data ; Uc_recv_data
+ 000000C0  E7C10002  STRB        R0,[R1,+R2]
+   86:    }
+ 000000C4          L_2:
+   87:    Uc_byte_count++;
+ 000000C4  E5100000  LDR         R0,=Uc_byte_count ; Uc_byte_count
+ 000000C8  E5D01000  LDRB        R1,[R0,#0x0] ; Uc_byte_count
+ 000000CC  E2811001  ADD         R1,R1,#0x0001
+ 000000D0  E5C01000  STRB        R1,[R0,#0x0] ; Uc_byte_count
+   89:    VICVectAddr = 0x00;
+ 000000D4  E3A01000  MOV         R1,#0x0
+ 000000D8  E5100000  LDR         R0,=0xFFFFF030
+ 000000DC  E5801000  STR         R1,[R0,#0x0]
+   90: }
+ 000000E0  E8BD5F0F  LDMIA       R13!,{R0-R3,R8-R12,LR}
+ 000000E4  E25EF004  SUBS        R15,R14,#0x0004
+ 000000E8          ENDP ; 'uart1_ISR?A'
+
+
+*** CODE SEGMENT '?PR?uart0_send_byte?T?uart':
+   95: void uart0_send_byte(unsigned char byte)
+ 00000000  1C02      MOV         R2,R0 ; byte
+ 00000002  ---- Variable 'byte' assigned to Register 'R2' ----
+   97:   U0THR=byte;
+ 00000002  1C11      MOV         R1,R2 ; byte
+ 00000004  4800      LDR         R0,=0xE000C000
+ 00000006  7001      STRB        R1,[R0,#0x0]
+   98:   while((U0LSR&0x20)==0);
+ 00000008          L_8:
+ARM COMPILER V2.50a,  uart                                                                 03/01/13  17:10:56  PAGE 8   
+
+ 00000008  4800      LDR         R0,=0xE000C014
+ 0000000A  7800      LDRB        R0,[R0,#0x0]
+ 0000000C  2120      MOV         R1,#0x20
+ 0000000E  4208      TST         R0,R1
+ 00000010  D0FA      BEQ         L_8  ; T=0x00000008
+   99: }
+ 00000012  4770      BX          R14
+ 00000014          ENDP ; 'uart0_send_byte?T'
+
+
+*** CODE SEGMENT '?PR?uart1_send_byte?T?uart':
+  103: void uart1_send_byte(unsigned char byte)
+ 00000000  1C02      MOV         R2,R0 ; byte
+ 00000002  ---- Variable 'byte' assigned to Register 'R2' ----
+  105:   U1THR=byte;
+ 00000002  1C11      MOV         R1,R2 ; byte
+ 00000004  4800      LDR         R0,=0xE0010000
+ 00000006  7001      STRB        R1,[R0,#0x0]
+  106:   while((U1LSR&0x20)==0);
+ 00000008          L_12:
+ 00000008  4800      LDR         R0,=0xE0010014
+ 0000000A  7800      LDRB        R0,[R0,#0x0]
+ 0000000C  2120      MOV         R1,#0x20
+ 0000000E  4208      TST         R0,R1
+ 00000010  D0FA      BEQ         L_12  ; T=0x00000008
+  108: }
+ 00000012  4770      BX          R14
+ 00000014          ENDP ; 'uart1_send_byte?T'
+
+
+*** CODE SEGMENT '?PR?uart0_send_string?T?uart':
+  112: void uart0_send_string(unsigned char *string)
+ 00000000  ---- Variable 'string' assigned to Register 'R0' ----
+  113: {
+ 00000000            ; SCOPE-START
+  116:   for (cnt=0; *string!='\0'; cnt++)
+ 00000000  2100      MOV         R1,#0x0
+ 00000002  ---- Variable 'cnt' assigned to Register 'R1' ----
+ 00000002  E00C      B           L_18  ; T=0x0000001E
+ 00000004          L_19:
+  118:       U0THR =*string;
+ 00000004  1C02      MOV         R2,R0 ; string
+ 00000006  7813      LDRB        R3,[R2,#0x0] ; string
+ 00000008  4800      LDR         R2,=0xE000C000
+ 0000000A  7013      STRB        R3,[R2,#0x0]
+  119:      while((U0LSR&0x20) == 0);
+ 0000000C          L_21:
+ 0000000C  4800      LDR         R2,=0xE000C014
+ 0000000E  7812      LDRB        R2,[R2,#0x0]
+ 00000010  2320      MOV         R3,#0x20
+ 00000012  421A      TST         R2,R3
+ 00000014  D0FA      BEQ         L_21  ; T=0x0000000C
+  120:       string++;
+ 00000016  3001      ADD         R0,#0x1
+  121:   }
+ 00000018  3101      ADD         R1,#0x1
+ 0000001A  0609      LSL         R1,R1,#0x18
+ 0000001C  0E09      LSR         R1,R1,#0x18
+ 0000001E          L_18:
+ 0000001E  1C02      MOV         R2,R0 ; string
+ 00000020  7812      LDRB        R2,[R2,#0x0] ; string
+ 00000022  2A00      CMP         R2,#0x0
+ 00000024  D1EE      BNE         L_19  ; T=0x00000004
+ 00000026            ; SCOPE-END
+  122: }
+ 00000026  4770      BX          R14
+ 00000028          ENDP ; 'uart0_send_string?T'
+
+
+*** CODE SEGMENT '?PR?uart1_send_string?T?uart':
+  125: void uart1_send_string(unsigned char *string)
+ 00000000  ---- Variable 'string' assigned to Register 'R0' ----
+ARM COMPILER V2.50a,  uart                                                                 03/01/13  17:10:56  PAGE 9   
+
+  126: {
+ 00000000            ; SCOPE-START
+  129:   for (cnt=0; *string != '\0'; cnt++)
+ 00000000  2100      MOV         R1,#0x0
+ 00000002  ---- Variable 'cnt' assigned to Register 'R1' ----
+ 00000002  E00C      B           L_27  ; T=0x0000001E
+ 00000004          L_28:
+  131:       U1THR=*string;
+ 00000004  1C02      MOV         R2,R0 ; string
+ 00000006  7813      LDRB        R3,[R2,#0x0] ; string
+ 00000008  4800      LDR         R2,=0xE0010000
+ 0000000A  7013      STRB        R3,[R2,#0x0]
+  132:      while((U1LSR&0x20) == 0);
+ 0000000C          L_30:
+ 0000000C  4800      LDR         R2,=0xE0010014
+ 0000000E  7812      LDRB        R2,[R2,#0x0]
+ 00000010  2320      MOV         R3,#0x20
+ 00000012  421A      TST         R2,R3
+ 00000014  D0FA      BEQ         L_30  ; T=0x0000000C
+  133:       string++;
+ 00000016  3001      ADD         R0,#0x1
+  134:   }
+ 00000018  3101      ADD         R1,#0x1
+ 0000001A  0609      LSL         R1,R1,#0x18
+ 0000001C  0E09      LSR         R1,R1,#0x18
+ 0000001E          L_27:
+ 0000001E  1C02      MOV         R2,R0 ; string
+ 00000020  7812      LDRB        R2,[R2,#0x0] ; string
+ 00000022  2A00      CMP         R2,#0x0
+ 00000024  D1EE      BNE         L_28  ; T=0x00000004
+ 00000026            ; SCOPE-END
+  135: }
+ 00000026  4770      BX          R14
+ 00000028          ENDP ; 'uart1_send_string?T'
+
+
+
+Module Information          Static
+----------------------------------
+  code size            =    ------
+  data size            =       103
+  const size           =    ------
+End of Module Information.
+
+
+ARM COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

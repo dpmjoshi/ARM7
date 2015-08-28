@@ -1,0 +1,186 @@
+ARM COMPILER V2.50a,  main1                                                                19/06/12  16:03:44  PAGE 1   
+
+
+ARM COMPILER V2.50a, COMPILATION OF MODULE main1
+OBJECT MODULE PLACED IN main1.OBJ
+COMPILER INVOKED BY: C:\Keil\ARM\BIN\CA.exe main1.c THUMB BROWSE DEBUG TABS(4) 
+
+stmt  level    source
+
+    1          /************************************************************/
+    2          /* PROJECT NAME: PWM                                        */
+    3          /* Project:      LPC2100 Training course                    */
+    4          /* Engineer:     T Martin                                   */
+    5          /* Filename:     main.c                                     */
+    6          /* Language:     C                                          */
+    7          /* Compiler:     Keil Carm 2.00b                            */
+    8          /* Assembler:                                               */
+    9          /*                                                          */
+   10          /************************************************************/
+   11          /* Modification History:                                    */
+   12          /*                                                          */
+   13          /************************************************************/
+   14          /* Function:                                                */
+   15          /*                                                          */
+   16          /* Example PWM module program for LPC2100                   */
+   17          /*                                                          */
+   18          /* Demonstrates dual edge PWM generation                    */
+   19          /*                                                          */  
+   20          /* Oscillator frequency 12.000 Mhz                          */
+   21          /* Target board Keil MCB2100                                */
+   22          /************************************************************/
+   23          
+   24          #include"includes.h"
+   25          
+   26          void ms_delay(unsigned int w)
+   27          {
+   28   1         T0TCR  = 0X01;
+   29   1         T0PR   = 1000;
+   30   1         while(T0TC<w)
+   31   1            {
+   32   2            }                                                             
+   33   1         T0TC   = 0;
+   34   1         T0TCR  = 0;
+   35   1      }
+   36          
+   37          
+   38          int main(void)
+   39          {
+   40   1          int i = 25, j = 15, k = 40;
+   41   1      
+   42   1          pwm5_dbl_init();
+   43   1          //pwm5_pulse_width(1000, i);
+   44   1      
+   45   1          while(1)                // main loop
+   46   1          {
+   47   2           //pwm5_dbl_pulse_width(k,i,j);
+   48   2           i += 1;
+   49   2           j -= 1;
+   50   2           if(i == k)
+   51   2           {      
+   52   3              k  += 5; 
+   53   3              i   = k-15;
+   54   3           }
+   55   2      
+   56   2           if(j == 0)
+   57   2           {
+   58   3              j = 15 ;
+   59   3           }
+ARM COMPILER V2.50a,  main1                                                                19/06/12  16:03:44  PAGE 2   
+
+   60   2           /*
+   61   2           ms_delay(4000);                             //set latch to update PWM registers next cycle
+   62   2           ms_delay(4000);
+   63   2           ms_delay(4000);
+   64   2           */
+   65   2          }
+   66   1      
+   67   1      
+   68   1      }
+ARM COMPILER V2.50a,  main1                                                                19/06/12  16:03:44  PAGE 3   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+
+*** EXTERNALS:
+ EXTERN CODE16 (pwm5_dbl_init?T)
+ EXTERN NUMBER (__startup)
+
+
+
+*** PUBLICS:
+ PUBLIC         ms_delay?T
+ PUBLIC         main
+
+
+
+*** CODE SEGMENT '?PR?ms_delay?T?main1':
+   26: void ms_delay(unsigned int w)
+ 00000000  ---- Variable 'w' assigned to Register 'R0' ----
+   28:    T0TCR  = 0X01;
+ 00000000  2201      MOV         R2,#0x1
+ 00000002  4800      LDR         R1,=0xE0004004
+ 00000004  600A      STR         R2,[R1,#0x0]
+   29:    T0PR   = 1000;
+ 00000006  4AFA      LDR         R2,=0x3E8
+ 00000008  4800      LDR         R1,=0xE000400C
+ 0000000A  600A      STR         R2,[R1,#0x0]
+   32:       }                                                                
+ 0000000C          L_1:
+ 0000000C  1C02      MOV         R2,R0 ; w
+ 0000000E  4800      LDR         R1,=0xE0004008
+ 00000010  6809      LDR         R1,[R1,#0x0]
+ 00000012  4291      CMP         R1,R2
+ 00000014  D3FA      BCC         L_1  ; T=0x0000000C
+   33:    T0TC   = 0;
+ 00000016  2100      MOV         R1,#0x0
+ 00000018  4800      LDR         R0,=0xE0004008
+ 0000001A  6001      STR         R1,[R0,#0x0]
+   34:    T0TCR  = 0;
+ 0000001C  4800      LDR         R0,=0xE0004004
+ 0000001E  6001      STR         R1,[R0,#0x0]
+   35: }
+ 00000020  4770      BX          R14
+ 00000022          ENDP ; 'ms_delay?T'
+
+
+*** CODE SEGMENT '?PR?main?main1':
+   38: int main(void)
+ 00000000  B500      PUSH        {LR}
+   39: {
+ 00000002            ; SCOPE-START
+   40:     int i = 25, j = 15, k = 40;
+ 00000002  2619      MOV         R6,#0x19
+ 00000004  ---- Variable 'i' assigned to Register 'R6' ----
+ 00000004  250F      MOV         R5,#0xF
+ 00000006  ---- Variable 'j' assigned to Register 'R5' ----
+ 00000006  2428      MOV         R4,#0x28
+ 00000008  ---- Variable 'k' assigned to Register 'R4' ----
+   42:     pwm5_dbl_init();
+ 00000008  F7FF      BL          pwm5_dbl_init?T  ; T=0x0001  (1)
+ 0000000A  FFFA      BL          pwm5_dbl_init?T  ; T=0x0001  (2)
+   45:     while(1)                // main loop
+ 0000000C          L_7:
+   48:      i += 1;
+ 0000000C  3601      ADD         R6,#0x1
+   49:      j -= 1;
+ 0000000E  3D01      SUB         R5,#0x1
+   50:      if(i == k)
+ 00000010  1C21      MOV         R1,R4 ; k
+ 00000012  1C30      MOV         R0,R6 ; i
+ 00000014  4288      CMP         R0,R1 ; i
+ 00000016  D102      BNE         L_9  ; T=0x0000001E
+   52:         k  += 5; 
+ARM COMPILER V2.50a,  main1                                                                19/06/12  16:03:44  PAGE 4   
+
+ 00000018  3405      ADD         R4,#0x5
+   53:         i   = k-15;
+ 0000001A  1C26      MOV         R6,R4 ; k
+ 0000001C  3E0F      SUB         R6,#0xF
+   54:      }
+ 0000001E          L_9:
+   56:      if(j == 0)
+ 0000001E  1C28      MOV         R0,R5 ; j
+ 00000020  2800      CMP         R0,#0x0 ; j
+ 00000022  D1F3      BNE         L_7  ; T=0x0000000C
+   58:          j = 15 ;
+ 00000024  250F      MOV         R5,#0xF
+   65:     }
+ 00000026  E7F1      B           L_7  ; T=0x0000000C
+ 00000028            ; SCOPE-END
+ 00000028  BC08      POP         {R3}
+ 0000002A  4718      BX          R3
+ 0000002C          ENDP ; 'main'
+
+
+
+Module Information          Static
+----------------------------------
+  code size            =    ------
+  data size            =    ------
+  const size           =    ------
+End of Module Information.
+
+
+ARM COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,316 @@
+ARM COMPILER V2.50a,  pwm                                                                  07/11/12  15:03:45  PAGE 1   
+
+
+ARM COMPILER V2.50a, COMPILATION OF MODULE pwm
+OBJECT MODULE PLACED IN pwm.OBJ
+COMPILER INVOKED BY: C:\Keil\ARM\BIN\CA.exe pwm.c THUMB BROWSE DEBUG TABS(4) 
+
+stmt  level    source
+
+    1          #include"includes.h"
+    2          
+    3          void pwm5_init(void);
+    4          void pwm5_pulse_width(unsigned int, unsigned int);
+    5          void pwm_ISR(void)__irq;
+    6          
+    7          void pwm5_init(void)
+    8          {
+    9   1          VICVectAddr4 = (unsigned int)&pwm_ISR;
+   10   1          VICVectCntl4 = 0x20 | 8;
+   11   1          VICIntEnable = 1 << 8;  
+   12   1          PWMPR    = 7500;    //Load prescaler
+   13   1      
+   14   1          PWMPCR   =  PWM5_OUT_EN;                    //0x00002000;//PWM channel 5 single edge control, output ena
+             -bled
+   15   1          PWMMCR   = (MR5_INT | MR0_INT | MR0_RST);   //0x00008003;//On match with timer reset the counter
+   16   1          
+   17   1          PWMMR0   = 40;                              //sets cycle rate of PWM
+   18   1          PWMMR5   = 1;                               //sets ON time of PWM
+   19   1          PWMLER   = (MR5_LATCH_EN | MR0_LATCH_EN);   //0x00000021;//enable shadow latch for match 0 - 2 
+   20   1          
+   21   1          PWMTCR   = PWM_TC_RST;                      //0x00000002;//Reset counter and prescaler 
+   22   1          PWMTCR   = (PWM_EN | PWM_TC_EN);            //0x09  enable counter and PWM, release counter from reset
+   23   1      }
+   24          
+   25          
+   26          void pwm5_pulse_width(unsigned int mr0,unsigned int mr5)
+   27          {
+   28   1          PWMTCR   = PWM_TC_RST;
+   29   1          PWMMR0   = mr0;                             //sets cycle rate of PWM
+   30   1          PWMMR5   = mr5;                             //sets ON time of PWM
+   31   1          PWMLER   = (MR5_LATCH_EN | MR0_LATCH_EN);     
+   32   1          PWMTCR   = (PWM_EN | PWM_TC_EN);
+   33   1      }
+   34          
+   35          void pwm_ISR(void)__irq
+   36          {
+   37   1       if(PWMIR & 0x01)
+   38   1        {
+   39   2         IO0SET |= PWM_OUT7;
+   40   2         IO0SET |= PWM_OUT9;
+   41   2         IO0SET |= PWM_OUT10;
+   42   2      
+   43   2         PWMIR = 0x01;
+   44   2        }
+   45   1       if(PWMIR & 0x200)
+   46   1        {
+   47   2         IO0CLR |= PWM_OUT7;
+   48   2         IO0CLR |= PWM_OUT9;
+   49   2         IO0CLR |= PWM_OUT10;
+   50   2         PWMIR = 0x200;
+   51   2        }
+   52   1       VICVectAddr   = 0x00;
+   53   1      
+   54   1      }
+   55          
+   56          void pwm_enable(void)
+   57          {
+   58   1          PWMTCR   = 9;
+ARM COMPILER V2.50a,  pwm                                                                  07/11/12  15:03:45  PAGE 2   
+
+   59   1      }
+   60          
+   61          void pwm_disable(void)
+   62          {
+   63   1          PWMTCR   = PWM_TC_RST;
+   64   1        
+   65   1      }
+   66          
+   67          void ms_delay(unsigned int w)
+   68          {
+   69   1         T0TCR=0X01;
+   70   1         T0PR=1000;
+   71   1         while(T0TC<w)
+   72   1            {
+   73   2            }                                                             
+   74   1         T0TC=0;
+   75   1         T0TCR=0;
+   76   1      }
+   77          
+   78          
+ARM COMPILER V2.50a,  pwm                                                                  07/11/12  15:03:45  PAGE 3   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+
+*** PUBLICS:
+ PUBLIC         pwm5_init?T
+ PUBLIC         pwm5_pulse_width?T
+ PUBLIC         pwm_enable?T
+ PUBLIC         pwm_disable?T
+ PUBLIC         ms_delay?T
+ PUBLIC         pwm_ISR?A
+
+
+
+*** CODE SEGMENT '?PR?pwm5_init?T?pwm':
+    9:     VICVectAddr4 = (unsigned int)&pwm_ISR;
+ 00000000  4900      LDR         R1,=pwm_ISR?A ; pwm_ISR?A
+ 00000002  4800      LDR         R0,=0xFFFFF110
+ 00000004  6001      STR         R1,[R0,#0x0]
+   10:     VICVectCntl4 = 0x20 | 8;
+ 00000006  2128      MOV         R1,#0x28
+ 00000008  4800      LDR         R0,=0xFFFFF210
+ 0000000A  6001      STR         R1,[R0,#0x0]
+   11:     VICIntEnable = 1 << 8;  
+ 0000000C  4A40      LDR         R2,=0x100
+ 0000000E  4800      LDR         R0,=0xFFFFF010
+ 00000010  6002      STR         R2,[R0,#0x0]
+   12:     PWMPR    = 7500;    //Load prescaler
+ 00000012  4800      LDR         R2,=0x1D4C
+ 00000014  4800      LDR         R0,=0xE001400C
+ 00000016  6002      STR         R2,[R0,#0x0]
+   14:     PWMPCR   =  PWM5_OUT_EN;                    //0x00002000;//PWM channel 5 single edge control, output enabled
+ 00000018  4800      LDR         R2,=0x2000
+ 0000001A  4800      LDR         R0,=0xE001404C
+ 0000001C  6002      STR         R2,[R0,#0x0]
+   15:     PWMMCR   = (MR5_INT | MR0_INT | MR0_RST);   //0x00008003;//On match with timer reset the counter
+ 0000001E  4800      LDR         R2,=0x8003
+ 00000020  4800      LDR         R0,=0xE0014014
+ 00000022  6002      STR         R2,[R0,#0x0]
+   17:     PWMMR0   = 40;                              //sets cycle rate of PWM
+ 00000024  4800      LDR         R0,=0xE0014018
+ 00000026  6001      STR         R1,[R0,#0x0]
+   18:     PWMMR5   = 1;                               //sets ON time of PWM
+ 00000028  2101      MOV         R1,#0x1
+ 0000002A  4800      LDR         R0,=0xE0014044
+ 0000002C  6001      STR         R1,[R0,#0x0]
+   19:     PWMLER   = (MR5_LATCH_EN | MR0_LATCH_EN);   //0x00000021;//enable shadow latch for match 0 - 2 
+ 0000002E  2121      MOV         R1,#0x21
+ 00000030  4800      LDR         R0,=0xE0014050
+ 00000032  6001      STR         R1,[R0,#0x0]
+   21:     PWMTCR   = PWM_TC_RST;                      //0x00000002;//Reset counter and prescaler 
+ 00000034  2102      MOV         R1,#0x2
+ 00000036  4800      LDR         R0,=0xE0014004
+ 00000038  6001      STR         R1,[R0,#0x0]
+   22:     PWMTCR   = (PWM_EN | PWM_TC_EN);            //0x09  enable counter and PWM, release counter from reset
+ 0000003A  2109      MOV         R1,#0x9
+ 0000003C  4800      LDR         R0,=0xE0014004
+ 0000003E  6001      STR         R1,[R0,#0x0]
+   23: }
+ 00000040  4770      BX          R14
+ 00000042          ENDP ; 'pwm5_init?T'
+
+
+*** CODE SEGMENT '?PR?pwm5_pulse_width?T?pwm':
+   26: void pwm5_pulse_width(unsigned int mr0,unsigned int mr5)
+ 00000000  1C0A      MOV         R2,R1 ; mr5
+ 00000002  ---- Variable 'mr5' assigned to Register 'R2' ----
+ 00000002  ---- Variable 'mr0' assigned to Register 'R0' ----
+   28:     PWMTCR   = PWM_TC_RST;
+ 00000002  2302      MOV         R3,#0x2
+ 00000004  4800      LDR         R1,=0xE0014004
+ARM COMPILER V2.50a,  pwm                                                                  07/11/12  15:03:45  PAGE 4   
+
+ 00000006  600B      STR         R3,[R1,#0x0]
+   29:     PWMMR0   = mr0;                             //sets cycle rate of PWM
+ 00000008  1C01      MOV         R1,R0 ; mr0
+ 0000000A  4800      LDR         R0,=0xE0014018
+ 0000000C  6001      STR         R1,[R0,#0x0]
+   30:     PWMMR5   = mr5;                             //sets ON time of PWM
+ 0000000E  1C11      MOV         R1,R2 ; mr5
+ 00000010  4800      LDR         R0,=0xE0014044
+ 00000012  6001      STR         R1,[R0,#0x0]
+   31:     PWMLER   = (MR5_LATCH_EN | MR0_LATCH_EN);     
+ 00000014  2121      MOV         R1,#0x21
+ 00000016  4800      LDR         R0,=0xE0014050
+ 00000018  6001      STR         R1,[R0,#0x0]
+   32:     PWMTCR   = (PWM_EN | PWM_TC_EN);
+ 0000001A  2109      MOV         R1,#0x9
+ 0000001C  4800      LDR         R0,=0xE0014004
+ 0000001E  6001      STR         R1,[R0,#0x0]
+   33: }
+ 00000020  4770      BX          R14
+ 00000022          ENDP ; 'pwm5_pulse_width?T'
+
+
+*** CODE SEGMENT '?PR?pwm_ISR?A?pwm':
+   35: void pwm_ISR(void)__irq
+ 00000000  E92D0003  STMDB       R13!,{R0-R1}
+   37:  if(PWMIR & 0x01)
+ 00000004  E5100000  LDR         R0,=0xE0014000
+ 00000008  E5900000  LDR         R0,[R0,#0x0]
+ 0000000C  E3100001  TST         R0,#0x0001
+ 00000010  0A00000E  BEQ         L_1  ; Targ=0x50
+   39:    IO0SET |= PWM_OUT7;
+ 00000014  E5100000  LDR         R0,=0xE0028004
+ 00000018  E5901000  LDR         R1,[R0,#0x0]
+ 0000001C  E3811080  ORR         R1,R1,#0x0080
+ 00000020  E5801000  STR         R1,[R0,#0x0]
+   40:    IO0SET |= PWM_OUT9;
+ 00000024  E5100000  LDR         R0,=0xE0028004
+ 00000028  E5901000  LDR         R1,[R0,#0x0]
+ 0000002C  E3811C02  ORR         R1,R1,#0x0200
+ 00000030  E5801000  STR         R1,[R0,#0x0]
+   41:    IO0SET |= PWM_OUT10;
+ 00000034  E5100000  LDR         R0,=0xE0028004
+ 00000038  E5901000  LDR         R1,[R0,#0x0]
+ 0000003C  E3811B01  ORR         R1,R1,#0x0400
+ 00000040  E5801000  STR         R1,[R0,#0x0]
+   43:    PWMIR = 0x01;
+ 00000044  E3A01001  MOV         R1,#0x1
+ 00000048  E5100000  LDR         R0,=0xE0014000
+ 0000004C  E5801000  STR         R1,[R0,#0x0]
+   44:   }
+ 00000050          L_1:
+   45:  if(PWMIR & 0x200)
+ 00000050  E5100000  LDR         R0,=0xE0014000
+ 00000054  E5900000  LDR         R0,[R0,#0x0]
+ 00000058  E3100C02  TST         R0,#0x0200
+ 0000005C  0A00000E  BEQ         L_2  ; Targ=0x9C
+   47:    IO0CLR |= PWM_OUT7;
+ 00000060  E5100000  LDR         R0,=0xE002800C
+ 00000064  E5901000  LDR         R1,[R0,#0x0]
+ 00000068  E3811080  ORR         R1,R1,#0x0080
+ 0000006C  E5801000  STR         R1,[R0,#0x0]
+   48:    IO0CLR |= PWM_OUT9;
+ 00000070  E5100000  LDR         R0,=0xE002800C
+ 00000074  E5901000  LDR         R1,[R0,#0x0]
+ 00000078  E3811C02  ORR         R1,R1,#0x0200
+ 0000007C  E5801000  STR         R1,[R0,#0x0]
+   49:    IO0CLR |= PWM_OUT10;
+ 00000080  E5100000  LDR         R0,=0xE002800C
+ARM COMPILER V2.50a,  pwm                                                                  07/11/12  15:03:45  PAGE 5   
+
+ 00000084  E5901000  LDR         R1,[R0,#0x0]
+ 00000088  E3811B01  ORR         R1,R1,#0x0400
+ 0000008C  E5801000  STR         R1,[R0,#0x0]
+   50:    PWMIR = 0x200;
+ 00000090  E3A01C02  MOV         R1,#0x200
+ 00000094  E5100000  LDR         R0,=0xE0014000
+ 00000098  E5801000  STR         R1,[R0,#0x0]
+   51:   }
+ 0000009C          L_2:
+   52:  VICVectAddr   = 0x00;
+ 0000009C  E3A01000  MOV         R1,#0x0
+ 000000A0  E5100000  LDR         R0,=0xFFFFF030
+ 000000A4  E5801000  STR         R1,[R0,#0x0]
+   54: }
+ 000000A8  E8BD0003  LDMIA       R13!,{R0-R1}
+ 000000AC  E25EF004  SUBS        R15,R14,#0x0004
+ 000000B0          ENDP ; 'pwm_ISR?A'
+
+
+*** CODE SEGMENT '?PR?pwm_enable?T?pwm':
+   58:     PWMTCR   = 9;
+ 00000000  2109      MOV         R1,#0x9
+ 00000002  4800      LDR         R0,=0xE0014004
+ 00000004  6001      STR         R1,[R0,#0x0]
+   59: }
+ 00000006  4770      BX          R14
+ 00000008          ENDP ; 'pwm_enable?T'
+
+
+*** CODE SEGMENT '?PR?pwm_disable?T?pwm':
+   63:     PWMTCR   = PWM_TC_RST;
+ 00000000  2102      MOV         R1,#0x2
+ 00000002  4800      LDR         R0,=0xE0014004
+ 00000004  6001      STR         R1,[R0,#0x0]
+   65: }
+ 00000006  4770      BX          R14
+ 00000008          ENDP ; 'pwm_disable?T'
+
+
+*** CODE SEGMENT '?PR?ms_delay?T?pwm':
+   67: void ms_delay(unsigned int w)
+ 00000000  ---- Variable 'w' assigned to Register 'R0' ----
+   69:    T0TCR=0X01;
+ 00000000  2201      MOV         R2,#0x1
+ 00000002  4800      LDR         R1,=0xE0004004
+ 00000004  600A      STR         R2,[R1,#0x0]
+   70:    T0PR=1000;
+ 00000006  4AFA      LDR         R2,=0x3E8
+ 00000008  4800      LDR         R1,=0xE000400C
+ 0000000A  600A      STR         R2,[R1,#0x0]
+   73:       }                                                                
+ 0000000C          L_3:
+ 0000000C  1C02      MOV         R2,R0 ; w
+ 0000000E  4800      LDR         R1,=0xE0004008
+ 00000010  6809      LDR         R1,[R1,#0x0]
+ 00000012  4291      CMP         R1,R2
+ 00000014  D3FA      BCC         L_3  ; T=0x0000000C
+   74:    T0TC=0;
+ 00000016  2100      MOV         R1,#0x0
+ 00000018  4800      LDR         R0,=0xE0004008
+ 0000001A  6001      STR         R1,[R0,#0x0]
+   75:    T0TCR=0;
+ 0000001C  4800      LDR         R0,=0xE0004004
+ 0000001E  6001      STR         R1,[R0,#0x0]
+   76: }
+ 00000020  4770      BX          R14
+ 00000022          ENDP ; 'ms_delay?T'
+
+
+
+Module Information          Static
+----------------------------------
+  code size            =    ------
+  data size            =    ------
+ARM COMPILER V2.50a,  pwm                                                                  07/11/12  15:03:45  PAGE 6   
+
+  const size           =    ------
+End of Module Information.
+
+
+ARM COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

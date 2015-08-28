@@ -1,0 +1,204 @@
+LARM LINKER/LOCATER V2.50a                                                              12/21/2012  17:19:54  PAGE 1
+
+
+LARM LINKER/LOCATER V2.50a, INVOKED BY:
+C:\KEIL\ARM\BIN\LA.EXE Startup.obj, lcd.obj, main.obj, rtc.obj, timer.obj TO EXT_INT_freq_measure CASE CLASSES (DATA (0X
+>> 40000000-0X40007FFF), CODE (0X0-0X7FFFF), CONST (0X0-0X7FFFF))
+
+
+CPU MODE: LITTLE ENDIAN
+
+
+INPUT MODULES INCLUDED:
+  Startup.obj (STARTUP)
+         COMMENT TYPE 0: AA V2.50
+  lcd.obj (lcd)
+         COMMENT TYPE 0: CARM V2.50a
+  main.obj (main)
+         COMMENT TYPE 0: CARM V2.50a
+  rtc.obj (rtc)
+         COMMENT TYPE 0: CARM V2.50a
+  timer.obj (timer)
+         COMMENT TYPE 0: CARM V2.50a
+  C:\KEIL\ARM\LIB\CAL.LIB (FIQ)
+         COMMENT TYPE 0: AA V2.50
+  C:\KEIL\ARM\LIB\CAL.LIB (IRQ)
+         COMMENT TYPE 0: AA V2.50
+  C:\KEIL\ARM\LIB\CAL.LIB (DABT)
+         COMMENT TYPE 0: AA V2.50
+  C:\KEIL\ARM\LIB\CAL.LIB (PABT)
+         COMMENT TYPE 0: AA V2.50
+  C:\KEIL\ARM\LIB\CAL.LIB (SWI)
+         COMMENT TYPE 0: AA V2.50
+  C:\KEIL\ARM\LIB\CAL.LIB (UNDEF)
+         COMMENT TYPE 0: AA V2.50
+  C:\KEIL\ARM\LIB\CAL.LIB (UDIV)
+         COMMENT TYPE 0: AA V2.50
+  C:\KEIL\ARM\LIB\CAL.LIB (SDIV)
+         COMMENT TYPE 0: AA V2.50
+
+
+ACTIVE MEMORY CLASSES OF MODULE:  EXT_INT_freq_measure (STARTUP)
+
+BASE       START      END        USED       MEMORY CLASS
+========================================================
+00000000H  40000000H  40007FFFH  000004CFH  DATA
+00000000H  00000000H  0007FFFFH  00000A1CH  CODE
+00000000H  00000000H  0007FFFFH  00000055H  CONST
+
+
+INTERRUPT FUNCTIONS
+
+TYPE  STACK SIZE    FUNCTION NAME
+=================================
+irq                 ext_int1?A
+irq                 rtc_ISR?A
+irq                 timer0_ISR?A
+
+
+
+
+MEMORY MAP OF MODULE:  EXT_INT_freq_measure (STARTUP)
+
+START      STOP       LENGTH    ALIGN  RELOC  MEMORY CLASS   SEGMENT NAME
+=========================================================================
+00000000H  0000010FH  00000110H     4  AT..   CODE           STARTUPCODE
+00000110H  00000118H  00000009H     4  UNIT   CONST          ?CON?main
+00000119H  0000011BH  00000003H   ---  ---    **GAP**
+0000011CH  00000143H  00000028H     4  UNIT   CONST          ?C_CLRSEG
+00000144H  00000167H  00000024H     4  UNIT   CONST          ?C_INITSEG
+LARM LINKER/LOCATER V2.50a                                                            12/21/2012  17:19:54  PAGE 2
+
+
+00000168H  0000019BH  00000034H     4  UNIT   CODE           ?PR?lcd_init?T?lcd
+0000019CH  000001ABH  00000010H     4  UNIT   CODE           ?PR?clrscr?T?lcd
+000001ACH  000001F7H  0000004CH     4  UNIT   CODE           ?PR?datar?T?lcd
+000001F8H  00000243H  0000004CH     4  UNIT   CODE           ?PR?comdr?T?lcd
+00000244H  00000283H  00000040H     4  UNIT   CODE           ?PR?lcd_line1_disp?T?lcd
+00000284H  000002C3H  00000040H     4  UNIT   CODE           ?PR?lcd_line3_disp?T?lcd
+000002C4H  00000303H  00000040H     4  UNIT   CODE           ?PR?lcd_line4_disp?T?lcd
+00000304H  00000353H  00000050H     4  UNIT   CODE           ?PR?ext_int1?A?main
+00000354H  0000038FH  0000003CH     4  UNIT   CODE           ?PR?extint_init?T?main
+00000390H  0000048FH  00000100H     4  UNIT   CODE           ?PR?main?main
+00000490H  000004D7H  00000048H     4  UNIT   CODE           ?PR?rtc_init_interrupt?T?rtc
+000004D8H  00000723H  0000024CH     4  UNIT   CODE           ?PR?rtc_get_time?T?rtc
+00000724H  00000797H  00000074H     4  UNIT   CODE           ?PR?rtc_ISR?A?rtc
+00000798H  000007CBH  00000034H     4  UNIT   CODE           ?PR?ms_delay?T?timer
+000007CCH  00000913H  00000148H     4  UNIT   CODE           ?PR?time1_measure?T?timer
+00000914H  000009B3H  000000A0H     4  UNIT   CODE           ?PR?timer0_ISR?A?timer
+000009B4H  000009B7H  00000004H     4  UNIT   CODE           ?C?FIQ
+000009B8H  000009BBH  00000004H     4  UNIT   CODE           ?C?IRQ
+000009BCH  000009BFH  00000004H     4  UNIT   CODE           ?C?DABT
+000009C0H  000009C3H  00000004H     4  UNIT   CODE           ?C?PABT
+000009C4H  000009CBH  00000008H     4  UNIT   CODE           ?C?UNDEF
+000009CCH  00000A13H  00000048H     4  UNIT   CODE           ?PR?C?UDIV
+00000A14H  00000A73H  00000060H     4  UNIT   CODE           ?PR?C?SDIV
+00000A74H  3FFFFFFFH  3FFFF58CH   ---  ---    **GAP**
+40000000H  4000048FH  00000490H     4  UNIT   DATA           STACK
+40000490H  40000499H  0000000AH     4  UNIT   DATA           ?DT0?lcd
+4000049AH  4000049BH  00000002H   ---  ---    **GAP**
+4000049CH  4000049FH  00000004H     4  UNIT   DATA           ?DT0?main
+400004A0H  400004B7H  00000018H     4  UNIT   DATA           ?DT0?rtc
+400004B8H  400004D0H  00000019H     4  UNIT   DATA           ?DT0?timer
+
+
+
+REMOVED FUNCTIONS OF MODULE:  EXT_INT_freq_measure (STARTUP)
+
+      ATTRIBUTE  FUNCTION NAME
+      ========================
+       unused    cursur_on?T
+       unused    cursur_off?T
+       unused    lcd_line2_disp?T
+       unused    lcd_line1_ch_disp?T
+       unused    lcd_line2_ch_disp?T
+       unused    lcd_line3_ch_disp?T
+       unused    lcd_line4_ch_disp?T
+       unused    lcd_scroll_disp?T
+       unused    display_dots?T
+       unused    rtc_init?T
+       unused    set_alarm?T
+       unused    timer0_init_interrupt?T
+       unused    timer1_init?T
+       unused    timer1_on?T
+       unused    timer1_off?T
+       unused    key_delay?T
+
+
+
+PUBLIC SYMBOLS OF MODULE:  EXT_INT_freq_measure (STARTUP)
+
+      VALUE      CLASS    TYPE      PUBLIC SYMBOL NAME
+      ================================================
+      0000011CH  ---      ---       ?C?CLRTAB
+      00000390H  ---      ---       ?C?INIT
+      00000144H  ---      ---       ?C?INITTAB
+      00000A18H  CODE     ---       ?C?SDIV?A
+      00000A14H  CODE     ---       ?C?SDIV?T
+LARM LINKER/LOCATER V2.50a                                                            12/21/2012  17:19:54  PAGE 3
+
+
+      000009D0H  CODE     ---       ?C?UDIV?A
+      000009CCH  CODE     ---       ?C?UDIV?T
+      000009BCH  CODE     ---       DAbt_Handler?A
+      000009B4H  CODE     ---       FIQ_Handler?A
+      000009B8H  CODE     ---       IRQ_Handler?A
+      000009C0H  CODE     ---       PAbt_Handler?A
+      000009C4H  CODE     ---       SWI_Handler?A
+      400004B6H  DATA     BYTE      Uc_alrm
+      400004ABH  DATA     ---       Uc_date
+      400004D0H  DATA     BYTE      Uc_fre
+      4000049CH  DATA     ---       Uc_freq_count
+      400004B8H  DATA     ---       Uc_pulse_width
+      400004A2H  DATA     ---       Uc_real_time
+      400004B7H  DATA     BYTE      Uc_rtc_flag
+      400004BCH  DATA     ---       Uc_time1_arr
+      400004A0H  DATA     WORD      Uc_time_sec
+      000009C8H  CODE     ---       Undef_Handler?A
+      00000000H  CODE     ---       __startup
+      0000019CH  CODE     ---       clrscr?T
+      000001F8H  CODE     ---       comdr?T
+      00000000H  CODE     ---       cursur_off?T
+      00000000H  CODE     ---       cursur_on?T
+      40000499H  DATA     BYTE      data_ptr
+      000001ACH  CODE     ---       datar?T
+      00000000H  CODE     ---       display_dots?T
+      00000A18H  CODE     ---       div?A
+      00000A14H  CODE     ---       div?T
+      000000F0H  CODE     ---       exit?A
+      000000F4H  CODE     ---       exit?T
+      00000304H  CODE     ---       ext_int1?A
+      00000354H  CODE     ---       extint_init?T
+      40000498H  DATA     BYTE      k
+      00000000H  CODE     ---       key_delay?T
+      00000168H  CODE     ---       lcd_init?T
+      00000000H  CODE     ---       lcd_line1_ch_disp?T
+      00000244H  CODE     ---       lcd_line1_disp?T
+      00000000H  CODE     ---       lcd_line2_ch_disp?T
+      00000000H  CODE     ---       lcd_line2_disp?T
+      00000000H  CODE     ---       lcd_line3_ch_disp?T
+      00000284H  CODE     ---       lcd_line3_disp?T
+      00000000H  CODE     ---       lcd_line4_ch_disp?T
+      000002C4H  CODE     ---       lcd_line4_disp?T
+      00000000H  CODE     ---       lcd_scroll_disp?T
+      00000A18H  CODE     ---       ldiv?A
+      00000A14H  CODE     ---       ldiv?T
+      000003C4H  CODE     ---       main
+      00000798H  CODE     ---       ms_delay?T
+      40000490H  DATA     ---       p
+      00000724H  CODE     ---       rtc_ISR?A
+      000004D8H  CODE     ---       rtc_get_time?T
+      00000000H  CODE     ---       rtc_init?T
+      00000490H  CODE     ---       rtc_init_interrupt?T
+      40000494H  DATA     ---       s
+      00000000H  CODE     ---       set_alarm?T
+      000007CCH  CODE     ---       time1_measure?A
+      000007D8H  CODE     ---       time1_measure?T
+      00000914H  CODE     ---       timer0_ISR?A
+      00000000H  CODE     ---       timer0_init_interrupt?T
+      00000000H  CODE     ---       timer1_init?T
+      00000000H  CODE     ---       timer1_off?T
+      00000000H  CODE     ---       timer1_on?T
+
+Program Size: data=1231 const=85 code=2588
+LARM RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)

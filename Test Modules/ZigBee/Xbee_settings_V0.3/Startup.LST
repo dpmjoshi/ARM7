@@ -1,0 +1,21 @@
+AA MACRO ASSEMBLER RSTARTUP                                                                 23/01/13 15:11:21 PAGE     1
+
+
+MACRO ASSEMBLER AA V2.50
+OBJECT MODULE PLACED IN Startup.OBJ
+ASSEMBLER INVOKED BY: C:\Keil\ARM\BIN\AA.exe Startup.s BROWSE DEBUG EP
+
+LOC      OBJ             LINE     SOURCE
+
+*** WARNING #A41 IN 1 (Startup.s, LINE 1): MISSING 'END' STATEMENT
+AA MACRO ASSEMBLER RSTARTUP                                                                 23/01/13 15:11:21 PAGE     2
+
+SYMBOL TABLE LISTING
+------ ----- -------
+
+
+N A M E             T Y P E  V A L U E     ATTRIBUTES
+
+
+
+ASSEMBLY COMPLETE.  1 WARNING(S), 0 ERROR(S).

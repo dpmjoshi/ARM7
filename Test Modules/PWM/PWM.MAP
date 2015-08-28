@@ -1,0 +1,104 @@
+LARM LINKER/LOCATER V2.50a                                                              06/19/2012  16:03:44  PAGE 1
+
+
+LARM LINKER/LOCATER V2.50a, INVOKED BY:
+C:\KEIL\ARM\BIN\LA.EXE Startup.obj, main1.obj, pwm.obj TO PWM CASE CLASSES (DATA (0X40000000-0X40007FFF), CODE (0X0-0X7F
+>> FFF), CONST (0X0-0X7FFFF))
+
+
+CPU MODE: LITTLE ENDIAN
+
+
+INPUT MODULES INCLUDED:
+  Startup.obj (STARTUP)
+         COMMENT TYPE 0: AA V2.50
+  main1.obj (main1)
+         COMMENT TYPE 0: CARM V2.50a
+  pwm.obj (pwm)
+         COMMENT TYPE 0: CARM V2.50a
+  C:\KEIL\ARM\LIB\CAL.LIB (FIQ)
+         COMMENT TYPE 0: AA V2.50
+  C:\KEIL\ARM\LIB\CAL.LIB (IRQ)
+         COMMENT TYPE 0: AA V2.50
+  C:\KEIL\ARM\LIB\CAL.LIB (DABT)
+         COMMENT TYPE 0: AA V2.50
+  C:\KEIL\ARM\LIB\CAL.LIB (PABT)
+         COMMENT TYPE 0: AA V2.50
+  C:\KEIL\ARM\LIB\CAL.LIB (SWI)
+         COMMENT TYPE 0: AA V2.50
+  C:\KEIL\ARM\LIB\CAL.LIB (UNDEF)
+         COMMENT TYPE 0: AA V2.50
+
+
+ACTIVE MEMORY CLASSES OF MODULE:  PWM (STARTUP)
+
+BASE       START      END        USED       MEMORY CLASS
+========================================================
+00000000H  40000000H  40007FFFH  00000490H  DATA
+00000000H  00000000H  0007FFFFH  000001FCH  CODE
+00000000H  00000000H  0007FFFFH  00000010H  CONST
+
+
+
+MEMORY MAP OF MODULE:  PWM (STARTUP)
+
+START      STOP       LENGTH    ALIGN  RELOC  MEMORY CLASS   SEGMENT NAME
+=========================================================================
+00000000H  0000010FH  00000110H     4  AT..   CODE           STARTUPCODE
+00000110H  00000117H  00000008H     4  UNIT   CONST          ?C_CLRSEG
+00000118H  0000011FH  00000008H     4  UNIT   CONST          ?C_INITSEG
+00000120H  00000187H  00000068H     4  UNIT   CODE           ?PR?main?main1
+00000188H  000001F3H  0000006CH     4  UNIT   CODE           ?PR?pwm5_dbl_init?T?pwm
+000001F4H  000001F7H  00000004H     4  UNIT   CODE           ?C?FIQ
+000001F8H  000001FBH  00000004H     4  UNIT   CODE           ?C?IRQ
+000001FCH  000001FFH  00000004H     4  UNIT   CODE           ?C?DABT
+00000200H  00000203H  00000004H     4  UNIT   CODE           ?C?PABT
+00000204H  0000020BH  00000008H     4  UNIT   CODE           ?C?UNDEF
+0000020CH  3FFFFFFFH  3FFFFDF4H   ---  ---    **GAP**
+40000000H  4000048FH  00000490H     4  UNIT   DATA           STACK
+
+
+
+REMOVED FUNCTIONS OF MODULE:  PWM (STARTUP)
+
+      ATTRIBUTE  FUNCTION NAME
+      ========================
+       unused    ms_delay?T
+       unused    pwm5_sngl_init?T
+       unused    pwm5_sngl_pulse_width?T
+       unused    pwm5_dbl_pulse_width?T
+LARM LINKER/LOCATER V2.50a                                                            06/19/2012  16:03:44  PAGE 2
+
+
+       unused    pwm_enable?T
+       unused    pwm_disable?T
+
+
+
+PUBLIC SYMBOLS OF MODULE:  PWM (STARTUP)
+
+      VALUE      CLASS    TYPE      PUBLIC SYMBOL NAME
+      ================================================
+      00000110H  ---      ---       ?C?CLRTAB
+      00000120H  ---      ---       ?C?INIT
+      00000118H  ---      ---       ?C?INITTAB
+      000001FCH  CODE     ---       DAbt_Handler?A
+      000001F4H  CODE     ---       FIQ_Handler?A
+      000001F8H  CODE     ---       IRQ_Handler?A
+      00000200H  CODE     ---       PAbt_Handler?A
+      00000204H  CODE     ---       SWI_Handler?A
+      00000208H  CODE     ---       Undef_Handler?A
+      00000000H  CODE     ---       __startup
+      000000F0H  CODE     ---       exit?A
+      000000F4H  CODE     ---       exit?T
+      00000154H  CODE     ---       main
+      00000000H  CODE     ---       ms_delay?T
+      00000188H  CODE     ---       pwm5_dbl_init?T
+      00000000H  CODE     ---       pwm5_dbl_pulse_width?T
+      00000000H  CODE     ---       pwm5_sngl_init?T
+      00000000H  CODE     ---       pwm5_sngl_pulse_width?T
+      00000000H  CODE     ---       pwm_disable?T
+      00000000H  CODE     ---       pwm_enable?T
+
+Program Size: data=1168 const=16 code=508
+LARM RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)

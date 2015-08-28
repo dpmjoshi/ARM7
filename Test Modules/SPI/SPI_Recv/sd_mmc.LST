@@ -1,0 +1,77 @@
+ARM COMPILER V2.40e,  sd_mmc                                                               08/05/12  17:27:54  PAGE 1   
+
+
+ARM COMPILER V2.40e, COMPILATION OF MODULE sd_mmc
+OBJECT MODULE PLACED IN sd_mmc.OBJ
+COMPILER INVOKED BY: C:\Keil\ARM\BIN\CA.exe sd_mmc.c THUMB BROWSE DEBUG TABS(4) 
+
+stmt  level    source
+
+    1          #include"includes.h"
+    2          
+    3          #define SPI_CS       1<<7
+    4          #define SD_CMD_SIZE   6
+    5          
+    6          
+    7          U8 sd_cmd0[7]  = {0x40,0x00,0x00,0x00,0x00,0x95};
+    8          U8 sd_cmd1[7]  = {0x40,0x00,0x00,0x00,0x00,0x95};
+    9          U8 sd_cmd16[7] = {0x40,0x00,0x00,0x00,0x00,0x95};
+   10          U8 sd_cmd17[7] = {0x40,0x00,0x00,0x00,0x00,0x95};
+   11          U8 sd_cmd58[7] = {0x40,0x00,0x00,0x00,0x00,0x95};
+   12          
+   13          void sd_init(void);
+   14          
+   15          void sd_init()
+   16          {
+   17   1          IO0DIR = SPI_CS;
+   18   1          IO0SET = SPI_CS; // set SPI SSEL 
+   19   1          
+   20   1          for(temp_cnt = 0; temp_cnt < 10; temp_cnt++)
+*** ERROR C67 IN LINE 20 OF SD_MMC.C: 'temp_cnt': undefined identifier
+*** ERROR C67 IN LINE 20 OF SD_MMC.C: 'temp_cnt': undefined identifier
+*** ERROR C83 IN LINE 20 OF SD_MMC.C: '++': incompatible types
+*** ERROR C122 IN LINE 20 OF SD_MMC.C: 'function': unknown size
+*** ERROR C100 IN LINE 20 OF SD_MMC.C: '++': left operand must be l-value
+   21   1          {   
+   22   2              spi_send_byte(0xff);    // sending 80 clks to SD card to get initialise in SPI mode
+   23   2          }
+   24   1      
+   25   1          IO0CLR = SPI_CS; // low SPI SSEL 
+   26   1          spi_send_data(sd_cmd0, SD_CMD_SIZE);  // sending CMD0 to SD card 
+   27   1          if(sd_response(0x01) == 1)
+*** WARNING C140 IN LINE 27 OF SD_MMC.C: 'sd_response' undefined; assuming 'extern int sd_response()'
+   28   1          {
+   29   2           SD_status = IDLE_STATE_TIMEOUT;
+*** ERROR C67 IN LINE 29 OF SD_MMC.C: 'SD_status': undefined identifier
+*** ERROR C67 IN LINE 29 OF SD_MMC.C: 'IDLE_STATE_TIMEOUT': undefined identifier
+   30   2           IOSET0 = SPI_SEL; /* set SPI SSEL */
+*** ERROR C67 IN LINE 30 OF SD_MMC.C: 'SPI_SEL': undefined identifier
+   31   2           return SD_status;
+*** ERROR C67 IN LINE 31 OF SD_MMC.C: 'SD_status': undefined identifier
+   32   2          }
+   33   1      
+   34   1      }
+   35          
+   36          
+   37          int sd_response(U8 response)
+   38          {
+   39   1          U16 count = 0xFFF;
+   40   1          U8 result;
+   41   1          while( count > 0 )
+   42   1          {
+   43   2              result = spi_recv_byte();
+   44   2              if ( result == response )
+   45   2              {
+   46   3                  break;
+   47   3              }
+   48   2          count--;
+   49   2          }
+ARM COMPILER V2.40e,  sd_mmc                                                               08/05/12  17:27:54  PAGE 2   
+
+   50   1          if ( count == 0 )
+   51   1              return 1; /* Failure, loop was exited due to timeout */
+   52   1          else
+   53   1              return 0; /* Normal, loop was exited before timeout */
+   54   1      }
+
+ARM COMPILATION COMPLETE.  1 WARNING(S),  9 ERROR(S)

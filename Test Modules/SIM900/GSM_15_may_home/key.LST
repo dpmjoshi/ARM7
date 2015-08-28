@@ -1,0 +1,429 @@
+ARM COMPILER V2.50a,  key                                                                  23/05/13  14:55:53  PAGE 1   
+
+
+ARM COMPILER V2.50a, COMPILATION OF MODULE key
+OBJECT MODULE PLACED IN key.OBJ
+COMPILER INVOKED BY: C:\Keil\ARM\BIN\CA.exe key.c THUMB BROWSE DEBUG TABS(4) 
+
+stmt  level    source
+
+    1          #include"includes.h"
+    2          // P1.16 - P1.18 and P1.20  COLOMNS
+    3          // P0.28 - P0.31  ROWS//
+    4          
+    5          #define ROWS 0xF0000000
+    6          
+    7          U8 scancode(U32 temp1,U32 temp2);
+    8          U8 get_key(U8 pass_key);
+    9          
+   10          U8 keyboard[4][4] =           
+   11           { '1','2','3','A',
+   12             '4','5','6','B',
+   13             '7','8','9','C',
+   14             'E','0','.','D'};
+   15           
+   16          
+   17          U8 get_key(U8 pass_key)
+   18          {
+   19   1       U32 i=0,temp1,temp2; 
+   20   1       U32 val1 =0;
+   21   1       U8 key =0;
+   22   1       
+   23   1       IO0DIR |= ROWS;
+   24   1       IO0CLR = ROWS;
+   25   1      
+   26   1       temp1 = IO1PIN ;
+   27   1       temp1 >>= 16;
+   28   1       val1   = temp1;
+   29   1       
+   30   1       if(pass_key == 1)
+   31   1       {
+   32   2          while((val1 & 0x0000000F) == 0x0000000F)
+   33   2          {
+   34   3              temp1  = IO1PIN;
+   35   3              temp1 >>= 16;
+   36   3              val1   = temp1;
+   37   3          }
+   38   2       }
+   39   1       if((val1 & 0x0000000F) != 0x0000000F)                  //temp2 ==  Row
+   40   1       { 
+   41   2          key_delay(20);      //wait 20msec debounce time
+   42   2      
+   43   2          temp1  = IO1PIN;
+   44   2          temp1 >>= 16;
+   45   2          val1   = temp1;
+   46   2      
+   47   2          if((val1 & 0x0000000F) != 0x0000000F)
+   48   2          {   
+   49   3              for(i=0;i<4;i++)
+   50   3              {
+   51   4                  IO0CLR = 0xF0000000;
+   52   4                  switch(i)
+   53   4                  {
+   54   5                      case 0 : IO0SET = 0x70000000;                    
+   55   5                               break;
+   56   5                      case 1 : IO0SET = 0xB0000000;    
+   57   5                               break;
+   58   5                      case 2 : IO0SET = 0xD0000000;     
+   59   5                               break;
+ARM COMPILER V2.50a,  key                                                                  23/05/13  14:55:53  PAGE 2   
+
+   60   5                      case 3 : IO0SET = 0xE0000000;     
+   61   5                               break;
+   62   5                  }
+   63   4                  temp2 = i;   ////------>  temp2 ====  row .... temp1 = column
+   64   4                  temp1 = IO1PIN;
+   65   4                  temp1 >>= 16;
+   66   4      
+   67   4                  if((temp1 & 0x0000000F) != 0x0000000F)
+   68   4                  {                         
+   69   5                      key = scancode(temp1,temp2);        //temp2 ------> row number
+   70   5                      break;
+   71   5                  }
+   72   4                  
+   73   4              }
+   74   3          }
+   75   2       } 
+   76   1      key_delay(250);
+   77   1      return key;
+   78   1      }
+   79          
+   80          
+   81           
+   82          U8 scancode(U32 temp1,U32 temp2)    //temp1 = column......temp2 = row......
+   83          {
+   84   1       U8 ch;             
+   85   1       U16  code1 = 0,code2 = 0, j=0;
+   86   1      
+   87   1       for(j=0;j<4;j++)
+   88   1       {
+   89   2          code1 = temp1;                  //ADDED
+   90   2          code1 = code1 & (1<<j);
+   91   2          if(code1 == 0)
+   92   2          {
+   93   3              code1 = j;
+   94   3              break;
+   95   3          }
+   96   2          else
+   97   2              continue;
+   98   2       }
+   99   1       code2 = temp2;
+  100   1       ch = keyboard[code2][code1];
+  101   1       return ch;
+  102   1      
+  103   1      }
+ARM COMPILER V2.50a,  key                                                                  23/05/13  14:55:53  PAGE 3   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+
+*** EXTERNALS:
+ EXTERN CODE16 (key_delay?T)
+
+
+
+*** PUBLICS:
+ PUBLIC         scancode?T
+ PUBLIC         get_key?T
+ PUBLIC         keyboard
+
+
+
+*** DATA SEGMENT '?DT0?key':
+ 00000000          keyboard:
+ 00000000           BEGIN_INIT
+ 00000000  31        DB          0x31
+ 00000001  32        DB          0x32
+ 00000002  33        DB          0x33
+ 00000003  41        DB          0x41
+ 00000004  34        DB          0x34
+ 00000005  35        DB          0x35
+ 00000006  36        DB          0x36
+ 00000007  42        DB          0x42
+ 00000008  37        DB          0x37
+ 00000009  38        DB          0x38
+ 0000000A  39        DB          0x39
+ 0000000B  43        DB          0x43
+ 0000000C  45        DB          0x45
+ 0000000D  30        DB          0x30
+ 0000000E  2E        DB          0x2E
+ 0000000F  44        DB          0x44
+ 00000010           END_INIT
+
+
+
+*** CODE SEGMENT '?PR?get_key?T?key':
+   17: U8 get_key(U8 pass_key)
+ 00000000  B5F0      PUSH        {R4-R7,LR}
+ 00000002  1C01      MOV         R1,R0 ; pass_key
+ 00000004  ---- Variable 'pass_key' assigned to Register 'R1' ----
+   18: {
+ 00000004            ; SCOPE-START
+   19:  U32 i=0,temp1,temp2; 
+ 00000004  2700      MOV         R7,#0x0
+ 00000006  1C3E      MOV         R6,R7 ; i
+ 00000008  ---- Variable 'i' assigned to Register 'R6' ----
+   20:  U32 val1 =0;
+ 00000008  ---- Variable 'val1' assigned to Register 'R7' ----
+   21:  U8 key =0;
+ 00000008  2400      MOV         R4,#0x0
+ 0000000A  ---- Variable 'key' assigned to Register 'R4' ----
+   23:  IO0DIR |= ROWS;
+ 0000000A  4800      LDR         R2,=0xF0000000
+ 0000000C  4800      LDR         R0,=0xE0028008
+ 0000000E  6803      LDR         R3,[R0,#0x0]
+ 00000010  4313      ORR         R3,R2
+ 00000012  6003      STR         R3,[R0,#0x0]
+   24:  IO0CLR = ROWS;
+ 00000014  4800      LDR         R0,=0xE002800C
+ 00000016  6002      STR         R2,[R0,#0x0]
+   26:  temp1 = IO1PIN ;
+ 00000018  4800      LDR         R0,=0xE0028010
+ 0000001A  6805      LDR         R5,[R0,#0x0]
+ 0000001C  ---- Variable 'temp1' assigned to Register 'R5' ----
+   27:  temp1 >>= 16;
+ 0000001C  0C2D      LSR         R5,R5,#0x10 ; temp1
+   28:  val1   = temp1;
+ 0000001E  1C2F      MOV         R7,R5 ; temp1
+   30:  if(pass_key == 1)
+ARM COMPILER V2.50a,  key                                                                  23/05/13  14:55:53  PAGE 4   
+
+ 00000020  1C08      MOV         R0,R1 ; pass_key
+ 00000022  0600      LSL         R0,R0,#0x18 ; pass_key
+ 00000024  0E00      LSR         R0,R0,#0x18
+ 00000026  2801      CMP         R0,#0x1
+ 00000028  D109      BNE         L_1  ; T=0x0000003E
+   32:     while((val1 & 0x0000000F) == 0x0000000F)
+ 0000002A  E003      B           L_2  ; T=0x00000034
+ 0000002C          L_4:
+   34:         temp1  = IO1PIN;
+ 0000002C  4800      LDR         R0,=0xE0028010
+ 0000002E  6805      LDR         R5,[R0,#0x0]
+   35:         temp1 >>= 16;
+ 00000030  0C2D      LSR         R5,R5,#0x10 ; temp1
+   36:         val1   = temp1;
+ 00000032  1C2F      MOV         R7,R5 ; temp1
+   37:     }
+ 00000034          L_2:
+ 00000034  1C38      MOV         R0,R7 ; val1
+ 00000036  210F      MOV         R1,#0xF
+ 00000038  4008      AND         R0,R1
+ 0000003A  280F      CMP         R0,#0xF
+ 0000003C  D0F6      BEQ         L_4  ; T=0x0000002C
+   38:  }
+ 0000003E          L_1:
+   39:  if((val1 & 0x0000000F) != 0x0000000F)                  //temp2 ==  Row
+ 0000003E  1C38      MOV         R0,R7 ; val1
+ 00000040  210F      MOV         R1,#0xF
+ 00000042  4008      AND         R0,R1
+ 00000044  280F      CMP         R0,#0xF
+ 00000046  D03A      BEQ         L_6  ; T=0x000000BE
+   41:      key_delay(20);     //wait 20msec debounce time
+ 00000048  2014      MOV         R0,#0x14
+ 0000004A  F7FF      BL          key_delay?T  ; T=0x0001  (1)
+ 0000004C  FFD9      BL          key_delay?T  ; T=0x0001  (2)
+   43:     temp1  = IO1PIN;
+ 0000004E  4800      LDR         R0,=0xE0028010
+ 00000050  6805      LDR         R5,[R0,#0x0]
+   44:     temp1 >>= 16;
+ 00000052  0C2D      LSR         R5,R5,#0x10 ; temp1
+   45:     val1   = temp1;
+ 00000054  1C2F      MOV         R7,R5 ; temp1
+   47:      if((val1 & 0x0000000F) != 0x0000000F)
+ 00000056  1C38      MOV         R0,R7 ; val1
+ 00000058  210F      MOV         R1,#0xF
+ 0000005A  4008      AND         R0,R1
+ 0000005C  280F      CMP         R0,#0xF
+ 0000005E  D02E      BEQ         L_6  ; T=0x000000BE
+   49:            for(i=0;i<4;i++)
+ 00000060  2600      MOV         R6,#0x0
+ 00000062          L_11:
+   51:             IO0CLR = 0xF0000000;
+ 00000062  4800      LDR         R1,=0xF0000000
+ 00000064  4800      LDR         R0,=0xE002800C
+ 00000066  6001      STR         R1,[R0,#0x0]
+   52:               switch(i)
+ 00000068  1C30      MOV         R0,R6 ; i
+ 0000006A  2801      CMP         R0,#0x1 ; i
+ 0000006C  D009      BEQ         L_15  ; T=0x00000082
+ 0000006E  2802      CMP         R0,#0x2 ; i
+ 00000070  D00B      BEQ         L_16  ; T=0x0000008A
+ 00000072  2803      CMP         R0,#0x3 ; i
+ 00000074  D00D      BEQ         L_17  ; T=0x00000092
+ 00000076  2800      CMP         R0,#0x0 ; i
+ 00000078  D10E      BNE         L_13  ; T=0x00000098
+   54:                 case 0 : IO0SET = 0x70000000;                    
+ 0000007A          L_14:
+ARM COMPILER V2.50a,  key                                                                  23/05/13  14:55:53  PAGE 5   
+
+ 0000007A  4800      LDR         R1,=0x70000000
+ 0000007C  4800      LDR         R0,=0xE0028004
+ 0000007E  6001      STR         R1,[R0,#0x0]
+   55:                          break;
+ 00000080  E00A      B           L_13  ; T=0x00000098
+   56:                 case 1 : IO0SET = 0xB0000000;    
+ 00000082          L_15:
+ 00000082  4800      LDR         R1,=0xB0000000
+ 00000084  4800      LDR         R0,=0xE0028004
+ 00000086  6001      STR         R1,[R0,#0x0]
+   57:                          break;
+ 00000088  E006      B           L_13  ; T=0x00000098
+   58:                 case 2 : IO0SET = 0xD0000000;     
+ 0000008A          L_16:
+ 0000008A  4800      LDR         R1,=0xD0000000
+ 0000008C  4800      LDR         R0,=0xE0028004
+ 0000008E  6001      STR         R1,[R0,#0x0]
+   59:                          break;
+ 00000090  E002      B           L_13  ; T=0x00000098
+   60:                 case 3 : IO0SET = 0xE0000000;     
+ 00000092          L_17:
+ 00000092  4800      LDR         R1,=0xE0000000
+ 00000094  4800      LDR         R0,=0xE0028004
+ 00000096  6001      STR         R1,[R0,#0x0]
+   62:             }
+ 00000098          L_13:
+   63:             temp2 = i;   ////------>  temp2 ====  row .... temp1 = column
+ 00000098  1C32      MOV         R2,R6 ; i
+ 0000009A  ---- Variable 'temp2' assigned to Register 'R2' ----
+   64:             temp1 = IO1PIN;
+ 0000009A  4800      LDR         R0,=0xE0028010
+ 0000009C  6805      LDR         R5,[R0,#0x0]
+   65:             temp1 >>= 16;
+ 0000009E  0C2D      LSR         R5,R5,#0x10 ; temp1
+   67:             if((temp1 & 0x0000000F) != 0x0000000F)
+ 000000A0  1C28      MOV         R0,R5 ; temp1
+ 000000A2  210F      MOV         R1,#0xF
+ 000000A4  4008      AND         R0,R1
+ 000000A6  280F      CMP         R0,#0xF
+ 000000A8  D005      BEQ         L_8  ; T=0x000000B6
+   69:                    key = scancode(temp1,temp2);        //temp2 ------> row number
+ 000000AA  1C28      MOV         R0,R5 ; temp1
+ 000000AC  1C11      MOV         R1,R2 ; temp2
+ 000000AE  F7FF      BL          scancode?T  ; T=0x0001  (1)
+ 000000B0  FFA7      BL          scancode?T  ; T=0x0001  (2)
+ 000000B2  1C04      MOV         R4,R0 ; key
+   70:                     break;
+ 000000B4  E003      B           L_9  ; T=0x000000BE
+   73:           }
+ 000000B6          L_8:
+ 000000B6  3601      ADD         R6,#0x1
+ 000000B8  1C30      MOV         R0,R6 ; i
+ 000000BA  2804      CMP         R0,#0x4 ; i
+ 000000BC  D3D1      BCC         L_11  ; T=0x00000062
+ 000000BE          L_9:
+   75:  } 
+ 000000BE          L_6:
+   76: key_delay(250);
+ 000000BE  20FA      MOV         R0,#0xFA
+ 000000C0  F7FF      BL          key_delay?T  ; T=0x0001  (1)
+ 000000C2  FF9E      BL          key_delay?T  ; T=0x0001  (2)
+   77: return key;
+ 000000C4  1C20      MOV         R0,R4 ; key
+ 000000C6  0600      LSL         R0,R0,#0x18 ; key
+ 000000C8  0E00      LSR         R0,R0,#0x18
+ 000000CA            ; SCOPE-END
+ARM COMPILER V2.50a,  key                                                                  23/05/13  14:55:53  PAGE 6   
+
+   78: }
+ 000000CA  BCF0      POP         {R4-R7}
+ 000000CC  BC08      POP         {R3}
+ 000000CE  4718      BX          R3
+ 000000D0          ENDP ; 'get_key?T'
+
+
+*** CODE SEGMENT '?PR?scancode?T?key':
+   82: U8 scancode(U32 temp1,U32 temp2)    //temp1 = column......temp2 = row......
+ 00000000  B470      PUSH        {R4-R6}
+ 00000002  ---- Variable 'temp2' assigned to Register 'R1' ----
+ 00000002  ---- Variable 'temp1' assigned to Register 'R0' ----
+   83: {
+ 00000002            ; SCOPE-START
+   85:  U16  code1 = 0,code2 = 0, j=0;
+ 00000002  2500      MOV         R5,#0x0
+ 00000004  1C2A      MOV         R2,R5 ; code1
+ 00000006  ---- Variable 'code1' assigned to Register 'R2' ----
+ 00000006  1C2B      MOV         R3,R5 ; code2
+ 00000008  ---- Variable 'code2' assigned to Register 'R3' ----
+ 00000008  1C2C      MOV         R4,R5 ; j
+ 0000000A  ---- Variable 'j' assigned to Register 'R4' ----
+   87:  for(j=0;j<4;j++)
+ 0000000A  1C2C      MOV         R4,R5 ; j
+ 0000000C  E016      B           L_22  ; T=0x0000003C
+ 0000000E          L_23:
+   89:     code1 = temp1;                  //ADDED
+ 0000000E  1C02      MOV         R2,R0 ; temp1
+ 00000010  0412      LSL         R2,R2,#0x10 ; temp1
+ 00000012  0C12      LSR         R2,R2,#0x10
+   90:     code1 = code1 & (1<<j);
+ 00000014  1C25      MOV         R5,R4 ; j
+ 00000016  042E      LSL         R6,R5,#0x10 ; j
+ 00000018  0C36      LSR         R6,R6,#0x10
+ 0000001A  2501      MOV         R5,#0x1
+ 0000001C  40B5      LSL         R5,R6
+ 0000001E  0412      LSL         R2,R2,#0x10 ; code1
+ 00000020  0C12      LSR         R2,R2,#0x10
+ 00000022  402A      AND         R2,R5
+ 00000024  0412      LSL         R2,R2,#0x10
+ 00000026  0C12      LSR         R2,R2,#0x10
+   91:     if(code1 == 0)
+ 00000028  1C15      MOV         R5,R2 ; code1
+ 0000002A  042D      LSL         R5,R5,#0x10 ; code1
+ 0000002C  0C2D      LSR         R5,R5,#0x10
+ 0000002E  2D00      CMP         R5,#0x0
+ 00000030  D101      BNE         L_20  ; T=0x00000036
+   93:         code1 = j;
+ 00000032  1C22      MOV         R2,R4 ; j
+   94:         break;
+ 00000034  E007      B           L_21  ; T=0x00000046
+   98:  }
+ 00000036          L_20:
+ 00000036  3401      ADD         R4,#0x1
+ 00000038  0424      LSL         R4,R4,#0x10
+ 0000003A  0C24      LSR         R4,R4,#0x10
+ 0000003C          L_22:
+ 0000003C  1C25      MOV         R5,R4 ; j
+ 0000003E  042D      LSL         R5,R5,#0x10 ; j
+ 00000040  0C2D      LSR         R5,R5,#0x10
+ 00000042  2D04      CMP         R5,#0x4
+ 00000044  D3E3      BCC         L_23  ; T=0x0000000E
+ 00000046          L_21:
+   99:  code2 = temp2;
+ 00000046  1C0B      MOV         R3,R1 ; temp2
+ 00000048  041B      LSL         R3,R3,#0x10 ; temp2
+ 0000004A  0C1B      LSR         R3,R3,#0x10
+  100:  ch = keyboard[code2][code1];
+ARM COMPILER V2.50a,  key                                                                  23/05/13  14:55:53  PAGE 7   
+
+ 0000004C  1C18      MOV         R0,R3 ; code2
+ 0000004E  0401      LSL         R1,R0,#0x10 ; code2
+ 00000050  0C09      LSR         R1,R1,#0x10
+ 00000052  0089      LSL         R1,R1,#0x2
+ 00000054  1C10      MOV         R0,R2 ; code1
+ 00000056  0400      LSL         R0,R0,#0x10 ; code1
+ 00000058  0C00      LSR         R0,R0,#0x10
+ 0000005A  1809      ADD         R1,R0
+ 0000005C  4800      LDR         R0,=keyboard ; keyboard
+ 0000005E  5C41      LDRB        R1,[R0,R1]
+ 00000060  ---- Variable 'ch' assigned to Register 'R1' ----
+  101:  return ch;
+ 00000060  1C08      MOV         R0,R1 ; ch
+ 00000062  0600      LSL         R0,R0,#0x18 ; ch
+ 00000064  0E00      LSR         R0,R0,#0x18
+ 00000066            ; SCOPE-END
+  103: }
+ 00000066  BC70      POP         {R4-R6}
+ 00000068  4770      BX          R14
+ 0000006A          ENDP ; 'scancode?T'
+
+
+
+Module Information          Static
+----------------------------------
+  code size            =    ------
+  data size            =        16
+  const size           =    ------
+End of Module Information.
+
+
+ARM COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

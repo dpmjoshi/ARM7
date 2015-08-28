@@ -1,0 +1,208 @@
+ARM COMPILER V2.50a,  main                                                                 01/11/12  14:36:57  PAGE 1   
+
+
+ARM COMPILER V2.50a, COMPILATION OF MODULE main
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\ARM\BIN\CA.exe main.c THUMB BROWSE DEBUG TABS(4) 
+
+stmt  level    source
+
+    1          #include"includes.h"
+    2          
+    3          #define OUT_PORT     1<<6
+    4          
+    5          
+    6          //*************************Flags*******************************//
+    7          U8  Uc_user_mode_flag = 4;
+    8          const U8  test_variable = 'A' ;
+    9          
+   10          U8  Uc_cnt = 0;
+   11          
+   12          void main()
+   13          {   
+   14   1        PINSEL0 |= 0X00050005;     // selecting UART0 and UART1
+   15   1        PINSEL1 |= 0X00080000;
+   16   1        IO1DIR  |= 0X0FFF0000;     //pins 1.16 to 1.23 output pins
+   17   1        IO0DIR  |= 0X003E0C00;     //port 0 rs and en as output
+   18   1        IO0CLR   = 0X00FF0000;    
+   19   1        //*************************************//
+   20   1        //         Initialisations             //
+   21   1        //*************************************//
+   22   1      
+   23   1        
+   24   1        uart_init();
+   25   1        lcd_init();
+   26   1        ms_delay(100);
+   27   1        lcd_line2_disp("DAC testing",0);
+   28   1        ms_delay(1000);
+   29   1        DAC_init();
+   30   1      
+   31   1        //uart0_send_string(0x00070000);
+   32   1        
+   33   1        while(1)
+   34   1        { 
+   35   2           Uc_key_temp = get_key(0);
+   36   2           if(Uc_key_temp == '1')
+   37   2           {
+   38   3            Uc_key_temp = 0;
+   39   3            ms_delay(10000);
+   40   3            DAC_write_val(10);
+   41   3           }
+   42   2      
+   43   2        }
+   44   1      }
+   45          
+   46          
+   47          
+   48          
+   49          
+   50          
+   51          
+   52          
+   53          
+   54          
+ARM COMPILER V2.50a,  main                                                                 01/11/12  14:36:57  PAGE 2   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+
+*** EXTERNALS:
+ EXTERN CODE16 (lcd_init?T)
+ EXTERN CODE16 (ms_delay?T)
+ EXTERN CODE16 (lcd_line2_disp?T)
+ EXTERN CODE16 (uart_init?T)
+ EXTERN CODE16 (get_key?T)
+ EXTERN DATA (Uc_key_temp)
+ EXTERN CODE16 (DAC_init?T)
+ EXTERN CODE16 (DAC_write_val?T)
+ EXTERN NUMBER (__startup)
+
+
+
+*** PUBLICS:
+ PUBLIC         test_variable
+ PUBLIC         main
+ PUBLIC         Uc_user_mode_flag
+ PUBLIC         Uc_cnt
+
+
+
+*** DATA SEGMENT '?CON?main':
+ 00000000          ??S_1:
+ 00000000            DB          'DAC testing',0x00
+ 0000000C          test_variable:
+ 0000000C           BEGIN_INIT
+ 0000000C  41        DB          0x41
+ 0000000D           END_INIT
+
+*** DATA SEGMENT '?DT0?main':
+ 00000000          Uc_user_mode_flag:
+ 00000000           BEGIN_INIT
+ 00000000  04        DB          0x4
+ 00000001           END_INIT
+ 00000001          Uc_cnt:
+ 00000001           BEGIN_INIT
+ 00000001  00        DB          0x0
+ 00000002           END_INIT
+
+
+
+*** CODE SEGMENT '?PR?main?main':
+   12: void main()
+ 00000000  B500      PUSH        {LR}
+   14:   PINSEL0 |= 0X00050005;     // selecting UART0 and UART1
+ 00000002  4800      LDR         R2,=0x50005
+ 00000004  4800      LDR         R0,=0xE002C000
+ 00000006  6801      LDR         R1,[R0,#0x0]
+ 00000008  4311      ORR         R1,R2
+ 0000000A  6001      STR         R1,[R0,#0x0]
+   15:   PINSEL1 |= 0X00080000;
+ 0000000C  4800      LDR         R2,=0x80000
+ 0000000E  4800      LDR         R0,=0xE002C004
+ 00000010  6801      LDR         R1,[R0,#0x0]
+ 00000012  4311      ORR         R1,R2
+ 00000014  6001      STR         R1,[R0,#0x0]
+   16:   IO1DIR  |= 0X0FFF0000;     //pins 1.16 to 1.23 output pins
+ 00000016  4800      LDR         R2,=0xFFF0000
+ 00000018  4800      LDR         R0,=0xE0028018
+ 0000001A  6801      LDR         R1,[R0,#0x0]
+ 0000001C  4311      ORR         R1,R2
+ 0000001E  6001      STR         R1,[R0,#0x0]
+   17:   IO0DIR  |= 0X003E0C00;     //port 0 rs and en as output
+ 00000020  4800      LDR         R2,=0x3E0C00
+ 00000022  4800      LDR         R0,=0xE0028008
+ 00000024  6801      LDR         R1,[R0,#0x0]
+ 00000026  4311      ORR         R1,R2
+ 00000028  6001      STR         R1,[R0,#0x0]
+   18:   IO0CLR   = 0X00FF0000;    
+ 0000002A  4800      LDR         R1,=0xFF0000
+ARM COMPILER V2.50a,  main                                                                 01/11/12  14:36:57  PAGE 3   
+
+ 0000002C  4800      LDR         R0,=0xE002800C
+ 0000002E  6001      STR         R1,[R0,#0x0]
+   24:   uart_init();
+ 00000030  F7FF      BL          uart_init?T  ; T=0x0001  (1)
+ 00000032  FFE6      BL          uart_init?T  ; T=0x0001  (2)
+   25:   lcd_init();
+ 00000034  F7FF      BL          lcd_init?T  ; T=0x0001  (1)
+ 00000036  FFE4      BL          lcd_init?T  ; T=0x0001  (2)
+   26:   ms_delay(100);
+ 00000038  2064      MOV         R0,#0x64
+ 0000003A  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000003C  FFE1      BL          ms_delay?T  ; T=0x0001  (2)
+   27:   lcd_line2_disp("DAC testing",0);
+ 0000003E  4800      LDR         R0,=??S_1 ; ??S_1
+ 00000040  2100      MOV         R1,#0x0
+ 00000042  F7FF      BL          lcd_line2_disp?T  ; T=0x0001  (1)
+ 00000044  FFDD      BL          lcd_line2_disp?T  ; T=0x0001  (2)
+   28:   ms_delay(1000);
+ 00000046  48FA      LDR         R0,=0x3E8
+ 00000048  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000004A  FFDA      BL          ms_delay?T  ; T=0x0001  (2)
+   29:   DAC_init();
+ 0000004C  F7FF      BL          DAC_init?T  ; T=0x0001  (1)
+ 0000004E  FFD8      BL          DAC_init?T  ; T=0x0001  (2)
+   33:   while(1)
+ 00000050          L_3:
+   35:      Uc_key_temp = get_key(0);
+ 00000050  2000      MOV         R0,#0x0
+ 00000052  F7FF      BL          get_key?T  ; T=0x0001  (1)
+ 00000054  FFD5      BL          get_key?T  ; T=0x0001  (2)
+ 00000056  4800      LDR         R1,=Uc_key_temp ; Uc_key_temp
+ 00000058  7008      STRB        R0,[R1,#0x0] ; Uc_key_temp
+   36:      if(Uc_key_temp == '1')
+ 0000005A  4800      LDR         R0,=Uc_key_temp ; Uc_key_temp
+ 0000005C  7800      LDRB        R0,[R0,#0x0] ; Uc_key_temp
+ 0000005E  2831      CMP         R0,#0x31
+ 00000060  D1F6      BNE         L_3  ; T=0x00000050
+   38:       Uc_key_temp = 0;
+ 00000062  2100      MOV         R1,#0x0
+ 00000064  4800      LDR         R0,=Uc_key_temp ; Uc_key_temp
+ 00000066  7001      STRB        R1,[R0,#0x0] ; Uc_key_temp
+   39:       ms_delay(10000);
+ 00000068  4800      LDR         R0,=0x2710
+ 0000006A  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000006C  FFC9      BL          ms_delay?T  ; T=0x0001  (2)
+   40:       DAC_write_val(10);
+ 0000006E  200A      MOV         R0,#0xA
+ 00000070  F7FF      BL          DAC_write_val?T  ; T=0x0001  (1)
+ 00000072  FFC6      BL          DAC_write_val?T  ; T=0x0001  (2)
+   43:   }
+ 00000074  E7EC      B           L_3  ; T=0x00000050
+   44: }
+ 00000076  BC08      POP         {R3}
+ 00000078  4718      BX          R3
+ 0000007A          ENDP ; 'main'
+
+
+
+Module Information          Static
+----------------------------------
+  code size            =    ------
+  data size            =         2
+  const size           =        13
+End of Module Information.
+
+
+ARM COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

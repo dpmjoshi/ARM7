@@ -1,0 +1,332 @@
+ARM COMPILER V2.50a,  adc                                                                  16/01/13  17:05:48  PAGE 1   
+
+
+ARM COMPILER V2.50a, COMPILATION OF MODULE adc
+OBJECT MODULE PLACED IN adc.OBJ
+COMPILER INVOKED BY: C:\Keil\ARM\BIN\CA.exe adc.c THUMB BROWSE DEBUG TABS(4) 
+
+stmt  level    source
+
+    1          #include "includes.h"
+    2          
+    3          #define AD_CR_SEL0          (0x00000001)                  // Select channel 0
+    4          #define AD_CR_SEL1          (0x00000002)                  // Select channel 1
+    5          #define AD_CR_SEL2          (0x00000004)                  // Select channel 2
+    6          #define AD_CR_SEL3          (0x00000008)                  // Select channel 3
+    7          #define AD_CR_SEL4          (0x00000010)                  // Select channel 4
+    8          #define AD_CR_SEL5          (0x00000020)                  // Select channel 5
+    9          #define AD_CR_SEL6          (0x00000040)                  // Select channel 6
+   10          #define AD_CR_SEL7          (0x00000080)                  // Select channel 7
+   11          #define AD_CR_SELMASK       (0x000000ff)
+   12          #define AD_CR_BURST         (0x00010000)
+   13          #define AD_CR_CLKS10        (0x00000000)                  // Use 10-bit conversions
+   14          #define AD_CR_PDN           (0x00200000)                  // Whether AD is operational (1) or powered-dow
+             -n (0)
+   15          #define AD_CR_START_NONE    (0x00000000)                  // No start (used when clearing PDN to 0)
+   16          #define AD_CR_START_NOW     (0x01000000)                  // Start conversion now
+   17          #define AD_CR_START_MASK    (0x07000000) 
+   18          
+   19          //***********************************
+   20          //  adc_init
+   21          //***********************************
+   22          void adc_init()
+   23          {
+   24   1          PINSEL1 |= 0X15000000;      //AD0.1
+   25   1          AD0CR    = 0X00210A0e;
+   26   1          
+   27   1      }
+   28          //***********************************
+   29          //  adc0.1_getval
+   30          //***********************************
+   31          U32 adc1_getval()
+   32          {
+   33   1        U32 ui_adc1_value; 
+   34   1        AD0CR &= ~(AD_CR_START_MASK | AD_CR_SELMASK);// Deselects all channels and stops all conversions
+   35   1        AD0CR |=  (AD_CR_START_NONE | AD_CR_SEL1);   // Select channel 3    
+   36   1        AD0CR |=   AD_CR_START_NOW;// Manually start conversions (rather than waiting on an external input)
+   37   1        do
+   38   1        {
+   39   2          ui_adc1_value = AD0DR1;
+   40   2        } 
+   41   1       while((ui_adc1_value & 0x80000000) );//wait for the conversion done bit to be 1
+   42   1       ui_adc1_value = ((ui_adc1_value >>6)& 0x3ff );//
+   43   1       return ui_adc1_value;
+   44   1      }
+   45          //***********************************
+   46          //  adc0.2_getval
+   47          //***********************************
+   48          U32 adc2_getval()
+   49          {
+   50   1        U32 ui_adc2_value; 
+   51   1        AD0CR &= ~(AD_CR_START_MASK | AD_CR_SELMASK);// Deselects all channels and stops all conversions
+   52   1        AD0CR |=  (AD_CR_START_NONE | AD_CR_SEL2);   // Select channel 3    
+   53   1        AD0CR |=   AD_CR_START_NOW;// Manually start conversions (rather than waiting on an external input)
+   54   1        do
+   55   1        {
+   56   2          ui_adc2_value = AD0DR2;
+   57   2        } 
+   58   1       while((ui_adc2_value & 0x80000000) );//wait for the conversion done bit to be 1
+ARM COMPILER V2.50a,  adc                                                                  16/01/13  17:05:48  PAGE 2   
+
+   59   1       ui_adc2_value = ((ui_adc2_value >>6)& 0x3ff );//
+   60   1       return ui_adc2_value;
+   61   1      }
+   62          //***********************************
+   63          //  adc0.3_getval
+   64          //***********************************
+   65          U32 adc3_getval()
+   66          {
+   67   1        U32 ui_adc3_value; 
+   68   1        AD0CR &= ~(AD_CR_START_MASK | AD_CR_SELMASK);// Deselects all channels and stops all conversions
+   69   1        AD0CR |=  (AD_CR_START_NONE | AD_CR_SEL3);   // Select channel 3    
+   70   1        AD0CR |=   AD_CR_START_NOW;// Manually start conversions (rather than waiting on an external input)
+   71   1        do
+   72   1        {
+   73   2          ui_adc3_value = AD0DR3;
+   74   2        } 
+   75   1       while((ui_adc3_value & 0x80000000) );//wait for the conversion done bit to be 1
+   76   1       ui_adc3_value = ((ui_adc3_value >>6)& 0x3ff );//
+   77   1       return ui_adc3_value;
+   78   1      }
+   79          
+   80          void adc0_1_soc()
+   81          {
+   82   1          AD0CR    = 0X01210A02;
+   83   1      }
+   84          
+   85          void adc0_1_eoc()
+   86          {
+   87   1          AD0CR    = 0X00210A02;
+   88   1      }
+   89          
+   90          void adc0_3_soc()
+   91          {
+   92   1          AD0CR    = 0X01210A08;
+   93   1      }
+   94          
+   95          void adc0_3_eoc()
+   96          {
+   97   1          AD0CR    = 0X00210A08;
+   98   1      }
+   99          
+  100          
+ARM COMPILER V2.50a,  adc                                                                  16/01/13  17:05:48  PAGE 3   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+
+*** PUBLICS:
+ PUBLIC         adc_init?T
+ PUBLIC         adc0_1_soc?T
+ PUBLIC         adc0_1_eoc?T
+ PUBLIC         adc0_3_soc?T
+ PUBLIC         adc0_3_eoc?T
+ PUBLIC         adc1_getval?T
+ PUBLIC         adc2_getval?T
+ PUBLIC         adc3_getval?T
+
+
+
+*** CODE SEGMENT '?PR?adc_init?T?adc':
+   24:     PINSEL1 |= 0X15000000;      //AD0.1
+ 00000000  4800      LDR         R2,=0x15000000
+ 00000002  4800      LDR         R0,=0xE002C004
+ 00000004  6801      LDR         R1,[R0,#0x0]
+ 00000006  4311      ORR         R1,R2
+ 00000008  6001      STR         R1,[R0,#0x0]
+   25:     AD0CR    = 0X00210A0e;
+ 0000000A  4800      LDR         R1,=0x210A0E
+ 0000000C  4800      LDR         R0,=0xE0034000
+ 0000000E  6001      STR         R1,[R0,#0x0]
+   27: }
+ 00000010  4770      BX          R14
+ 00000012          ENDP ; 'adc_init?T'
+
+
+*** CODE SEGMENT '?PR?adc1_getval?T?adc':
+   32: {
+ 00000000            ; SCOPE-START
+   34:   AD0CR &= ~(AD_CR_START_MASK | AD_CR_SELMASK);// Deselects all channels and stops all conversions
+ 00000000  4800      LDR         R2,=0xF8FFFF00
+ 00000002  4800      LDR         R0,=0xE0034000
+ 00000004  6801      LDR         R1,[R0,#0x0]
+ 00000006  4011      AND         R1,R2
+ 00000008  6001      STR         R1,[R0,#0x0]
+   35:   AD0CR |=  (AD_CR_START_NONE | AD_CR_SEL1);   // Select channel 3    
+ 0000000A  2202      MOV         R2,#0x2
+ 0000000C  4800      LDR         R0,=0xE0034000
+ 0000000E  6801      LDR         R1,[R0,#0x0]
+ 00000010  4311      ORR         R1,R2
+ 00000012  6001      STR         R1,[R0,#0x0]
+   36:   AD0CR |=   AD_CR_START_NOW;// Manually start conversions (rather than waiting on an external input)
+ 00000014  4800      LDR         R2,=0x1000000
+ 00000016  4800      LDR         R0,=0xE0034000
+ 00000018  6801      LDR         R1,[R0,#0x0]
+ 0000001A  4311      ORR         R1,R2
+ 0000001C  6001      STR         R1,[R0,#0x0]
+   37:   do
+ 0000001E          L_1:
+   39:     ui_adc1_value = AD0DR1;
+ 0000001E  4800      LDR         R0,=0xE0034014
+ 00000020  6801      LDR         R1,[R0,#0x0]
+ 00000022  ---- Variable 'ui_adc1_value' assigned to Register 'R1' ----
+   40:   } 
+ 00000022  1C08      MOV         R0,R1 ; ui_adc1_value
+ 00000024  4800      LDR         R2,=0x80000000
+ 00000026  4210      TST         R0,R2 ; ui_adc1_value
+ 00000028  D1F9      BNE         L_1  ; T=0x0000001E
+   42:  ui_adc1_value = ((ui_adc1_value >>6)& 0x3ff );//
+ 0000002A  0989      LSR         R1,R1,#0x6 ; ui_adc1_value
+ 0000002C  4800      LDR         R0,=0x3FF
+ 0000002E  4001      AND         R1,R0
+   43:  return ui_adc1_value;
+ 00000030  1C08      MOV         R0,R1 ; ui_adc1_value
+ 00000032            ; SCOPE-END
+ARM COMPILER V2.50a,  adc                                                                  16/01/13  17:05:48  PAGE 4   
+
+   44: }
+ 00000032  4770      BX          R14
+ 00000034          ENDP ; 'adc1_getval?T'
+
+
+*** CODE SEGMENT '?PR?adc2_getval?T?adc':
+   49: {
+ 00000000            ; SCOPE-START
+   51:   AD0CR &= ~(AD_CR_START_MASK | AD_CR_SELMASK);// Deselects all channels and stops all conversions
+ 00000000  4800      LDR         R2,=0xF8FFFF00
+ 00000002  4800      LDR         R0,=0xE0034000
+ 00000004  6801      LDR         R1,[R0,#0x0]
+ 00000006  4011      AND         R1,R2
+ 00000008  6001      STR         R1,[R0,#0x0]
+   52:   AD0CR |=  (AD_CR_START_NONE | AD_CR_SEL2);   // Select channel 3    
+ 0000000A  2204      MOV         R2,#0x4
+ 0000000C  4800      LDR         R0,=0xE0034000
+ 0000000E  6801      LDR         R1,[R0,#0x0]
+ 00000010  4311      ORR         R1,R2
+ 00000012  6001      STR         R1,[R0,#0x0]
+   53:   AD0CR |=   AD_CR_START_NOW;// Manually start conversions (rather than waiting on an external input)
+ 00000014  4800      LDR         R2,=0x1000000
+ 00000016  4800      LDR         R0,=0xE0034000
+ 00000018  6801      LDR         R1,[R0,#0x0]
+ 0000001A  4311      ORR         R1,R2
+ 0000001C  6001      STR         R1,[R0,#0x0]
+   54:   do
+ 0000001E          L_6:
+   56:     ui_adc2_value = AD0DR2;
+ 0000001E  4800      LDR         R0,=0xE0034018
+ 00000020  6801      LDR         R1,[R0,#0x0]
+ 00000022  ---- Variable 'ui_adc2_value' assigned to Register 'R1' ----
+   57:   } 
+ 00000022  1C08      MOV         R0,R1 ; ui_adc2_value
+ 00000024  4800      LDR         R2,=0x80000000
+ 00000026  4210      TST         R0,R2 ; ui_adc2_value
+ 00000028  D1F9      BNE         L_6  ; T=0x0000001E
+   59:  ui_adc2_value = ((ui_adc2_value >>6)& 0x3ff );//
+ 0000002A  0989      LSR         R1,R1,#0x6 ; ui_adc2_value
+ 0000002C  4800      LDR         R0,=0x3FF
+ 0000002E  4001      AND         R1,R0
+   60:  return ui_adc2_value;
+ 00000030  1C08      MOV         R0,R1 ; ui_adc2_value
+ 00000032            ; SCOPE-END
+   61: }
+ 00000032  4770      BX          R14
+ 00000034          ENDP ; 'adc2_getval?T'
+
+
+*** CODE SEGMENT '?PR?adc3_getval?T?adc':
+   66: {
+ 00000000            ; SCOPE-START
+   68:   AD0CR &= ~(AD_CR_START_MASK | AD_CR_SELMASK);// Deselects all channels and stops all conversions
+ 00000000  4800      LDR         R2,=0xF8FFFF00
+ 00000002  4800      LDR         R0,=0xE0034000
+ 00000004  6801      LDR         R1,[R0,#0x0]
+ 00000006  4011      AND         R1,R2
+ 00000008  6001      STR         R1,[R0,#0x0]
+   69:   AD0CR |=  (AD_CR_START_NONE | AD_CR_SEL3);   // Select channel 3    
+ 0000000A  2208      MOV         R2,#0x8
+ 0000000C  4800      LDR         R0,=0xE0034000
+ 0000000E  6801      LDR         R1,[R0,#0x0]
+ 00000010  4311      ORR         R1,R2
+ 00000012  6001      STR         R1,[R0,#0x0]
+   70:   AD0CR |=   AD_CR_START_NOW;// Manually start conversions (rather than waiting on an external input)
+ 00000014  4800      LDR         R2,=0x1000000
+ 00000016  4800      LDR         R0,=0xE0034000
+ 00000018  6801      LDR         R1,[R0,#0x0]
+ 0000001A  4311      ORR         R1,R2
+ 0000001C  6001      STR         R1,[R0,#0x0]
+ARM COMPILER V2.50a,  adc                                                                  16/01/13  17:05:48  PAGE 5   
+
+   71:   do
+ 0000001E          L_11:
+   73:     ui_adc3_value = AD0DR3;
+ 0000001E  4800      LDR         R0,=0xE003401C
+ 00000020  6801      LDR         R1,[R0,#0x0]
+ 00000022  ---- Variable 'ui_adc3_value' assigned to Register 'R1' ----
+   74:   } 
+ 00000022  1C08      MOV         R0,R1 ; ui_adc3_value
+ 00000024  4800      LDR         R2,=0x80000000
+ 00000026  4210      TST         R0,R2 ; ui_adc3_value
+ 00000028  D1F9      BNE         L_11  ; T=0x0000001E
+   76:  ui_adc3_value = ((ui_adc3_value >>6)& 0x3ff );//
+ 0000002A  0989      LSR         R1,R1,#0x6 ; ui_adc3_value
+ 0000002C  4800      LDR         R0,=0x3FF
+ 0000002E  4001      AND         R1,R0
+   77:  return ui_adc3_value;
+ 00000030  1C08      MOV         R0,R1 ; ui_adc3_value
+ 00000032            ; SCOPE-END
+   78: }
+ 00000032  4770      BX          R14
+ 00000034          ENDP ; 'adc3_getval?T'
+
+
+*** CODE SEGMENT '?PR?adc0_1_soc?T?adc':
+   82:     AD0CR    = 0X01210A02;
+ 00000000  4800      LDR         R1,=0x1210A02
+ 00000002  4800      LDR         R0,=0xE0034000
+ 00000004  6001      STR         R1,[R0,#0x0]
+   83: }
+ 00000006  4770      BX          R14
+ 00000008          ENDP ; 'adc0_1_soc?T'
+
+
+*** CODE SEGMENT '?PR?adc0_1_eoc?T?adc':
+   87:     AD0CR    = 0X00210A02;
+ 00000000  4800      LDR         R1,=0x210A02
+ 00000002  4800      LDR         R0,=0xE0034000
+ 00000004  6001      STR         R1,[R0,#0x0]
+   88: }
+ 00000006  4770      BX          R14
+ 00000008          ENDP ; 'adc0_1_eoc?T'
+
+
+*** CODE SEGMENT '?PR?adc0_3_soc?T?adc':
+   92:     AD0CR    = 0X01210A08;
+ 00000000  4800      LDR         R1,=0x1210A08
+ 00000002  4800      LDR         R0,=0xE0034000
+ 00000004  6001      STR         R1,[R0,#0x0]
+   93: }
+ 00000006  4770      BX          R14
+ 00000008          ENDP ; 'adc0_3_soc?T'
+
+
+*** CODE SEGMENT '?PR?adc0_3_eoc?T?adc':
+   97:     AD0CR    = 0X00210A08;
+ 00000000  4800      LDR         R1,=0x210A08
+ 00000002  4800      LDR         R0,=0xE0034000
+ 00000004  6001      STR         R1,[R0,#0x0]
+   98: }
+ 00000006  4770      BX          R14
+ 00000008          ENDP ; 'adc0_3_eoc?T'
+
+
+
+Module Information          Static
+----------------------------------
+  code size            =    ------
+  data size            =    ------
+  const size           =    ------
+End of Module Information.
+
+
+ARM COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

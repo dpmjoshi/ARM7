@@ -1,0 +1,331 @@
+ARM COMPILER V2.50a,  main                                                                 01/11/12  11:50:37  PAGE 1   
+
+
+ARM COMPILER V2.50a, COMPILATION OF MODULE main
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\ARM\BIN\CA.exe main.c THUMB BROWSE DEBUG TABS(4) 
+
+stmt  level    source
+
+    1          #include"includes.h"
+    2          
+    3          #define OUT_PORT     1<<6
+    4          
+    5          
+    6          #define flash_ptr    0X0000013E
+    7          
+    8          
+    9          
+   10          
+   11          
+   12          U8 *ram_ptr;
+   13          U8 *rom_ptr;
+   14          //*************************Flags*******************************//
+   15          U8  Uc_user_mode_flag = 4;
+   16          const U8  test_variable = 'A' ;
+   17          
+   18          U8  Uc_cnt = 0;
+   19          U8  test_data[256] = {"  Testing of In Application Progrmming(IAP)\n\rROM Sector No: 21\n\rSize of Sector
+             -: 32Kb"};
+   20          
+   21          
+   22          
+   23          void prog_rom();
+   24          
+   25          
+   26          
+   27          void main()
+   28          {   
+   29   1        PINSEL0 |= 0X00050005;     // selecting UART0 and UART1
+   30   1        PINSEL1 |= 0X00080000;
+   31   1        IO1DIR  |= 0X0FFF0000;     //pins 1.16 to 1.23 output pins
+   32   1        IO0DIR  |= 0X003E0C00;     //port 0 rs and en as output
+   33   1        IO0CLR   = 0X00FF0000;    
+   34   1        //*************************************//
+   35   1        //         Initialisations             //
+   36   1        //*************************************//
+   37   1        ram_ptr = ram_add;
+   38   1        rom_ptr = rom_add;
+   39   1        
+   40   1        uart_init();
+   41   1        lcd_init();
+   42   1        ms_delay(1000);
+   43   1        lcd_line2_disp("IAP testing",0);
+   44   1        uart0_send_string("\n\rIAP testing");
+   45   1        ms_delay(1000);
+   46   1        
+   47   1       
+   48   1        
+   49   1        for(Uc_cnt = 0; Uc_cnt < 255; Uc_cnt++)
+   50   1        {
+   51   2          *ram_ptr = test_data[Uc_cnt];
+   52   2          ram_ptr++;
+   53   2        }
+   54   1         *ram_ptr = '\0';
+   55   1      
+   56   1      
+   57   1        //uart0_send_string(0x00070000);
+   58   1        
+ARM COMPILER V2.50a,  main                                                                 01/11/12  11:50:37  PAGE 2   
+
+   59   1        while(1)
+   60   1        { 
+   61   2           Uc_key_temp = get_key(0);
+   62   2           if(Uc_key_temp == '1')
+   63   2           {
+   64   3            Uc_key_temp = 0;
+   65   3            ms_delay(10000);
+   66   3            prog_rom();
+   67   3           }
+   68   2           if(Uc_key_temp == '2')
+   69   2           {
+   70   3            Uc_key_temp = 0;
+   71   3            IAP_read_boot_code();
+   72   3            ms_delay(10000);
+   73   3           }
+   74   2           ms_delay(1000);
+   75   2        }
+   76   1      }
+   77          
+   78          
+   79          
+   80          
+   81          
+   82          
+   83          
+   84          
+   85          
+   86          
+ARM COMPILER V2.50a,  main                                                                 01/11/12  11:50:37  PAGE 3   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+
+*** EXTERNALS:
+ EXTERN CODE16 (lcd_init?T)
+ EXTERN CODE16 (ms_delay?T)
+ EXTERN CODE16 (lcd_line2_disp?T)
+ EXTERN CODE16 (uart_init?T)
+ EXTERN CODE16 (uart0_send_string?T)
+ EXTERN CODE16 (get_key?T)
+ EXTERN DATA (Uc_key_temp)
+ EXTERN CODE16 (IAP_read_boot_code?T)
+ EXTERN CODE16 (prog_rom?T)
+ EXTERN NUMBER (__startup)
+
+
+
+*** PUBLICS:
+ PUBLIC         test_variable
+ PUBLIC         main
+ PUBLIC         ram_ptr
+ PUBLIC         rom_ptr
+ PUBLIC         Uc_user_mode_flag
+ PUBLIC         Uc_cnt
+ PUBLIC         test_data
+
+
+
+*** DATA SEGMENT '?CON?main':
+ 00000000          ??S_3:
+ 00000000            DB          0x0A,0x0D,'IAP testing',0x00
+ 0000000E          ??S_2:
+ 0000000E            DB          'IAP testing',0x00
+ 0000001A          test_variable:
+ 0000001A           BEGIN_INIT
+ 0000001A  41        DB          0x41
+ 0000001B           END_INIT
+
+*** DATA SEGMENT '?DT0?main':
+ 00000000          ram_ptr:
+ 00000000            DS          4
+ 00000004          rom_ptr:
+ 00000004            DS          4
+ 00000008          Uc_user_mode_flag:
+ 00000008           BEGIN_INIT
+ 00000008  04        DB          0x4
+ 00000009           END_INIT
+ 00000009          Uc_cnt:
+ 00000009           BEGIN_INIT
+ 00000009  00        DB          0x0
+ 0000000A           END_INIT
+ 0000000A          test_data:
+ 0000000A           BEGIN_INIT
+ 0000000A            DB          '  Testing of In Application Progrmming'
+ 00000030            DB          '(IAP)',0x0A,0x0D,'ROM Sector No: 21',0x0A
+ 00000049            DB          0x0D,'Size of Sector: 32Kb',0x00
+ 0000005F            SPACE       171
+ 0000010A           END_INIT
+
+
+
+*** CODE SEGMENT '?PR?main?main':
+   27: void main()
+ 00000000  B500      PUSH        {LR}
+   29:   PINSEL0 |= 0X00050005;     // selecting UART0 and UART1
+ 00000002  4800      LDR         R2,=0x50005
+ 00000004  4800      LDR         R0,=0xE002C000
+ 00000006  6801      LDR         R1,[R0,#0x0]
+ 00000008  4311      ORR         R1,R2
+ 0000000A  6001      STR         R1,[R0,#0x0]
+   30:   PINSEL1 |= 0X00080000;
+ 0000000C  4800      LDR         R2,=0x80000
+ 0000000E  4800      LDR         R0,=0xE002C004
+ARM COMPILER V2.50a,  main                                                                 01/11/12  11:50:37  PAGE 4   
+
+ 00000010  6801      LDR         R1,[R0,#0x0]
+ 00000012  4311      ORR         R1,R2
+ 00000014  6001      STR         R1,[R0,#0x0]
+   31:   IO1DIR  |= 0X0FFF0000;     //pins 1.16 to 1.23 output pins
+ 00000016  4800      LDR         R2,=0xFFF0000
+ 00000018  4800      LDR         R0,=0xE0028018
+ 0000001A  6801      LDR         R1,[R0,#0x0]
+ 0000001C  4311      ORR         R1,R2
+ 0000001E  6001      STR         R1,[R0,#0x0]
+   32:   IO0DIR  |= 0X003E0C00;     //port 0 rs and en as output
+ 00000020  4800      LDR         R2,=0x3E0C00
+ 00000022  4800      LDR         R0,=0xE0028008
+ 00000024  6801      LDR         R1,[R0,#0x0]
+ 00000026  4311      ORR         R1,R2
+ 00000028  6001      STR         R1,[R0,#0x0]
+   33:   IO0CLR   = 0X00FF0000;    
+ 0000002A  4800      LDR         R1,=0xFF0000
+ 0000002C  4800      LDR         R0,=0xE002800C
+ 0000002E  6001      STR         R1,[R0,#0x0]
+   37:   ram_ptr = ram_add;
+ 00000030  4800      LDR         R1,=0x40002000
+ 00000032  4800      LDR         R0,=ram_ptr ; ram_ptr
+ 00000034  6001      STR         R1,[R0,#0x0] ; ram_ptr
+   38:   rom_ptr = rom_add;
+ 00000036  4800      LDR         R1,=0x70000
+ 00000038  4800      LDR         R0,=rom_ptr ; rom_ptr
+ 0000003A  6001      STR         R1,[R0,#0x0] ; rom_ptr
+   40:   uart_init();
+ 0000003C  F7FF      BL          uart_init?T  ; T=0x0001  (1)
+ 0000003E  FFE0      BL          uart_init?T  ; T=0x0001  (2)
+   41:   lcd_init();
+ 00000040  F7FF      BL          lcd_init?T  ; T=0x0001  (1)
+ 00000042  FFDE      BL          lcd_init?T  ; T=0x0001  (2)
+   42:   ms_delay(1000);
+ 00000044  48FA      LDR         R0,=0x3E8
+ 00000046  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000048  FFDB      BL          ms_delay?T  ; T=0x0001  (2)
+   43:   lcd_line2_disp("IAP testing",0);
+ 0000004A  4800      LDR         R0,=??S_2 ; ??S_2
+ 0000004C  2100      MOV         R1,#0x0
+ 0000004E  F7FF      BL          lcd_line2_disp?T  ; T=0x0001  (1)
+ 00000050  FFD7      BL          lcd_line2_disp?T  ; T=0x0001  (2)
+   44:   uart0_send_string("\n\rIAP testing");
+ 00000052  4800      LDR         R0,=??S_3 ; ??S_3
+ 00000054  F7FF      BL          uart0_send_string?T  ; T=0x0001  (1)
+ 00000056  FFD4      BL          uart0_send_string?T  ; T=0x0001  (2)
+   45:   ms_delay(1000);
+ 00000058  48FA      LDR         R0,=0x3E8
+ 0000005A  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000005C  FFD1      BL          ms_delay?T  ; T=0x0001  (2)
+   49:   for(Uc_cnt = 0; Uc_cnt < 255; Uc_cnt++)
+ 0000005E  2100      MOV         R1,#0x0
+ 00000060  4800      LDR         R0,=Uc_cnt ; Uc_cnt
+ 00000062  7001      STRB        R1,[R0,#0x0] ; Uc_cnt
+ 00000064  E00F      B           L_3  ; T=0x00000086
+ 00000066          L_4:
+   51:     *ram_ptr = test_data[Uc_cnt];
+ 00000066  4800      LDR         R0,=Uc_cnt ; Uc_cnt
+ 00000068  7800      LDRB        R0,[R0,#0x0] ; Uc_cnt
+ 0000006A  1C01      MOV         R1,R0
+ 0000006C  4800      LDR         R0,=test_data ; test_data
+ 0000006E  5C41      LDRB        R1,[R0,R1]
+ 00000070  4800      LDR         R0,=ram_ptr ; ram_ptr
+ 00000072  6800      LDR         R0,[R0,#0x0] ; ram_ptr
+ 00000074  7001      STRB        R1,[R0,#0x0]
+   52:     ram_ptr++;
+ARM COMPILER V2.50a,  main                                                                 01/11/12  11:50:37  PAGE 5   
+
+ 00000076  4800      LDR         R0,=ram_ptr ; ram_ptr
+ 00000078  6801      LDR         R1,[R0,#0x0] ; ram_ptr
+ 0000007A  3101      ADD         R1,#0x1
+ 0000007C  6001      STR         R1,[R0,#0x0] ; ram_ptr
+   53:   }
+ 0000007E  4800      LDR         R0,=Uc_cnt ; Uc_cnt
+ 00000080  7801      LDRB        R1,[R0,#0x0] ; Uc_cnt
+ 00000082  3101      ADD         R1,#0x1
+ 00000084  7001      STRB        R1,[R0,#0x0] ; Uc_cnt
+ 00000086          L_3:
+ 00000086  4800      LDR         R0,=Uc_cnt ; Uc_cnt
+ 00000088  7800      LDRB        R0,[R0,#0x0] ; Uc_cnt
+ 0000008A  28FF      CMP         R0,#0xFF
+ 0000008C  DBEB      BLT         L_4  ; T=0x00000066
+   54:    *ram_ptr = '\0';
+ 0000008E  2100      MOV         R1,#0x0
+ 00000090  4800      LDR         R0,=ram_ptr ; ram_ptr
+ 00000092  6800      LDR         R0,[R0,#0x0] ; ram_ptr
+ 00000094  7001      STRB        R1,[R0,#0x0]
+   59:   while(1)
+ 00000096          L_8:
+   61:      Uc_key_temp = get_key(0);
+ 00000096  2000      MOV         R0,#0x0
+ 00000098  F7FF      BL          get_key?T  ; T=0x0001  (1)
+ 0000009A  FFB2      BL          get_key?T  ; T=0x0001  (2)
+ 0000009C  4800      LDR         R1,=Uc_key_temp ; Uc_key_temp
+ 0000009E  7008      STRB        R0,[R1,#0x0] ; Uc_key_temp
+   62:      if(Uc_key_temp == '1')
+ 000000A0  4800      LDR         R0,=Uc_key_temp ; Uc_key_temp
+ 000000A2  7800      LDRB        R0,[R0,#0x0] ; Uc_key_temp
+ 000000A4  2831      CMP         R0,#0x31
+ 000000A6  D107      BNE         L_10  ; T=0x000000B8
+   64:       Uc_key_temp = 0;
+ 000000A8  2100      MOV         R1,#0x0
+ 000000AA  4800      LDR         R0,=Uc_key_temp ; Uc_key_temp
+ 000000AC  7001      STRB        R1,[R0,#0x0] ; Uc_key_temp
+   65:       ms_delay(10000);
+ 000000AE  4800      LDR         R0,=0x2710
+ 000000B0  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 000000B2  FFA6      BL          ms_delay?T  ; T=0x0001  (2)
+   66:       prog_rom();
+ 000000B4  F7FF      BL          prog_rom?T  ; T=0x0001  (1)
+ 000000B6  FFA4      BL          prog_rom?T  ; T=0x0001  (2)
+   67:      }
+ 000000B8          L_10:
+   68:      if(Uc_key_temp == '2')
+ 000000B8  4800      LDR         R0,=Uc_key_temp ; Uc_key_temp
+ 000000BA  7800      LDRB        R0,[R0,#0x0] ; Uc_key_temp
+ 000000BC  2832      CMP         R0,#0x32
+ 000000BE  D107      BNE         L_11  ; T=0x000000D0
+   70:       Uc_key_temp = 0;
+ 000000C0  2100      MOV         R1,#0x0
+ 000000C2  4800      LDR         R0,=Uc_key_temp ; Uc_key_temp
+ 000000C4  7001      STRB        R1,[R0,#0x0] ; Uc_key_temp
+   71:       IAP_read_boot_code();
+ 000000C6  F7FF      BL          IAP_read_boot_code?T  ; T=0x0001  (1)
+ 000000C8  FF9B      BL          IAP_read_boot_code?T  ; T=0x0001  (2)
+   72:       ms_delay(10000);
+ 000000CA  4800      LDR         R0,=0x2710
+ 000000CC  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 000000CE  FF98      BL          ms_delay?T  ; T=0x0001  (2)
+   73:      }
+ 000000D0          L_11:
+   74:      ms_delay(1000);
+ 000000D0  48FA      LDR         R0,=0x3E8
+ 000000D2  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ARM COMPILER V2.50a,  main                                                                 01/11/12  11:50:37  PAGE 6   
+
+ 000000D4  FF95      BL          ms_delay?T  ; T=0x0001  (2)
+   75:   }
+ 000000D6  E7DE      B           L_8  ; T=0x00000096
+   76: }
+ 000000D8  BC08      POP         {R3}
+ 000000DA  4718      BX          R3
+ 000000DC          ENDP ; 'main'
+
+
+
+Module Information          Static
+----------------------------------
+  code size            =    ------
+  data size            =       266
+  const size           =        27
+End of Module Information.
+
+
+ARM COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

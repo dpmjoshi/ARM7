@@ -1,0 +1,355 @@
+LARM LINKER/LOCATER V2.50a                                                              05/22/2013  17:19:51  PAGE 1
+
+
+LARM LINKER/LOCATER V2.50a, INVOKED BY:
+C:\KEIL\ARM\BIN\LA.EXE Startup.obj, app.obj, gsm.obj, lib.obj, main.obj, rtc.obj, uart.obj, key.obj, timer.obj, lcd.obj,
+>>  gsm_app.obj TO Timer_Capture _mode CASE CLASSES (DATA (0X40000000-0X40007FFF), CODE (0X0-0X7FFFF), CONST (0X0-0X7FFF
+>> F))
+
+
+CPU MODE: LITTLE ENDIAN
+
+
+INPUT MODULES INCLUDED:
+  Startup.obj (STARTUP)
+         COMMENT TYPE 0: AA V2.50
+  app.obj (app)
+         COMMENT TYPE 0: CARM V2.50a
+  gsm.obj (gsm)
+         COMMENT TYPE 0: CARM V2.50a
+  lib.obj (lib)
+         COMMENT TYPE 0: CARM V2.50a
+  main.obj (main)
+         COMMENT TYPE 0: CARM V2.50a
+  rtc.obj (rtc)
+         COMMENT TYPE 0: CARM V2.50a
+  uart.obj (uart)
+         COMMENT TYPE 0: CARM V2.50a
+  key.obj (key)
+         COMMENT TYPE 0: CARM V2.50a
+  timer.obj (timer)
+         COMMENT TYPE 0: CARM V2.50a
+  lcd.obj (lcd)
+         COMMENT TYPE 0: CARM V2.50a
+  gsm_app.obj (gsm_app)
+         COMMENT TYPE 0: CARM V2.50a
+  C:\KEIL\ARM\LIB\CAL.LIB (FIQ)
+         COMMENT TYPE 0: AA V2.50
+  C:\KEIL\ARM\LIB\CAL.LIB (IRQ)
+         COMMENT TYPE 0: AA V2.50
+  C:\KEIL\ARM\LIB\CAL.LIB (DABT)
+         COMMENT TYPE 0: AA V2.50
+  C:\KEIL\ARM\LIB\CAL.LIB (PABT)
+         COMMENT TYPE 0: AA V2.50
+  C:\KEIL\ARM\LIB\CAL.LIB (SWI)
+         COMMENT TYPE 0: AA V2.50
+  C:\KEIL\ARM\LIB\CAL.LIB (UNDEF)
+         COMMENT TYPE 0: AA V2.50
+  C:\KEIL\ARM\LIB\CAL.LIB (UDIV)
+         COMMENT TYPE 0: AA V2.50
+  C:\KEIL\ARM\LIB\CAL.LIB (SDIV)
+         COMMENT TYPE 0: AA V2.50
+
+
+ACTIVE MEMORY CLASSES OF MODULE:  Timer_Capture _mode (STARTUP)
+
+BASE       START      END        USED       MEMORY CLASS
+========================================================
+00000000H  40000000H  40007FFFH  00000E14H  DATA
+00000000H  00000000H  0007FFFFH  00001770H  CODE
+00000000H  00000000H  0007FFFFH  000003ECH  CONST
+
+
+INTERRUPT FUNCTIONS
+
+TYPE  STACK SIZE    FUNCTION NAME
+=================================
+irq                 rtc_isr?A
+irq                 uart0_isr?A
+irq                 uart1_isr?A
+LARM LINKER/LOCATER V2.50a                                                            05/22/2013  17:19:51  PAGE 2
+
+
+irq                 timer1_ISR?A
+
+
+
+
+MEMORY MAP OF MODULE:  Timer_Capture _mode (STARTUP)
+
+START      STOP       LENGTH    ALIGN  RELOC  MEMORY CLASS   SEGMENT NAME
+=========================================================================
+00000000H  0000010FH  00000110H     4  AT..   CODE           STARTUPCODE
+00000110H  000001F3H  000000E4H     4  UNIT   CONST          ?CON?app
+000001F4H  0000022FH  0000003CH     4  UNIT   CONST          ?CON?gsm
+00000230H  000002A6H  00000077H     4  UNIT   CONST          ?CON?main
+000002A7H  000002A7H  00000001H   ---  ---    **GAP**
+000002A8H  000002A9H  00000002H     4  UNIT   CONST          ?CON?rtc
+000002AAH  000002ABH  00000002H   ---  ---    **GAP**
+000002ACH  0000031AH  0000006FH     4  UNIT   CONST          ?CON?uart
+0000031BH  0000031BH  00000001H   ---  ---    **GAP**
+0000031CH  000003DBH  000000C0H     4  UNIT   CONST          ?CON?gsm_app
+000003DCH  00000423H  00000048H     4  UNIT   CONST          ?C_CLRSEG
+00000424H  000004FFH  000000DCH     4  UNIT   CONST          ?C_INITSEG
+00000500H  000005FBH  000000FCH     4  UNIT   CODE           ?PR?APP_phone_dial?T?app
+000005FCH  0000060FH  00000014H     4  UNIT   CODE           ?PR?APP_default_page?T?app
+00000610H  00000747H  00000138H     4  UNIT   CODE           ?PR?APP_msgkey?T?app
+00000748H  000007B7H  00000070H     4  UNIT   CODE           ?PR?gsm_init?T?gsm
+000007B8H  000007F3H  0000003CH     4  UNIT   CODE           ?PR?gsm_sms_del?T?gsm
+000007F4H  00000813H  00000020H     4  UNIT   CODE           ?PR?gsm_voice_call?T?gsm
+00000814H  00000823H  00000010H     4  UNIT   CODE           ?PR?gsm_end_voice_call?T?gsm
+00000824H  000008A3H  00000080H     4  UNIT   CODE           ?PR?LIB_hex_dec?T?lib
+000008A4H  000008D3H  00000030H     4  UNIT   CODE           ?PR?LIB_str_copy?T?lib
+000008D4H  000008E7H  00000014H     4  UNIT   CODE           ?PR?LIB_frmt_arr?T?lib
+000008E8H  00000903H  0000001CH     4  UNIT   CODE           ?PR?LIB_strlen?T?lib
+00000904H  00000A6FH  0000016CH     4  UNIT   CODE           ?PR?main?main
+00000A70H  00000A93H  00000024H     4  UNIT   CODE           ?PR?rtc_init?T?rtc
+00000A94H  00000B87H  000000F4H     4  UNIT   CODE           ?PR?rtc_get_time?T?rtc
+00000B88H  00000C47H  000000C0H     4  UNIT   CODE           ?PR?rtc_get_date?T?rtc
+00000C48H  00000CBBH  00000074H     4  UNIT   CODE           ?PR?rtc_isr?A?rtc
+00000CBCH  00000CDBH  00000020H     4  UNIT   CODE           ?PR?uart0_rx_byte?T?uart
+00000CDCH  00000CFBH  00000020H     4  UNIT   CODE           ?PR?uart1_rx_byte?T?uart
+00000CFCH  00000D23H  00000028H     4  UNIT   CODE           ?PR?uart0_tx_byte?T?uart
+00000D24H  00000D3FH  0000001CH     4  UNIT   CODE           ?PR?uart1_tx_byte?T?uart
+00000D40H  00000D67H  00000028H     4  UNIT   CODE           ?PR?uart0_tx_string?T?uart
+00000D68H  00000D83H  0000001CH     4  UNIT   CODE           ?PR?uart1_tx_string?T?uart
+00000D84H  00000E43H  000000C0H     4  UNIT   CODE           ?PR?uart_init_interrupt?T?uart
+00000E44H  00000F13H  000000D0H     4  UNIT   CODE           ?PR?uart0_isr?A?uart
+00000F14H  00001157H  00000244H     4  UNIT   CODE           ?PR?uart1_isr?A?uart
+00001158H  00001233H  000000DCH     4  UNIT   CODE           ?PR?scancode?T?key
+00001234H  00001333H  00000100H     4  UNIT   CODE           ?PR?get_key?T?key
+00001334H  00001367H  00000034H     4  UNIT   CODE           ?PR?ms_delay?T?timer
+00001368H  0000139BH  00000034H     4  UNIT   CODE           ?PR?key_delay?T?timer
+0000139CH  000013EBH  00000050H     4  UNIT   CODE           ?PR?timer1_ISR?A?timer
+000013ECH  0000141FH  00000034H     4  UNIT   CODE           ?PR?lcd_init?T?lcd
+00001420H  0000142FH  00000010H     4  UNIT   CODE           ?PR?clrscr?T?lcd
+00001430H  0000147BH  0000004CH     4  UNIT   CODE           ?PR?datar?T?lcd
+0000147CH  000014C7H  0000004CH     4  UNIT   CODE           ?PR?comdr?T?lcd
+000014C8H  00001507H  00000040H     4  UNIT   CODE           ?PR?lcd_line1_disp?T?lcd
+00001508H  00001547H  00000040H     4  UNIT   CODE           ?PR?lcd_line2_disp?T?lcd
+00001548H  00001587H  00000040H     4  UNIT   CODE           ?PR?lcd_line4_disp?T?lcd
+00001588H  000015EFH  00000068H     4  UNIT   CODE           ?PR?lcd_line_disp?T?lcd
+000015F0H  0000163FH  00000050H     4  UNIT   CODE           ?PR?GSM_APP_diallist_init?T?gsm_app
+00001640H  00001683H  00000044H     4  UNIT   CODE           ?PR?GSM_APP_diallist_update?T?gsm_app
+00001684H  0000186BH  000001E8H     4  UNIT   CODE           ?PR?GSM_APP_diallist_show?T?gsm_app
+0000186CH  000018DFH  00000074H     4  UNIT   CODE           ?PR?GSM_APP_diallist_delete?T?gsm_app
+000018E0H  000019BFH  000000E0H     4  UNIT   CODE           ?PR?GSM_APP_options?T?gsm_app
+000019C0H  00001A7BH  000000BCH     4  UNIT   CODE           ?PR?GSM_APP_call?T?gsm_app
+LARM LINKER/LOCATER V2.50a                                                            05/22/2013  17:19:51  PAGE 3
+
+
+00001A7CH  00001A9FH  00000024H     4  UNIT   CODE           ?PR?GSM_APP_deleteall?T?gsm_app
+00001AA0H  00001AA3H  00000004H     4  UNIT   CODE           ?C?FIQ
+00001AA4H  00001AA7H  00000004H     4  UNIT   CODE           ?C?IRQ
+00001AA8H  00001AABH  00000004H     4  UNIT   CODE           ?C?DABT
+00001AACH  00001AAFH  00000004H     4  UNIT   CODE           ?C?PABT
+00001AB0H  00001AB7H  00000008H     4  UNIT   CODE           ?C?UNDEF
+00001AB8H  00001AFFH  00000048H     4  UNIT   CODE           ?PR?C?UDIV
+00001B00H  00001B5FH  00000060H     4  UNIT   CODE           ?PR?C?SDIV
+00001B60H  3FFFFFFFH  3FFFE4A0H   ---  ---    **GAP**
+40000000H  4000048FH  00000490H     4  UNIT   DATA           STACK
+40000490H  400006FDH  0000026EH     4  UNIT   DATA           ?DT0?gsm
+400006FEH  400006FFH  00000002H   ---  ---    **GAP**
+40000700H  400007E1H  000000E2H     4  UNIT   DATA           ?DT0?main
+400007E2H  400007E3H  00000002H   ---  ---    **GAP**
+400007E4H  400007FBH  00000018H     4  UNIT   DATA           ?DT0?rtc
+400007FCH  4000092FH  00000134H     4  UNIT   DATA           ?DT0?uart
+40000930H  40000941H  00000012H     4  UNIT   DATA           ?DT0?key
+40000942H  40000943H  00000002H   ---  ---    **GAP**
+40000944H  40000957H  00000014H     4  UNIT   DATA           ?DT0?timer
+40000958H  40000961H  0000000AH     4  UNIT   DATA           ?DT0?lcd
+40000962H  40000963H  00000002H   ---  ---    **GAP**
+40000964H  40000E1BH  000004B8H     4  UNIT   DATA           ?DT0?gsm_app
+
+
+
+REMOVED FUNCTIONS OF MODULE:  Timer_Capture _mode (STARTUP)
+
+      ATTRIBUTE  FUNCTION NAME
+      ========================
+       unused    gsm_sms_frmt?T
+       unused    gsm_sms_send?T
+       unused    gsm_sms_del_all?T
+       unused    gsm_check_status?T
+       unused    gsm_phno_validate?T
+       unused    gsm_responce?T
+       unused    LIB_hex_ascii?T
+       unused    LIB_dec_hex?T
+       unused    LIB_str_cmp?T
+       unused    LIB_str_conc?T
+       unused    LIB_str_conc1?T
+       unused    LIB_frag_arr?T
+       unused    set_alarm?T
+       unused    uart_init?T
+       unused    uart0_rx_string?T
+       unused    uart1_rx_string?T
+       unused    timer1_init_interrupt?T
+       unused    timer1_init?T
+       unused    timer1_on?T
+       unused    timer1_off?T
+       unused    time1_measure?T
+       unused    cursur_on?T
+       unused    cursur_off?T
+       unused    lcd_line3_disp?T
+       unused    lcd_line1_ch_disp?T
+       unused    lcd_line2_ch_disp?T
+       unused    lcd_line3_ch_disp?T
+       unused    lcd_line4_ch_disp?T
+       unused    lcd_scroll_disp?T
+       unused    display_dots?T
+
+
+
+PUBLIC SYMBOLS OF MODULE:  Timer_Capture _mode (STARTUP)
+
+      VALUE      CLASS    TYPE      PUBLIC SYMBOL NAME
+LARM LINKER/LOCATER V2.50a                                                            05/22/2013  17:19:51  PAGE 4
+
+
+      ================================================
+      000003DCH  ---      ---       ?C?CLRTAB
+      00000904H  ---      ---       ?C?INIT
+      00000424H  ---      ---       ?C?INITTAB
+      00001B04H  CODE     ---       ?C?SDIV?A
+      00001B00H  CODE     ---       ?C?SDIV?T
+      00001ABCH  CODE     ---       ?C?UDIV?A
+      00001AB8H  CODE     ---       ?C?UDIV?T
+      000005FCH  CODE     ---       APP_default_page?T
+      00000610H  CODE     ---       APP_msgkey?T
+      00000500H  CODE     ---       APP_phone_dial?T
+      00001AA8H  CODE     ---       DAbt_Handler?A
+      00001AA0H  CODE     ---       FIQ_Handler?A
+      000019C0H  CODE     ---       GSM_APP_call?T
+      00001A7CH  CODE     ---       GSM_APP_deleteall?T
+      0000186CH  CODE     ---       GSM_APP_diallist_delete?T
+      000015F0H  CODE     ---       GSM_APP_diallist_init?T
+      00001684H  CODE     ---       GSM_APP_diallist_show?T
+      00001640H  CODE     ---       GSM_APP_diallist_update?T
+      000018E0H  CODE     ---       GSM_APP_options?T
+      00001AA4H  CODE     ---       IRQ_Handler?A
+      00000000H  CODE     ---       LIB_dec_hex?T
+      00000000H  CODE     ---       LIB_frag_arr?T
+      000008D4H  CODE     ---       LIB_frmt_arr?T
+      00000000H  CODE     ---       LIB_hex_ascii?T
+      00000824H  CODE     ---       LIB_hex_dec?T
+      00000000H  CODE     ---       LIB_str_cmp?T
+      00000000H  CODE     ---       LIB_str_conc1?T
+      00000000H  CODE     ---       LIB_str_conc?T
+      000008A4H  CODE     ---       LIB_str_copy?T
+      000008E8H  CODE     ---       LIB_strlen?T
+      00001AACH  CODE     ---       PAbt_Handler?A
+      40000490H  DATA     ---       SMS_cur
+      00001AB0H  CODE     ---       SWI_Handler?A
+      400007E5H  DATA     BYTE      Uc_alarm
+      4000092CH  DATA     BYTE      Uc_byte_cnt_gsm
+      4000092FH  DATA     BYTE      Uc_byte_cnt_zb
+      40000862H  DATA     BYTE      Uc_eof_gsm
+      40000861H  DATA     BYTE      Uc_eof_zb
+      4000077DH  DATA     ---       Uc_gsm_sms_read
+      40000930H  DATA     BYTE      Uc_key_temp
+      4000072CH  DATA     ---       Uc_new_ip_msg
+      400006D6H  DATA     ---       Uc_send_sms1
+      400006EAH  DATA     ---       Uc_send_sms2
+      4000092BH  DATA     BYTE      Uc_stat_code_gsm
+      40000944H  DATA     ---       Uc_time1_arr
+      400007E4H  DATA     BYTE      Uc_time_sec
+      400007FDH  DATA     ---       Uc_uart0_str_zb
+      40000863H  DATA     ---       Uc_uart1_str_gsm
+      400007FCH  DATA     BYTE      Uc_user_option
+      00001AB4H  CODE     ---       Undef_Handler?A
+      00000000H  CODE     ---       __startup
+      40000941H  DATA     BYTE      ch
+      00001420H  CODE     ---       clrscr?T
+      0000147CH  CODE     ---       comdr?T
+      00000000H  CODE     ---       cursur_off?T
+      00000000H  CODE     ---       cursur_on?T
+      40000961H  DATA     BYTE      data_ptr
+      00001430H  CODE     ---       datar?T
+      400007F0H  DATA     ---       date
+      40000964H  DATA     ---       diallist
+      40000E14H  DATA     ---       diallist_head
+      40000E18H  DATA     ---       diallist_tail
+      00000000H  CODE     ---       display_dots?T
+      00001B04H  CODE     ---       div?A
+LARM LINKER/LOCATER V2.50a                                                            05/22/2013  17:19:51  PAGE 5
+
+
+      00001B00H  CODE     ---       div?T
+      000000F0H  CODE     ---       exit?A
+      000000F4H  CODE     ---       exit?T
+      00001234H  CODE     ---       get_key?T
+      00000000H  CODE     ---       gsm_check_status?T
+      00000814H  CODE     ---       gsm_end_voice_call?T
+      00000748H  CODE     ---       gsm_init?T
+      00000000H  CODE     ---       gsm_phno_validate?T
+      00000000H  CODE     ---       gsm_responce?T
+      000007B8H  CODE     ---       gsm_sms_del?T
+      00000000H  CODE     ---       gsm_sms_del_all?T
+      00000000H  CODE     ---       gsm_sms_frmt?T
+      00000000H  CODE     ---       gsm_sms_send?T
+      000007F4H  CODE     ---       gsm_voice_call?T
+      40000960H  DATA     BYTE      k
+      00001368H  CODE     ---       key_delay?T
+      40000931H  DATA     ---       keyboard
+      000013ECH  CODE     ---       lcd_init?T
+      00000000H  CODE     ---       lcd_line1_ch_disp?T
+      000014C8H  CODE     ---       lcd_line1_disp?T
+      00000000H  CODE     ---       lcd_line2_ch_disp?T
+      00001508H  CODE     ---       lcd_line2_disp?T
+      00000000H  CODE     ---       lcd_line3_ch_disp?T
+      00000000H  CODE     ---       lcd_line3_disp?T
+      00000000H  CODE     ---       lcd_line4_ch_disp?T
+      00001548H  CODE     ---       lcd_line4_disp?T
+      00001588H  CODE     ---       lcd_line_disp?T
+      00000000H  CODE     ---       lcd_scroll_disp?T
+      00001B04H  CODE     ---       ldiv?A
+      00001B00H  CODE     ---       ldiv?T
+      00000938H  CODE     ---       main
+      40000704H  DATA     ---       main_opt
+      00001334H  CODE     ---       ms_delay?T
+      400007B0H  DATA     ---       msg
+      40000958H  DATA     ---       p
+      400007A1H  DATA     ---       phone_no
+      00000B88H  CODE     ---       rtc_get_date?T
+      00000A94H  CODE     ---       rtc_get_time?T
+      00000A70H  CODE     ---       rtc_init?T
+      00000C48H  CODE     ---       rtc_isr?A
+      4000092DH  DATA     BYTE      rx_data
+      4000095CH  DATA     ---       s
+      00001158H  CODE     ---       scancode?T
+      00000000H  CODE     ---       set_alarm?T
+      4000077CH  DATA     BYTE      temp_byte
+      40000791H  DATA     BYTE      temp_key
+      400007E6H  DATA     ---       time
+      00000000H  CODE     ---       time1_measure?T
+      0000139CH  CODE     ---       timer1_ISR?A
+      00000000H  CODE     ---       timer1_init?T
+      00000000H  CODE     ---       timer1_init_interrupt?T
+      00000000H  CODE     ---       timer1_off?T
+      00000000H  CODE     ---       timer1_on?T
+      00000E44H  CODE     ---       uart0_isr?A
+      00000CBCH  CODE     ---       uart0_rx_byte?T
+      00000000H  CODE     ---       uart0_rx_string?T
+      00000CFCH  CODE     ---       uart0_tx_byte?A
+      00000D08H  CODE     ---       uart0_tx_byte?T
+      00000D40H  CODE     ---       uart0_tx_string?A
+      00000D4CH  CODE     ---       uart0_tx_string?T
+      00000F14H  CODE     ---       uart1_isr?A
+      00000CDCH  CODE     ---       uart1_rx_byte?T
+      00000000H  CODE     ---       uart1_rx_string?T
+      00000D24H  CODE     ---       uart1_tx_byte?T
+      00000D68H  CODE     ---       uart1_tx_string?T
+LARM LINKER/LOCATER V2.50a                                                            05/22/2013  17:19:51  PAGE 6
+
+
+      00000000H  CODE     ---       uart_init?T
+      00000D84H  CODE     ---       uart_init_interrupt?T
+      4000069AH  DATA     ---       uc_gsm_flw_ctrl
+      400006C2H  DATA     ---       uc_gsm_regi
+      400006AEH  DATA     ---       uc_gsm_uart_baud
+      40000792H  DATA     ---       uc_temp
+      4000092EH  DATA     BYTE      uc_u1rbr
+      40000700H  DATA     ---       ui_temp
+
+Program Size: data=3604 const=1004 code=6000
+LARM RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)

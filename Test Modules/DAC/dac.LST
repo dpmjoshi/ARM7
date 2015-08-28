@@ -1,0 +1,100 @@
+ARM COMPILER V2.50a,  dac                                                                  01/11/12  14:36:58  PAGE 1   
+
+
+ARM COMPILER V2.50a, COMPILATION OF MODULE dac
+OBJECT MODULE PLACED IN dac.OBJ
+COMPILER INVOKED BY: C:\Keil\ARM\BIN\CA.exe dac.c THUMB BROWSE DEBUG TABS(4) 
+
+stmt  level    source
+
+    1          #include "includes.h"
+    2          
+    3          void DAC_init()
+    4          {
+    5   1       PINSEL1 |= 0x00080000;
+    6   1      }
+    7          
+    8          
+    9          void DAC_write_val(U32 value)
+   10          {
+   11   1       value &= 0x3ff;
+   12   1       value <<= 6;
+   13   1      
+   14   1       DACR = value; 
+   15   1      }
+   16          
+   17          
+   18          
+   19          
+   20          
+   21          
+   22          
+   23          
+   24          
+   25          
+   26          
+   27          
+   28          
+   29          
+   30          
+   31          
+   32          
+   33          
+   34          
+   35          
+   36          
+   37          
+   38          
+   39          
+   40          
+ARM COMPILER V2.50a,  dac                                                                  01/11/12  14:36:58  PAGE 2   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+
+*** PUBLICS:
+ PUBLIC         DAC_init?T
+ PUBLIC         DAC_write_val?T
+
+
+
+*** CODE SEGMENT '?PR?DAC_init?T?dac':
+    5:  PINSEL1 |= 0x00080000;
+ 00000000  4800      LDR         R2,=0x80000
+ 00000002  4800      LDR         R0,=0xE002C004
+ 00000004  6801      LDR         R1,[R0,#0x0]
+ 00000006  4311      ORR         R1,R2
+ 00000008  6001      STR         R1,[R0,#0x0]
+    6: }
+ 0000000A  4770      BX          R14
+ 0000000C          ENDP ; 'DAC_init?T'
+
+
+*** CODE SEGMENT '?PR?DAC_write_val?T?dac':
+    9: void DAC_write_val(U32 value)
+ 00000000  ---- Variable 'value' assigned to Register 'R0' ----
+   11:  value &= 0x3ff;
+ 00000000  4800      LDR         R1,=0x3FF
+ 00000002  4008      AND         R0,R1
+   12:  value <<= 6;
+ 00000004  0180      LSL         R0,R0,#0x6 ; value
+   14:  DACR = value; 
+ 00000006  1C01      MOV         R1,R0 ; value
+ 00000008  4800      LDR         R0,=0xE006C000
+ 0000000A  6001      STR         R1,[R0,#0x0]
+   15: }
+ 0000000C  4770      BX          R14
+ 0000000E          ENDP ; 'DAC_write_val?T'
+
+
+
+Module Information          Static
+----------------------------------
+  code size            =    ------
+  data size            =    ------
+  const size           =    ------
+End of Module Information.
+
+
+ARM COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

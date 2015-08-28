@@ -1,0 +1,388 @@
+ARM COMPILER V2.50a,  spi                                                                  27/11/12  15:41:12  PAGE 1   
+
+
+ARM COMPILER V2.50a, COMPILATION OF MODULE spi
+OBJECT MODULE PLACED IN spi.OBJ
+COMPILER INVOKED BY: C:\Keil\ARM\BIN\CA.exe spi.c THUMB BROWSE DEBUG TABS(4) 
+
+stmt  level    source
+
+    1          //*******************************************************************************************************
+             -*//
+    2          
+    3          
+    4          //*******************************************************************************************************
+             -//
+    5          #include "includes.h"
+    6          
+    7          void spi_init(void);
+    8          void spi_clk_sel(U8);
+    9          U8   spi_send_byte(U8 data);
+   10          U8   spi_recv_byte(void);
+   11          void spi_send_data(U8*, U16);
+   12          void spi_recv_data(U8*, U16);
+   13          
+   14          
+   15          //**********************************************************************************//
+   16          // Function Name: spi_init                                                          //
+   17          // Arguments    : NONE                                                              //
+   18          // Return Types : NONE                                                              //
+   19          // Description  : Function to initialise SPI interface in to master mode,clk-400kHz //
+   20          //**********************************************************************************//
+   21          void spi_init(void)
+   22          {
+   23   1        //PINSEL0 |= SPI0_SEL;
+   24   1        spi_clk_sel(10);
+   25   1        S0SPCR  |= MASTER;
+   26   1         
+   27   1      }
+   28          //**********************************************************************************//
+   29          // Function Name: spi_clk_sel                                                       //
+   30          // Arguments    : U8 clk                                                            //
+   31          // Return Types : NONE                                                              //
+   32          // Description  : Function which writes "U8 clk" to S0SPCCR, the value in S0SPCCR   //
+   33          //                is used to derive SPI clk from PCLK                               //
+   34          //**********************************************************************************//
+   35          void spi_clk_sel(U8 clk)
+   36          {
+   37   1       S0SPCCR  = clk;
+   38   1      }
+   39          //**********************************************************************************//
+   40          // Function Name: spi_send_byte                                                     //
+   41          // Arguments    : U8 data                                                           //
+   42          // Return Types : NONE                                                              //
+   43          // Description  : Function to transmit a single byte as specified by "U8 data"      //
+   44          //**********************************************************************************//
+   45          U8 spi_send_byte(U8 data)
+   46          {
+   47   1        U8 temp;  
+   48   1        S0SPDR = data;
+   49   1        
+   50   1      
+   51   1        while(!(S0SPSR & 0x80));
+   52   1      
+   53   1        temp   = S0SPSR;
+   54   1        uart0_send_byte('A');
+   55   1        uart0_send_byte((temp & 0x0f) + 0x30);
+   56   1        uart0_send_byte((temp>> 4) + 0x30);
+   57   1        uart0_send_byte('B');
+ARM COMPILER V2.50a,  spi                                                                  27/11/12  15:41:12  PAGE 2   
+
+   58   1      
+   59   1        temp = S0SPDR;
+   60   1        return(temp);
+   61   1      }
+   62          //**********************************************************************************//
+   63          // Function Name: spi_recv_byte                                                     //
+   64          // Arguments    : NONE                                                              //
+   65          // Return Types : U8                                                                //
+   66          // Description  : Function to receive a single byte                                 //
+   67          //**********************************************************************************//
+   68          U8 spi_recv_byte(void)
+   69          {
+   70   1        U8 data;
+   71   1        S0SPDR = 0xff;            // dummy write in S0SPDR which causes SPI controller to 
+   72   1        while(!(S0SPSR & 0x80));  // genrate CLK which in turn recv the data from MISO PIN
+   73   1        data = S0SPDR;
+   74   1        return data;
+   75   1      }
+   76          //**********************************************************************************//
+   77          // Function Name: spi_send_data                                                     //
+   78          // Arguments    : NONE                                                              //
+   79          // Return Types : NONE                                                              //
+   80          // Description  : Function to transmit no of bytes to slave specified by            //
+   81          //                "U16 no_byte" argument & "U8 *data" is the source of bytes        //
+   82          //**********************************************************************************//
+   83          void spi_send_data(U8 *data, U16 no_byte)
+   84          {
+   85   1        U8 temp_count;
+   86   1        if(no_byte > 0)
+   87   1        {
+   88   2         for(temp_count = 0; temp_count < no_byte; temp_count++)
+   89   2         {
+   90   3          spi_send_byte(*data);
+   91   3          data++;
+   92   3         }
+   93   2        }
+   94   1      }
+   95          //**********************************************************************************//
+   96          // Function Name: spi_recv_data                                                     //
+   97          // Arguments    : U8 *data, U16 no_bytes                                            //
+   98          // Return Types : NONE                                                              //
+   99          // Description  : Function to receive no of bytes from slave specified by           //
+  100          //                "U16 no_byte" the argument & are stored in "U8 *data"             //
+  101          //**********************************************************************************//
+  102          void spi_recv_data(U8 *data, U16 no_byte)
+  103          {
+  104   1        U16 temp_count;
+  105   1        for(temp_count = 0; temp_count < no_byte; temp_count++)
+  106   1        {
+  107   2          *data = spi_recv_byte();
+  108   2          data++;
+  109   2        }
+  110   1      }
+  111          
+  112          
+  113          
+  114          
+  115          
+  116          
+  117          
+  118          
+ARM COMPILER V2.50a,  spi                                                                  27/11/12  15:41:12  PAGE 3   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+
+*** EXTERNALS:
+ EXTERN CODE16 (uart0_send_byte?T)
+
+
+
+*** PUBLICS:
+ PUBLIC         spi_init?T
+ PUBLIC         spi_clk_sel?T
+ PUBLIC         spi_send_byte?T
+ PUBLIC         spi_recv_byte?T
+ PUBLIC         spi_send_data?T
+ PUBLIC         spi_recv_data?T
+
+
+
+*** CODE SEGMENT '?PR?spi_init?T?spi':
+   21: void spi_init(void)
+ 00000000  B500      PUSH        {LR}
+   24:   spi_clk_sel(10);
+ 00000002  200A      MOV         R0,#0xA
+ 00000004  F7FF      BL          spi_clk_sel?T  ; T=0x0001  (1)
+ 00000006  FFFC      BL          spi_clk_sel?T  ; T=0x0001  (2)
+   25:   S0SPCR  |= MASTER;
+ 00000008  2220      MOV         R2,#0x20
+ 0000000A  4800      LDR         R0,=0xE0020000
+ 0000000C  8801      LDRH        R1,[R0,#0x0]
+ 0000000E  4311      ORR         R1,R2
+ 00000010  8001      STRH        R1,[R0,#0x0]
+   27: }
+ 00000012  BC08      POP         {R3}
+ 00000014  4718      BX          R3
+ 00000016          ENDP ; 'spi_init?T'
+
+
+*** CODE SEGMENT '?PR?spi_clk_sel?T?spi':
+   35: void spi_clk_sel(U8 clk)
+ 00000000  1C02      MOV         R2,R0 ; clk
+ 00000002  ---- Variable 'clk' assigned to Register 'R2' ----
+   37:  S0SPCCR  = clk;
+ 00000002  1C11      MOV         R1,R2 ; clk
+ 00000004  4800      LDR         R0,=0xE002000C
+ 00000006  7001      STRB        R1,[R0,#0x0]
+   38: }
+ 00000008  4770      BX          R14
+ 0000000A          ENDP ; 'spi_clk_sel?T'
+
+
+*** CODE SEGMENT '?PR?spi_send_byte?T?spi':
+   45: U8 spi_send_byte(U8 data)
+ 00000000  B510      PUSH        {R4,LR}
+ 00000002  1C01      MOV         R1,R0 ; data
+ 00000004  ---- Variable 'data' assigned to Register 'R1' ----
+   46: {
+ 00000004            ; SCOPE-START
+   48:   S0SPDR = data;
+ 00000004  1C08      MOV         R0,R1 ; data
+ 00000006  0601      LSL         R1,R0,#0x18 ; data
+ 00000008  0E09      LSR         R1,R1,#0x18
+ 0000000A  4800      LDR         R0,=0xE0020008
+ 0000000C  8001      STRH        R1,[R0,#0x0]
+   51:   while(!(S0SPSR & 0x80));
+ 0000000E          L_1:
+ 0000000E  4800      LDR         R0,=0xE0020004
+ 00000010  7800      LDRB        R0,[R0,#0x0]
+ 00000012  2180      MOV         R1,#0x80
+ 00000014  4208      TST         R0,R1
+ 00000016  D0FA      BEQ         L_1  ; T=0x0000000E
+   53:   temp   = S0SPSR;
+ 00000018  4800      LDR         R0,=0xE0020004
+ 0000001A  7804      LDRB        R4,[R0,#0x0]
+ 0000001C  ---- Variable 'temp' assigned to Register 'R4' ----
+ARM COMPILER V2.50a,  spi                                                                  27/11/12  15:41:12  PAGE 4   
+
+   54:   uart0_send_byte('A');
+ 0000001C  2041      MOV         R0,#0x41
+ 0000001E  F7FF      BL          uart0_send_byte?T  ; T=0x0001  (1)
+ 00000020  FFEF      BL          uart0_send_byte?T  ; T=0x0001  (2)
+   55:   uart0_send_byte((temp & 0x0f) + 0x30);
+ 00000022  1C20      MOV         R0,R4 ; temp
+ 00000024  0600      LSL         R0,R0,#0x18 ; temp
+ 00000026  0E00      LSR         R0,R0,#0x18
+ 00000028  210F      MOV         R1,#0xF
+ 0000002A  4008      AND         R0,R1
+ 0000002C  3030      ADD         R0,#0x30
+ 0000002E  F7FF      BL          uart0_send_byte?T  ; T=0x0001  (1)
+ 00000030  FFE7      BL          uart0_send_byte?T  ; T=0x0001  (2)
+   56:   uart0_send_byte((temp>> 4) + 0x30);
+ 00000032  1C20      MOV         R0,R4 ; temp
+ 00000034  0600      LSL         R0,R0,#0x18 ; temp
+ 00000036  0E00      LSR         R0,R0,#0x18
+ 00000038  0900      LSR         R0,R0,#0x4
+ 0000003A  3030      ADD         R0,#0x30
+ 0000003C  F7FF      BL          uart0_send_byte?T  ; T=0x0001  (1)
+ 0000003E  FFE0      BL          uart0_send_byte?T  ; T=0x0001  (2)
+   57:   uart0_send_byte('B');
+ 00000040  2042      MOV         R0,#0x42
+ 00000042  F7FF      BL          uart0_send_byte?T  ; T=0x0001  (1)
+ 00000044  FFDD      BL          uart0_send_byte?T  ; T=0x0001  (2)
+   59:   temp = S0SPDR;
+ 00000046  4800      LDR         R0,=0xE0020008
+ 00000048  8804      LDRH        R4,[R0,#0x0]
+ 0000004A  0624      LSL         R4,R4,#0x18
+ 0000004C  0E24      LSR         R4,R4,#0x18
+   60:   return(temp);
+ 0000004E  1C20      MOV         R0,R4 ; temp
+ 00000050  0600      LSL         R0,R0,#0x18 ; temp
+ 00000052  0E00      LSR         R0,R0,#0x18
+ 00000054            ; SCOPE-END
+   61: }
+ 00000054  BC10      POP         {R4}
+ 00000056  BC08      POP         {R3}
+ 00000058  4718      BX          R3
+ 0000005A          ENDP ; 'spi_send_byte?T'
+
+
+*** CODE SEGMENT '?PR?spi_recv_byte?T?spi':
+   69: {
+ 00000000            ; SCOPE-START
+   71:   S0SPDR = 0xff;            // dummy write in S0SPDR which causes SPI controller to 
+ 00000000  21FF      MOV         R1,#0xFF
+ 00000002  4800      LDR         R0,=0xE0020008
+ 00000004  8001      STRH        R1,[R0,#0x0]
+   72:   while(!(S0SPSR & 0x80));  // genrate CLK which in turn recv the data from MISO PIN
+ 00000006          L_6:
+ 00000006  4800      LDR         R0,=0xE0020004
+ 00000008  7800      LDRB        R0,[R0,#0x0]
+ 0000000A  2180      MOV         R1,#0x80
+ 0000000C  4208      TST         R0,R1
+ 0000000E  D0FA      BEQ         L_6  ; T=0x00000006
+   73:   data = S0SPDR;
+ 00000010  4800      LDR         R0,=0xE0020008
+ 00000012  8801      LDRH        R1,[R0,#0x0]
+ 00000014  0609      LSL         R1,R1,#0x18
+ 00000016  0E09      LSR         R1,R1,#0x18
+ 00000018  ---- Variable 'data' assigned to Register 'R1' ----
+   74:   return data;
+ 00000018  1C08      MOV         R0,R1 ; data
+ 0000001A  0600      LSL         R0,R0,#0x18 ; data
+ 0000001C  0E00      LSR         R0,R0,#0x18
+ 0000001E            ; SCOPE-END
+   75: }
+ARM COMPILER V2.50a,  spi                                                                  27/11/12  15:41:12  PAGE 5   
+
+ 0000001E  4770      BX          R14
+ 00000020          ENDP ; 'spi_recv_byte?T'
+
+
+*** CODE SEGMENT '?PR?spi_send_data?T?spi':
+   83: void spi_send_data(U8 *data, U16 no_byte)
+ 00000000  B570      PUSH        {R4-R6,LR}
+ 00000002  1C0E      MOV         R6,R1 ; no_byte
+ 00000004  ---- Variable 'no_byte' assigned to Register 'R6' ----
+ 00000004  1C05      MOV         R5,R0 ; data
+ 00000006  ---- Variable 'data' assigned to Register 'R5' ----
+   84: {
+ 00000006            ; SCOPE-START
+   86:   if(no_byte > 0)
+ 00000006  1C30      MOV         R0,R6 ; no_byte
+ 00000008  0400      LSL         R0,R0,#0x10 ; no_byte
+ 0000000A  0C00      LSR         R0,R0,#0x10
+ 0000000C  2800      CMP         R0,#0x0
+ 0000000E  D911      BLS         L_11  ; T=0x00000034
+   88:    for(temp_count = 0; temp_count < no_byte; temp_count++)
+ 00000010  2400      MOV         R4,#0x0
+ 00000012  ---- Variable 'temp_count' assigned to Register 'R4' ----
+ 00000012  E007      B           L_14  ; T=0x00000024
+ 00000014          L_15:
+   90:     spi_send_byte(*data);
+ 00000014  1C28      MOV         R0,R5 ; data
+ 00000016  7800      LDRB        R0,[R0,#0x0] ; data
+ 00000018  F7FF      BL          spi_send_byte?T  ; T=0x0001  (1)
+ 0000001A  FFF2      BL          spi_send_byte?T  ; T=0x0001  (2)
+   91:     data++;
+ 0000001C  3501      ADD         R5,#0x1
+   92:    }
+ 0000001E  3401      ADD         R4,#0x1
+ 00000020  0624      LSL         R4,R4,#0x18
+ 00000022  0E24      LSR         R4,R4,#0x18
+ 00000024          L_14:
+ 00000024  1C30      MOV         R0,R6 ; no_byte
+ 00000026  0401      LSL         R1,R0,#0x10 ; no_byte
+ 00000028  0C09      LSR         R1,R1,#0x10
+ 0000002A  1C20      MOV         R0,R4 ; temp_count
+ 0000002C  0600      LSL         R0,R0,#0x18 ; temp_count
+ 0000002E  0E00      LSR         R0,R0,#0x18
+ 00000030  4288      CMP         R0,R1
+ 00000032  D3EF      BCC         L_15  ; T=0x00000014
+   93:   }
+ 00000034          L_11:
+ 00000034            ; SCOPE-END
+   94: }
+ 00000034  BC70      POP         {R4-R6}
+ 00000036  BC08      POP         {R3}
+ 00000038  4718      BX          R3
+ 0000003A          ENDP ; 'spi_send_data?T'
+
+
+*** CODE SEGMENT '?PR?spi_recv_data?T?spi':
+  102: void spi_recv_data(U8 *data, U16 no_byte)
+ 00000000  B510      PUSH        {R4,LR}
+ 00000002  1C0C      MOV         R4,R1 ; no_byte
+ 00000004  ---- Variable 'no_byte' assigned to Register 'R4' ----
+ 00000004  1C03      MOV         R3,R0 ; data
+ 00000006  ---- Variable 'data' assigned to Register 'R3' ----
+  103: {
+ 00000006            ; SCOPE-START
+  105:   for(temp_count = 0; temp_count < no_byte; temp_count++)
+ 00000006  2200      MOV         R2,#0x0
+ 00000008  ---- Variable 'temp_count' assigned to Register 'R2' ----
+ 00000008  E007      B           L_19  ; T=0x0000001A
+ 0000000A          L_20:
+  107:       *data = spi_recv_byte();
+ 0000000A  F7FF      BL          spi_recv_byte?T  ; T=0x0001  (1)
+ARM COMPILER V2.50a,  spi                                                                  27/11/12  15:41:12  PAGE 6   
+
+ 0000000C  FFF9      BL          spi_recv_byte?T  ; T=0x0001  (2)
+ 0000000E  1C19      MOV         R1,R3 ; data
+ 00000010  7008      STRB        R0,[R1,#0x0] ; data
+  108:     data++;
+ 00000012  3301      ADD         R3,#0x1
+  109:   }
+ 00000014  3201      ADD         R2,#0x1
+ 00000016  0412      LSL         R2,R2,#0x10
+ 00000018  0C12      LSR         R2,R2,#0x10
+ 0000001A          L_19:
+ 0000001A  1C20      MOV         R0,R4 ; no_byte
+ 0000001C  0401      LSL         R1,R0,#0x10 ; no_byte
+ 0000001E  0C09      LSR         R1,R1,#0x10
+ 00000020  1C10      MOV         R0,R2 ; temp_count
+ 00000022  0400      LSL         R0,R0,#0x10 ; temp_count
+ 00000024  0C00      LSR         R0,R0,#0x10
+ 00000026  4288      CMP         R0,R1
+ 00000028  D3EF      BCC         L_20  ; T=0x0000000A
+ 0000002A            ; SCOPE-END
+  110: }
+ 0000002A  BC10      POP         {R4}
+ 0000002C  BC08      POP         {R3}
+ 0000002E  4718      BX          R3
+ 00000030          ENDP ; 'spi_recv_data?T'
+
+
+
+Module Information          Static
+----------------------------------
+  code size            =    ------
+  data size            =    ------
+  const size           =    ------
+End of Module Information.
+
+
+ARM COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

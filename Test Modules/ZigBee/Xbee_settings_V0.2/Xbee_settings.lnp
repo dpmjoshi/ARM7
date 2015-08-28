@@ -1,0 +1,18 @@
+"Startup.obj",
+"adc.obj",
+"app.obj",
+"dac.obj",
+"key.obj",
+"lcd.obj",
+"lib.obj",
+"main.obj",
+"pwm.obj",
+"rtc.obj",
+"timer.obj",
+"uart.obj",
+"wdt.obj",
+"zigbee.obj" 
+TO "Xbee_settings" 
+CASE 
+CLASSES (DATA (0x40000000-0x40007FFF), 
+CODE (0x0-0x7FFFF), CONST (0x0-0x7FFFF)) 

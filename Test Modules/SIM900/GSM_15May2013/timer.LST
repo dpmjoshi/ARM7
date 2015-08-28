@@ -1,0 +1,510 @@
+ARM COMPILER V2.50a,  timer                                                                22/05/13  17:19:50  PAGE 1   
+
+
+ARM COMPILER V2.50a, COMPILATION OF MODULE timer
+OBJECT MODULE PLACED IN timer.OBJ
+COMPILER INVOKED BY: C:\Keil\ARM\BIN\CA.exe timer.c THUMB BROWSE DEBUG TABS(4) 
+
+stmt  level    source
+
+    1          #include"includes.h"
+    2          
+    3          U8 Uc_time1_arr[20];
+    4          
+    5          void timer1_ISR(void)__irq
+    6          {
+    7   1          if((T1IR & 0x01) == 1)
+    8   1          {
+    9   2              
+   10   2              //T1PC = 0;
+   11   2              T1TC = 0;
+   12   2              T1IR = 0x01;
+   13   2          }
+   14   1          
+   15   1          VICVectAddr   = 0x00;
+   16   1      }
+   17          
+   18          void timer1_init_interrupt()
+   19          {
+   20   1          VICVectAddr3 = (U32)&timer1_ISR;
+   21   1          VICVectCntl3 = 0x20 | 5;
+   22   1          VICIntEnable = 1 << 5;
+   23   1          T1MCR        = 0x01;
+   24   1          T1MR0        = 1000;
+   25   1          T1PR         = 15000;
+   26   1          T1TCR        = 0x01;
+   27   1      }
+   28          
+   29          
+   30          void timer1_init()
+   31          {
+   32   1          T1PR = 15000;
+   33   1      }
+   34          
+   35          void timer1_on()
+   36          {
+   37   1          T1PC = 0;
+   38   1          T1TCR = 0x01;
+   39   1      }
+   40          
+   41          void timer1_off()
+   42          {
+   43   1          T1TCR = 0x00;
+   44   1      }
+   45          
+   46          void time1_measure()
+   47          {
+   48   1          U32 uc_time_t1pc;
+   49   1          //U32 uc_time_t1tc;
+   50   1          U8  uc_index = 0;
+   51   1      
+   52   1          uc_time_t1pc = T1PC;
+   53   1          
+   54   1      
+   55   1          Uc_time1_arr[uc_index]  = uc_time_t1pc/10000;   
+   56   1          Uc_time1_arr[uc_index] += 0x30;
+   57   1          uc_time_t1pc            = uc_time_t1pc%10000;
+   58   1          uc_index++;
+   59   1          //--------------------------------------
+ARM COMPILER V2.50a,  timer                                                                22/05/13  17:19:50  PAGE 2   
+
+   60   1          Uc_time1_arr[uc_index]  = uc_time_t1pc/1000;    
+   61   1          Uc_time1_arr[uc_index] += 0x30;
+   62   1          uc_time_t1pc            = uc_time_t1pc%1000;
+   63   1          uc_index++;
+   64   1          //--------------------------------------
+   65   1          Uc_time1_arr[uc_index]  = uc_time_t1pc/100;
+   66   1          Uc_time1_arr[uc_index] += 0x30;
+   67   1          uc_time_t1pc    = uc_time_t1pc%100;
+   68   1          uc_index++;
+   69   1          //--------------------------------------
+   70   1          Uc_time1_arr[uc_index]  = uc_time_t1pc/10;
+   71   1          Uc_time1_arr[uc_index] += 0x30;
+   72   1          uc_time_t1pc            = uc_time_t1pc%10;
+   73   1          uc_index++;
+   74   1          //--------------------------------------
+   75   1          //--------------------------------------
+   76   1          Uc_time1_arr[uc_index]  = uc_time_t1pc;
+   77   1          Uc_time1_arr[uc_index] += 0x30;
+   78   1          uc_index++;
+   79   1         
+   80   1          Uc_time1_arr[uc_index]  = '\0' ;
+   81   1          lcd_line4_disp(&Uc_time1_arr[0],0);
+   82   1      
+   83   1      
+   84   1      }
+   85          
+   86          void ms_delay(unsigned int w)
+   87          {
+   88   1         T0TCR  = 0X01;
+   89   1         T0PR   = 1000;
+   90   1         while(T0TC<w)
+   91   1            {
+   92   2            }                                                             
+   93   1         T0TC   = 0;
+   94   1         T0TCR  = 0;
+   95   1      }
+   96          
+   97          void key_delay(unsigned int w)
+   98          {
+   99   1         T0TCR = 0X01;
+  100   1         T0PR  = 15000;
+  101   1         while(T0TC<w)
+  102   1            {
+  103   2            }                                                             
+  104   1         T0TC  = 0;
+  105   1         T0TCR = 0;
+  106   1      }
+ARM COMPILER V2.50a,  timer                                                                22/05/13  17:19:50  PAGE 3   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+
+*** EXTERNALS:
+ EXTERN CODE16 (lcd_line4_disp?T)
+ EXTERN CODE16 (?C?UDIV?T)
+
+
+
+*** PUBLICS:
+ PUBLIC         ms_delay?T
+ PUBLIC         timer1_init_interrupt?T
+ PUBLIC         timer1_init?T
+ PUBLIC         timer1_on?T
+ PUBLIC         timer1_off?T
+ PUBLIC         time1_measure?T
+ PUBLIC         key_delay?T
+ PUBLIC         timer1_ISR?A
+ PUBLIC         Uc_time1_arr
+
+
+
+*** DATA SEGMENT '?DT0?timer':
+ 00000000          Uc_time1_arr:
+ 00000000            DS          20
+
+
+
+*** CODE SEGMENT '?PR?timer1_ISR?A?timer':
+    5: void timer1_ISR(void)__irq
+ 00000000  E92D0003  STMDB       R13!,{R0-R1}
+    7:     if((T1IR & 0x01) == 1)
+ 00000004  E5100000  LDR         R0,=0xE0008000
+ 00000008  E5900000  LDR         R0,[R0,#0x0]
+ 0000000C  E2000001  AND         R0,R0,#0x0001
+ 00000010  E3500001  CMP         R0,#0x0001
+ 00000014  1A000005  BNE         L_1  ; Targ=0x30
+   11:         T1TC = 0;
+ 00000018  E3A01000  MOV         R1,#0x0
+ 0000001C  E5100000  LDR         R0,=0xE0008008
+ 00000020  E5801000  STR         R1,[R0,#0x0]
+   12:         T1IR = 0x01;
+ 00000024  E3A01001  MOV         R1,#0x1
+ 00000028  E5100000  LDR         R0,=0xE0008000
+ 0000002C  E5801000  STR         R1,[R0,#0x0]
+   13:      }
+ 00000030          L_1:
+   15:     VICVectAddr   = 0x00;
+ 00000030  E3A01000  MOV         R1,#0x0
+ 00000034  E5100000  LDR         R0,=0xFFFFF030
+ 00000038  E5801000  STR         R1,[R0,#0x0]
+   16: }
+ 0000003C  E8BD0003  LDMIA       R13!,{R0-R1}
+ 00000040  E25EF004  SUBS        R15,R14,#0x0004
+ 00000044          ENDP ; 'timer1_ISR?A'
+
+
+*** CODE SEGMENT '?PR?timer1_init_interrupt?T?timer':
+   20:     VICVectAddr3 = (U32)&timer1_ISR;
+ 00000000  4900      LDR         R1,=timer1_ISR?A ; timer1_ISR?A
+ 00000002  4800      LDR         R0,=0xFFFFF10C
+ 00000004  6001      STR         R1,[R0,#0x0]
+   21:       VICVectCntl3 = 0x20 | 5;
+ 00000006  2125      MOV         R1,#0x25
+ 00000008  4800      LDR         R0,=0xFFFFF20C
+ 0000000A  6001      STR         R1,[R0,#0x0]
+   22:     VICIntEnable = 1 << 5;
+ 0000000C  2120      MOV         R1,#0x20
+ 0000000E  4800      LDR         R0,=0xFFFFF010
+ 00000010  6001      STR         R1,[R0,#0x0]
+   23:     T1MCR        = 0x01;
+ 00000012  2101      MOV         R1,#0x1
+ 00000014  4800      LDR         R0,=0xE0008014
+ 00000016  6001      STR         R1,[R0,#0x0]
+ARM COMPILER V2.50a,  timer                                                                22/05/13  17:19:50  PAGE 4   
+
+   24:     T1MR0        = 1000;
+ 00000018  4AFA      LDR         R2,=0x3E8
+ 0000001A  4800      LDR         R0,=0xE0008018
+ 0000001C  6002      STR         R2,[R0,#0x0]
+   25:     T1PR         = 15000;
+ 0000001E  4800      LDR         R2,=0x3A98
+ 00000020  4800      LDR         R0,=0xE000800C
+ 00000022  6002      STR         R2,[R0,#0x0]
+   26:     T1TCR        = 0x01;
+ 00000024  4800      LDR         R0,=0xE0008004
+ 00000026  6001      STR         R1,[R0,#0x0]
+   27: }
+ 00000028  4770      BX          R14
+ 0000002A          ENDP ; 'timer1_init_interrupt?T'
+
+
+*** CODE SEGMENT '?PR?timer1_init?T?timer':
+   32:     T1PR = 15000;
+ 00000000  4800      LDR         R1,=0x3A98
+ 00000002  4800      LDR         R0,=0xE000800C
+ 00000004  6001      STR         R1,[R0,#0x0]
+   33: }
+ 00000006  4770      BX          R14
+ 00000008          ENDP ; 'timer1_init?T'
+
+
+*** CODE SEGMENT '?PR?timer1_on?T?timer':
+   37:     T1PC = 0;
+ 00000000  2100      MOV         R1,#0x0
+ 00000002  4800      LDR         R0,=0xE0008010
+ 00000004  6001      STR         R1,[R0,#0x0]
+   38:     T1TCR = 0x01;
+ 00000006  2101      MOV         R1,#0x1
+ 00000008  4800      LDR         R0,=0xE0008004
+ 0000000A  6001      STR         R1,[R0,#0x0]
+   39: }
+ 0000000C  4770      BX          R14
+ 0000000E          ENDP ; 'timer1_on?T'
+
+
+*** CODE SEGMENT '?PR?timer1_off?T?timer':
+   43:     T1TCR = 0x00;
+ 00000000  2100      MOV         R1,#0x0
+ 00000002  4800      LDR         R0,=0xE0008004
+ 00000004  6001      STR         R1,[R0,#0x0]
+   44: }
+ 00000006  4770      BX          R14
+ 00000008          ENDP ; 'timer1_off?T'
+
+
+*** CODE SEGMENT '?PR?time1_measure?T?timer':
+   46: void time1_measure()
+ 00000000  B510      PUSH        {R4,LR}
+   47: {
+ 00000002            ; SCOPE-START
+   50:     U8  uc_index = 0;
+ 00000002  2200      MOV         R2,#0x0
+ 00000004  ---- Variable 'uc_index' assigned to Register 'R2' ----
+   52:     uc_time_t1pc = T1PC;
+ 00000004  4800      LDR         R0,=0xE0008010
+ 00000006  6803      LDR         R3,[R0,#0x0]
+ 00000008  ---- Variable 'uc_time_t1pc' assigned to Register 'R3' ----
+   55:     Uc_time1_arr[uc_index]  = uc_time_t1pc/10000;   
+ 00000008  1C18      MOV         R0,R3 ; uc_time_t1pc
+ 0000000A  4800      LDR         R1,=0x2710
+ 0000000C  F7FF      BL          ?C?UDIV?T  ; T=0x0001  (1) ; ?C?UDIV?T
+ 0000000E  FFF8      BL          ?C?UDIV?T  ; T=0x0001  (2) ; ?C?UDIV?T
+ 00000010  1C08      MOV         R0,R1
+ 00000012  0600      LSL         R0,R0,#0x18
+ 00000014  0E00      LSR         R0,R0,#0x18
+ 00000016  1C11      MOV         R1,R2 ; uc_index
+ 00000018  060C      LSL         R4,R1,#0x18 ; uc_index
+ 0000001A  0E24      LSR         R4,R4,#0x18
+ 0000001C  4800      LDR         R1,=Uc_time1_arr ; Uc_time1_arr
+ARM COMPILER V2.50a,  timer                                                                22/05/13  17:19:50  PAGE 5   
+
+ 0000001E  5508      STRB        R0,[R1,R4]
+   56:     Uc_time1_arr[uc_index] += 0x30;
+ 00000020  1C10      MOV         R0,R2 ; uc_index
+ 00000022  0601      LSL         R1,R0,#0x18 ; uc_index
+ 00000024  0E09      LSR         R1,R1,#0x18
+ 00000026  4800      LDR         R0,=Uc_time1_arr ; Uc_time1_arr
+ 00000028  1840      ADD         R0,R1 ; Uc_time1_arr
+ 0000002A  7801      LDRB        R1,[R0,#0x0]
+ 0000002C  3130      ADD         R1,#0x30
+ 0000002E  7001      STRB        R1,[R0,#0x0]
+   57:     uc_time_t1pc            = uc_time_t1pc%10000;
+ 00000030  1C18      MOV         R0,R3 ; uc_time_t1pc
+ 00000032  4800      LDR         R1,=0x2710
+ 00000034  F7FF      BL          ?C?UDIV?T  ; T=0x0001  (1) ; ?C?UDIV?T
+ 00000036  FFE4      BL          ?C?UDIV?T  ; T=0x0001  (2) ; ?C?UDIV?T
+ 00000038  1C01      MOV         R1,R0
+ 0000003A  1C0B      MOV         R3,R1 ; uc_time_t1pc
+   58:     uc_index++;
+ 0000003C  3201      ADD         R2,#0x1
+ 0000003E  0612      LSL         R2,R2,#0x18
+ 00000040  0E12      LSR         R2,R2,#0x18
+   60:     Uc_time1_arr[uc_index]  = uc_time_t1pc/1000;    
+ 00000042  1C18      MOV         R0,R3 ; uc_time_t1pc
+ 00000044  49FA      LDR         R1,=0x3E8
+ 00000046  F7FF      BL          ?C?UDIV?T  ; T=0x0001  (1) ; ?C?UDIV?T
+ 00000048  FFDB      BL          ?C?UDIV?T  ; T=0x0001  (2) ; ?C?UDIV?T
+ 0000004A  1C08      MOV         R0,R1
+ 0000004C  0600      LSL         R0,R0,#0x18
+ 0000004E  0E00      LSR         R0,R0,#0x18
+ 00000050  1C11      MOV         R1,R2 ; uc_index
+ 00000052  060C      LSL         R4,R1,#0x18 ; uc_index
+ 00000054  0E24      LSR         R4,R4,#0x18
+ 00000056  4800      LDR         R1,=Uc_time1_arr ; Uc_time1_arr
+ 00000058  5508      STRB        R0,[R1,R4]
+   61:     Uc_time1_arr[uc_index] += 0x30;
+ 0000005A  1C10      MOV         R0,R2 ; uc_index
+ 0000005C  0601      LSL         R1,R0,#0x18 ; uc_index
+ 0000005E  0E09      LSR         R1,R1,#0x18
+ 00000060  4800      LDR         R0,=Uc_time1_arr ; Uc_time1_arr
+ 00000062  1840      ADD         R0,R1 ; Uc_time1_arr
+ 00000064  7801      LDRB        R1,[R0,#0x0]
+ 00000066  3130      ADD         R1,#0x30
+ 00000068  7001      STRB        R1,[R0,#0x0]
+   62:     uc_time_t1pc            = uc_time_t1pc%1000;
+ 0000006A  1C18      MOV         R0,R3 ; uc_time_t1pc
+ 0000006C  49FA      LDR         R1,=0x3E8
+ 0000006E  F7FF      BL          ?C?UDIV?T  ; T=0x0001  (1) ; ?C?UDIV?T
+ 00000070  FFC7      BL          ?C?UDIV?T  ; T=0x0001  (2) ; ?C?UDIV?T
+ 00000072  1C01      MOV         R1,R0
+ 00000074  1C0B      MOV         R3,R1 ; uc_time_t1pc
+   63:     uc_index++;
+ 00000076  3201      ADD         R2,#0x1
+ 00000078  0612      LSL         R2,R2,#0x18
+ 0000007A  0E12      LSR         R2,R2,#0x18
+   65:     Uc_time1_arr[uc_index]  = uc_time_t1pc/100;
+ 0000007C  1C18      MOV         R0,R3 ; uc_time_t1pc
+ 0000007E  2164      MOV         R1,#0x64
+ 00000080  F7FF      BL          ?C?UDIV?T  ; T=0x0001  (1) ; ?C?UDIV?T
+ 00000082  FFBE      BL          ?C?UDIV?T  ; T=0x0001  (2) ; ?C?UDIV?T
+ 00000084  1C08      MOV         R0,R1
+ 00000086  0600      LSL         R0,R0,#0x18
+ 00000088  0E00      LSR         R0,R0,#0x18
+ 0000008A  1C11      MOV         R1,R2 ; uc_index
+ 0000008C  060C      LSL         R4,R1,#0x18 ; uc_index
+ 0000008E  0E24      LSR         R4,R4,#0x18
+ 00000090  4800      LDR         R1,=Uc_time1_arr ; Uc_time1_arr
+ARM COMPILER V2.50a,  timer                                                                22/05/13  17:19:50  PAGE 6   
+
+ 00000092  5508      STRB        R0,[R1,R4]
+   66:     Uc_time1_arr[uc_index] += 0x30;
+ 00000094  1C10      MOV         R0,R2 ; uc_index
+ 00000096  0601      LSL         R1,R0,#0x18 ; uc_index
+ 00000098  0E09      LSR         R1,R1,#0x18
+ 0000009A  4800      LDR         R0,=Uc_time1_arr ; Uc_time1_arr
+ 0000009C  1840      ADD         R0,R1 ; Uc_time1_arr
+ 0000009E  7801      LDRB        R1,[R0,#0x0]
+ 000000A0  3130      ADD         R1,#0x30
+ 000000A2  7001      STRB        R1,[R0,#0x0]
+   67:     uc_time_t1pc    = uc_time_t1pc%100;
+ 000000A4  1C18      MOV         R0,R3 ; uc_time_t1pc
+ 000000A6  2164      MOV         R1,#0x64
+ 000000A8  F7FF      BL          ?C?UDIV?T  ; T=0x0001  (1) ; ?C?UDIV?T
+ 000000AA  FFAA      BL          ?C?UDIV?T  ; T=0x0001  (2) ; ?C?UDIV?T
+ 000000AC  1C01      MOV         R1,R0
+ 000000AE  1C0B      MOV         R3,R1 ; uc_time_t1pc
+   68:     uc_index++;
+ 000000B0  3201      ADD         R2,#0x1
+ 000000B2  0612      LSL         R2,R2,#0x18
+ 000000B4  0E12      LSR         R2,R2,#0x18
+   70:     Uc_time1_arr[uc_index]  = uc_time_t1pc/10;
+ 000000B6  1C18      MOV         R0,R3 ; uc_time_t1pc
+ 000000B8  210A      MOV         R1,#0xA
+ 000000BA  F7FF      BL          ?C?UDIV?T  ; T=0x0001  (1) ; ?C?UDIV?T
+ 000000BC  FFA1      BL          ?C?UDIV?T  ; T=0x0001  (2) ; ?C?UDIV?T
+ 000000BE  1C08      MOV         R0,R1
+ 000000C0  0600      LSL         R0,R0,#0x18
+ 000000C2  0E00      LSR         R0,R0,#0x18
+ 000000C4  1C11      MOV         R1,R2 ; uc_index
+ 000000C6  060C      LSL         R4,R1,#0x18 ; uc_index
+ 000000C8  0E24      LSR         R4,R4,#0x18
+ 000000CA  4800      LDR         R1,=Uc_time1_arr ; Uc_time1_arr
+ 000000CC  5508      STRB        R0,[R1,R4]
+   71:     Uc_time1_arr[uc_index] += 0x30;
+ 000000CE  1C10      MOV         R0,R2 ; uc_index
+ 000000D0  0601      LSL         R1,R0,#0x18 ; uc_index
+ 000000D2  0E09      LSR         R1,R1,#0x18
+ 000000D4  4800      LDR         R0,=Uc_time1_arr ; Uc_time1_arr
+ 000000D6  1840      ADD         R0,R1 ; Uc_time1_arr
+ 000000D8  7801      LDRB        R1,[R0,#0x0]
+ 000000DA  3130      ADD         R1,#0x30
+ 000000DC  7001      STRB        R1,[R0,#0x0]
+   72:      uc_time_t1pc            = uc_time_t1pc%10;
+ 000000DE  1C18      MOV         R0,R3 ; uc_time_t1pc
+ 000000E0  210A      MOV         R1,#0xA
+ 000000E2  F7FF      BL          ?C?UDIV?T  ; T=0x0001  (1) ; ?C?UDIV?T
+ 000000E4  FF8D      BL          ?C?UDIV?T  ; T=0x0001  (2) ; ?C?UDIV?T
+ 000000E6  1C01      MOV         R1,R0
+ 000000E8  1C0B      MOV         R3,R1 ; uc_time_t1pc
+   73:     uc_index++;
+ 000000EA  3201      ADD         R2,#0x1
+ 000000EC  0612      LSL         R2,R2,#0x18
+ 000000EE  0E12      LSR         R2,R2,#0x18
+   76:      Uc_time1_arr[uc_index]  = uc_time_t1pc;
+ 000000F0  1C18      MOV         R0,R3 ; uc_time_t1pc
+ 000000F2  0600      LSL         R0,R0,#0x18 ; uc_time_t1pc
+ 000000F4  0E00      LSR         R0,R0,#0x18
+ 000000F6  1C11      MOV         R1,R2 ; uc_index
+ 000000F8  060B      LSL         R3,R1,#0x18 ; uc_index
+ 000000FA  0E1B      LSR         R3,R3,#0x18
+ 000000FC  4800      LDR         R1,=Uc_time1_arr ; Uc_time1_arr
+ 000000FE  54C8      STRB        R0,[R1,R3]
+   77:     Uc_time1_arr[uc_index] += 0x30;
+ 00000100  1C10      MOV         R0,R2 ; uc_index
+ 00000102  0601      LSL         R1,R0,#0x18 ; uc_index
+ARM COMPILER V2.50a,  timer                                                                22/05/13  17:19:50  PAGE 7   
+
+ 00000104  0E09      LSR         R1,R1,#0x18
+ 00000106  4800      LDR         R0,=Uc_time1_arr ; Uc_time1_arr
+ 00000108  1840      ADD         R0,R1 ; Uc_time1_arr
+ 0000010A  7801      LDRB        R1,[R0,#0x0]
+ 0000010C  3130      ADD         R1,#0x30
+ 0000010E  7001      STRB        R1,[R0,#0x0]
+   78:      uc_index++;
+ 00000110  3201      ADD         R2,#0x1
+ 00000112  0612      LSL         R2,R2,#0x18
+ 00000114  0E12      LSR         R2,R2,#0x18
+   80:     Uc_time1_arr[uc_index]  = '\0' ;
+ 00000116  2000      MOV         R0,#0x0
+ 00000118  1C11      MOV         R1,R2 ; uc_index
+ 0000011A  060A      LSL         R2,R1,#0x18 ; uc_index
+ 0000011C  0E12      LSR         R2,R2,#0x18
+ 0000011E  4800      LDR         R1,=Uc_time1_arr ; Uc_time1_arr
+ 00000120  5488      STRB        R0,[R1,R2]
+   81:     lcd_line4_disp(&Uc_time1_arr[0],0);
+ 00000122  4800      LDR         R0,=Uc_time1_arr ; Uc_time1_arr
+ 00000124  2100      MOV         R1,#0x0
+ 00000126  F7FF      BL          lcd_line4_disp?T  ; T=0x0001  (1)
+ 00000128  FF6B      BL          lcd_line4_disp?T  ; T=0x0001  (2)
+ 0000012A            ; SCOPE-END
+   84: }
+ 0000012A  BC10      POP         {R4}
+ 0000012C  BC08      POP         {R3}
+ 0000012E  4718      BX          R3
+ 00000130          ENDP ; 'time1_measure?T'
+
+
+*** CODE SEGMENT '?PR?ms_delay?T?timer':
+   86: void ms_delay(unsigned int w)
+ 00000000  ---- Variable 'w' assigned to Register 'R0' ----
+   88:    T0TCR  = 0X01;
+ 00000000  2201      MOV         R2,#0x1
+ 00000002  4800      LDR         R1,=0xE0004004
+ 00000004  600A      STR         R2,[R1,#0x0]
+   89:    T0PR   = 1000;
+ 00000006  4AFA      LDR         R2,=0x3E8
+ 00000008  4800      LDR         R1,=0xE000400C
+ 0000000A  600A      STR         R2,[R1,#0x0]
+   92:       }                                                                
+ 0000000C          L_2:
+ 0000000C  1C02      MOV         R2,R0 ; w
+ 0000000E  4800      LDR         R1,=0xE0004008
+ 00000010  6809      LDR         R1,[R1,#0x0]
+ 00000012  4291      CMP         R1,R2
+ 00000014  D3FA      BCC         L_2  ; T=0x0000000C
+   93:    T0TC   = 0;
+ 00000016  2100      MOV         R1,#0x0
+ 00000018  4800      LDR         R0,=0xE0004008
+ 0000001A  6001      STR         R1,[R0,#0x0]
+   94:    T0TCR  = 0;
+ 0000001C  4800      LDR         R0,=0xE0004004
+ 0000001E  6001      STR         R1,[R0,#0x0]
+   95: }
+ 00000020  4770      BX          R14
+ 00000022          ENDP ; 'ms_delay?T'
+
+
+*** CODE SEGMENT '?PR?key_delay?T?timer':
+   97: void key_delay(unsigned int w)
+ 00000000  ---- Variable 'w' assigned to Register 'R0' ----
+   99:    T0TCR = 0X01;
+ 00000000  2201      MOV         R2,#0x1
+ 00000002  4800      LDR         R1,=0xE0004004
+ 00000004  600A      STR         R2,[R1,#0x0]
+  100:    T0PR  = 15000;
+ 00000006  4800      LDR         R2,=0x3A98
+ 00000008  4800      LDR         R1,=0xE000400C
+ARM COMPILER V2.50a,  timer                                                                22/05/13  17:19:50  PAGE 8   
+
+ 0000000A  600A      STR         R2,[R1,#0x0]
+  103:       }                                                                
+ 0000000C          L_6:
+ 0000000C  1C02      MOV         R2,R0 ; w
+ 0000000E  4800      LDR         R1,=0xE0004008
+ 00000010  6809      LDR         R1,[R1,#0x0]
+ 00000012  4291      CMP         R1,R2
+ 00000014  D3FA      BCC         L_6  ; T=0x0000000C
+  104:    T0TC  = 0;
+ 00000016  2100      MOV         R1,#0x0
+ 00000018  4800      LDR         R0,=0xE0004008
+ 0000001A  6001      STR         R1,[R0,#0x0]
+  105:    T0TCR = 0;
+ 0000001C  4800      LDR         R0,=0xE0004004
+ 0000001E  6001      STR         R1,[R0,#0x0]
+  106: }
+ 00000020  4770      BX          R14
+ 00000022          ENDP ; 'key_delay?T'
+
+
+
+Module Information          Static
+----------------------------------
+  code size            =    ------
+  data size            =        20
+  const size           =    ------
+End of Module Information.
+
+
+ARM COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

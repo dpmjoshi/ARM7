@@ -1,0 +1,30 @@
+AA MACRO ASSEMBLER RTEST1                                                                   13/03/13 10:47:03 PAGE     1
+
+
+MACRO ASSEMBLER AA V2.50
+OBJECT MODULE PLACED IN test1.OBJ
+ASSEMBLER INVOKED BY: C:\Keil\ARM\BIN\AA.exe test1.s BROWSE DEBUG EP
+
+LOC      OBJ             LINE     SOURCE
+
+00000000                  1     AREA test, CODE, READONLY
+                          2     
+00000000                  3     ENTRY
+                          4     
+00000000 E1A00001         5     mov r0,r1;
+                          6     
+                          7     
+                          8     END 
+AA MACRO ASSEMBLER RTEST1                                                                   13/03/13 10:47:03 PAGE     2
+
+SYMBOL TABLE LISTING
+------ ----- -------
+
+
+N A M E               T Y P E  V A L U E     ATTRIBUTES
+
+ENTRY. . . . . . . .  C  ADDR  0000H     R   SEG=test
+test . . . . . . . .  C  SEG   0004H         REL=UNIT, ALN=BYTE
+
+
+ASSEMBLY COMPLETE.  0 WARNING(S), 0 ERROR(S).

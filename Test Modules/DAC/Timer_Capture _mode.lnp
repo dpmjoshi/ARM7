@@ -1,0 +1,13 @@
+"Startup.obj",
+"lcd.obj",
+"main.obj",
+"timer.obj",
+"rtc.obj",
+"uart.obj",
+"key.obj",
+"lib.obj",
+"dac.obj" 
+TO "Timer_Capture _mode" 
+CASE 
+CLASSES (DATA (0x40000000-0x40007FFF), 
+CODE (0x0-0x7FFFF), CONST (0x0-0x7FFFF)) 

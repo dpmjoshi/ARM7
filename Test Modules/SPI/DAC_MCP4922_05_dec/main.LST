@@ -1,0 +1,276 @@
+ARM COMPILER V2.50a,  main                                                                 05/12/12  17:32:40  PAGE 1   
+
+
+ARM COMPILER V2.50a, COMPILATION OF MODULE main
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\ARM\BIN\CA.exe main.c THUMB BROWSE DEBUG TABS(4) 
+
+stmt  level    source
+
+    1          #include"includes.h"
+    2          
+    3          #define CS_DAC 1<<7
+    4          #define LDAC   1<<17
+    5          //************************************************************//
+    6          
+    7          
+    8          //*************************Flags*******************************//
+    9          
+   10          void main()
+   11          {   
+   12   1        PINSEL0 |= 0X00051505;     // selecting UART0 and UART1
+   13   1        PINSEL1 |= 0X00080000;
+   14   1        IO1DIR  |= 0X0FFF0000;     //pins 1.16 to 1.23 output pins
+   15   1        IO0DIR  |= 0X003E0C88;     //port 0 rs and en as output
+   16   1        IO0CLR   = 0X00FF0000;    
+   17   1        
+   18   1        IO0SET   = 0X0FF00400;
+   19   1       
+   20   1      
+   21   1        //*************************************//
+   22   1        //         Initialisations             //
+   23   1        //*************************************//
+   24   1        lcd_init();
+   25   1        spi_init();
+   26   1        irq_init();
+   27   1        uart_init();
+   28   1        
+   29   1        IO0SET |= (CS_DAC | LDAC);
+   30   1        lcd_line1_disp("SPI Test", 0);
+   31   1      
+   32   1        while(1)
+   33   1        { 
+   34   2         Uc_key_temp = get_key(0);
+   35   2         if(Uc_key_temp == '1')
+   36   2         {
+   37   3      
+   38   3          Uc_key_temp = 0;
+   39   3          lcd_line2_disp("Enter data", 0);
+   40   3          ms_delay(10000);
+   41   3          Uc_key_temp = get_key(1);
+   42   3      
+   43   3          IO0CLR |= CS_DAC; 
+   44   3          ms_delay(100);
+   45   3          spi_send_byte(0x3800);
+   46   3          ms_delay(100);
+   47   3          IO0SET |= CS_DAC;
+   48   3          
+   49   3          ms_delay(10000);
+   50   3          IO0CLR |= LDAC;
+   51   3          ms_delay(100);
+   52   3          IO0SET |= LDAC;
+   53   3          
+   54   3          ms_delay(100);
+   55   3          lcd_line2_disp("          ", 0);
+   56   3      
+   57   3         }
+   58   2        }
+   59   1      }
+ARM COMPILER V2.50a,  main                                                                 05/12/12  17:32:40  PAGE 2   
+
+   60          
+   61          
+   62          
+   63          
+   64          
+   65          
+   66          
+ARM COMPILER V2.50a,  main                                                                 05/12/12  17:32:40  PAGE 3   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+
+*** EXTERNALS:
+ EXTERN CODE16 (uart_init?T)
+ EXTERN CODE16 (irq_init?T)
+ EXTERN CODE16 (lcd_init?T)
+ EXTERN CODE16 (ms_delay?T)
+ EXTERN CODE16 (lcd_line1_disp?T)
+ EXTERN CODE16 (lcd_line2_disp?T)
+ EXTERN CODE16 (get_key?T)
+ EXTERN DATA (Uc_key_temp)
+ EXTERN CODE16 (spi_init?T)
+ EXTERN CODE16 (spi_send_byte?T)
+ EXTERN NUMBER (__startup)
+
+
+
+*** PUBLICS:
+ PUBLIC         main
+
+
+
+*** DATA SEGMENT '?CON?main':
+ 00000000          ??S_3:
+ 00000000            DB          '          ',0x00
+ 0000000B          ??S_2:
+ 0000000B            DB          'Enter data',0x00
+ 00000016          ??S_1:
+ 00000016            DB          'SPI Test',0x00
+
+*** CODE SEGMENT '?PR?main?main':
+   10: void main()
+ 00000000  B500      PUSH        {LR}
+   12:   PINSEL0 |= 0X00051505;     // selecting UART0 and UART1
+ 00000002  4800      LDR         R2,=0x51505
+ 00000004  4800      LDR         R0,=0xE002C000
+ 00000006  6801      LDR         R1,[R0,#0x0]
+ 00000008  4311      ORR         R1,R2
+ 0000000A  6001      STR         R1,[R0,#0x0]
+   13:   PINSEL1 |= 0X00080000;
+ 0000000C  4800      LDR         R2,=0x80000
+ 0000000E  4800      LDR         R0,=0xE002C004
+ 00000010  6801      LDR         R1,[R0,#0x0]
+ 00000012  4311      ORR         R1,R2
+ 00000014  6001      STR         R1,[R0,#0x0]
+   14:   IO1DIR  |= 0X0FFF0000;     //pins 1.16 to 1.23 output pins
+ 00000016  4800      LDR         R2,=0xFFF0000
+ 00000018  4800      LDR         R0,=0xE0028018
+ 0000001A  6801      LDR         R1,[R0,#0x0]
+ 0000001C  4311      ORR         R1,R2
+ 0000001E  6001      STR         R1,[R0,#0x0]
+   15:   IO0DIR  |= 0X003E0C88;     //port 0 rs and en as output
+ 00000020  4800      LDR         R2,=0x3E0C88
+ 00000022  4800      LDR         R0,=0xE0028008
+ 00000024  6801      LDR         R1,[R0,#0x0]
+ 00000026  4311      ORR         R1,R2
+ 00000028  6001      STR         R1,[R0,#0x0]
+   16:   IO0CLR   = 0X00FF0000;    
+ 0000002A  4800      LDR         R1,=0xFF0000
+ 0000002C  4800      LDR         R0,=0xE002800C
+ 0000002E  6001      STR         R1,[R0,#0x0]
+   18:   IO0SET   = 0X0FF00400;
+ 00000030  4800      LDR         R1,=0xFF00400
+ 00000032  4800      LDR         R0,=0xE0028004
+ 00000034  6001      STR         R1,[R0,#0x0]
+   24:   lcd_init();
+ 00000036  F7FF      BL          lcd_init?T  ; T=0x0001  (1)
+ 00000038  FFE3      BL          lcd_init?T  ; T=0x0001  (2)
+   25:   spi_init();
+ 0000003A  F7FF      BL          spi_init?T  ; T=0x0001  (1)
+ARM COMPILER V2.50a,  main                                                                 05/12/12  17:32:40  PAGE 4   
+
+ 0000003C  FFE1      BL          spi_init?T  ; T=0x0001  (2)
+   26:   irq_init();
+ 0000003E  F7FF      BL          irq_init?T  ; T=0x0001  (1)
+ 00000040  FFDF      BL          irq_init?T  ; T=0x0001  (2)
+   27:   uart_init();
+ 00000042  F7FF      BL          uart_init?T  ; T=0x0001  (1)
+ 00000044  FFDD      BL          uart_init?T  ; T=0x0001  (2)
+   29:   IO0SET |= (CS_DAC | LDAC);
+ 00000046  4800      LDR         R2,=0x20080
+ 00000048  4800      LDR         R0,=0xE0028004
+ 0000004A  6801      LDR         R1,[R0,#0x0]
+ 0000004C  4311      ORR         R1,R2
+ 0000004E  6001      STR         R1,[R0,#0x0]
+   30:   lcd_line1_disp("SPI Test", 0);
+ 00000050  4800      LDR         R0,=??S_1 ; ??S_1
+ 00000052  2100      MOV         R1,#0x0
+ 00000054  F7FF      BL          lcd_line1_disp?T  ; T=0x0001  (1)
+ 00000056  FFD4      BL          lcd_line1_disp?T  ; T=0x0001  (2)
+   32:   while(1)
+ 00000058          L_3:
+   34:    Uc_key_temp = get_key(0);
+ 00000058  2000      MOV         R0,#0x0
+ 0000005A  F7FF      BL          get_key?T  ; T=0x0001  (1)
+ 0000005C  FFD1      BL          get_key?T  ; T=0x0001  (2)
+ 0000005E  4800      LDR         R1,=Uc_key_temp ; Uc_key_temp
+ 00000060  7008      STRB        R0,[R1,#0x0] ; Uc_key_temp
+   35:    if(Uc_key_temp == '1')
+ 00000062  4800      LDR         R0,=Uc_key_temp ; Uc_key_temp
+ 00000064  7800      LDRB        R0,[R0,#0x0] ; Uc_key_temp
+ 00000066  2831      CMP         R0,#0x31
+ 00000068  D1F6      BNE         L_3  ; T=0x00000058
+   38:     Uc_key_temp = 0;
+ 0000006A  2100      MOV         R1,#0x0
+ 0000006C  4800      LDR         R0,=Uc_key_temp ; Uc_key_temp
+ 0000006E  7001      STRB        R1,[R0,#0x0] ; Uc_key_temp
+   39:     lcd_line2_disp("Enter data", 0);
+ 00000070  4800      LDR         R0,=??S_2 ; ??S_2
+ 00000072  2100      MOV         R1,#0x0
+ 00000074  F7FF      BL          lcd_line2_disp?T  ; T=0x0001  (1)
+ 00000076  FFC4      BL          lcd_line2_disp?T  ; T=0x0001  (2)
+   40:     ms_delay(10000);
+ 00000078  4800      LDR         R0,=0x2710
+ 0000007A  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000007C  FFC1      BL          ms_delay?T  ; T=0x0001  (2)
+   41:     Uc_key_temp = get_key(1);
+ 0000007E  2001      MOV         R0,#0x1
+ 00000080  F7FF      BL          get_key?T  ; T=0x0001  (1)
+ 00000082  FFBE      BL          get_key?T  ; T=0x0001  (2)
+ 00000084  4800      LDR         R1,=Uc_key_temp ; Uc_key_temp
+ 00000086  7008      STRB        R0,[R1,#0x0] ; Uc_key_temp
+   43:     IO0CLR |= CS_DAC; 
+ 00000088  2280      MOV         R2,#0x80
+ 0000008A  4800      LDR         R0,=0xE002800C
+ 0000008C  6801      LDR         R1,[R0,#0x0]
+ 0000008E  4311      ORR         R1,R2
+ 00000090  6001      STR         R1,[R0,#0x0]
+   44:     ms_delay(100);
+ 00000092  2064      MOV         R0,#0x64
+ 00000094  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000096  FFB4      BL          ms_delay?T  ; T=0x0001  (2)
+   45:     spi_send_byte(0x3800);
+ 00000098  4800      LDR         R0,=0x3800
+ 0000009A  F7FF      BL          spi_send_byte?T  ; T=0x0001  (1)
+ 0000009C  FFB1      BL          spi_send_byte?T  ; T=0x0001  (2)
+   46:     ms_delay(100);
+ 0000009E  2064      MOV         R0,#0x64
+ARM COMPILER V2.50a,  main                                                                 05/12/12  17:32:40  PAGE 5   
+
+ 000000A0  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 000000A2  FFAE      BL          ms_delay?T  ; T=0x0001  (2)
+   47:     IO0SET |= CS_DAC;
+ 000000A4  2280      MOV         R2,#0x80
+ 000000A6  4800      LDR         R0,=0xE0028004
+ 000000A8  6801      LDR         R1,[R0,#0x0]
+ 000000AA  4311      ORR         R1,R2
+ 000000AC  6001      STR         R1,[R0,#0x0]
+   49:     ms_delay(10000);
+ 000000AE  4800      LDR         R0,=0x2710
+ 000000B0  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 000000B2  FFA6      BL          ms_delay?T  ; T=0x0001  (2)
+   50:     IO0CLR |= LDAC;
+ 000000B4  4800      LDR         R2,=0x20000
+ 000000B6  4800      LDR         R0,=0xE002800C
+ 000000B8  6801      LDR         R1,[R0,#0x0]
+ 000000BA  4311      ORR         R1,R2
+ 000000BC  6001      STR         R1,[R0,#0x0]
+   51:     ms_delay(100);
+ 000000BE  2064      MOV         R0,#0x64
+ 000000C0  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 000000C2  FF9E      BL          ms_delay?T  ; T=0x0001  (2)
+   52:     IO0SET |= LDAC;
+ 000000C4  4800      LDR         R2,=0x20000
+ 000000C6  4800      LDR         R0,=0xE0028004
+ 000000C8  6801      LDR         R1,[R0,#0x0]
+ 000000CA  4311      ORR         R1,R2
+ 000000CC  6001      STR         R1,[R0,#0x0]
+   54:     ms_delay(100);
+ 000000CE  2064      MOV         R0,#0x64
+ 000000D0  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 000000D2  FF96      BL          ms_delay?T  ; T=0x0001  (2)
+   55:     lcd_line2_disp("          ", 0);
+ 000000D4  4800      LDR         R0,=??S_3 ; ??S_3
+ 000000D6  2100      MOV         R1,#0x0
+ 000000D8  F7FF      BL          lcd_line2_disp?T  ; T=0x0001  (1)
+ 000000DA  FF92      BL          lcd_line2_disp?T  ; T=0x0001  (2)
+   58:   }
+ 000000DC  E7BC      B           L_3  ; T=0x00000058
+   59: }
+ 000000DE  BC08      POP         {R3}
+ 000000E0  4718      BX          R3
+ 000000E2          ENDP ; 'main'
+
+
+
+Module Information          Static
+----------------------------------
+  code size            =    ------
+  data size            =    ------
+  const size           =        31
+End of Module Information.
+
+
+ARM COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

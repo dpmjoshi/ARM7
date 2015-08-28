@@ -1,0 +1,915 @@
+ARM COMPILER V2.50a,  lib                                                                  22/05/13  17:19:50  PAGE 1   
+
+
+ARM COMPILER V2.50a, COMPILATION OF MODULE lib
+OBJECT MODULE PLACED IN lib.OBJ
+COMPILER INVOKED BY: C:\Keil\ARM\BIN\CA.exe lib.c THUMB BROWSE DEBUG TABS(4) 
+
+stmt  level    source
+
+    1          #include"includes.h"
+    2          
+    3          /*******  MATH  Functions   **********/
+    4          U32 LIB_hex_dec(U8*, U32);
+    5          void LIB_hex_ascii(U8*, U8*);
+    6          
+    7          void LIB_str_copy(U8*, U8*, U8);
+    8          U8   LIB_str_cmp(U8*, U8*);
+    9          void LIB_str_conc(U8*, U8*, U8*);
+   10          void LIB_str_conc1(U8*, U8*, U8*);
+   11          void LIB_frmt_arr(U8*, U32);
+   12          U8   LIB_frag_arr(U8*, U32*, U8);
+   13              
+   14          /**********************************************************************************/
+   15          /*****************************  MATH  Functions   *********************************/
+   16          /**********************************************************************************/
+   17          /* Function Name: LIB_hex_dec(U8*, U32)                                           */
+   18          /* Arguments    : U8* Pointer to the array, which is used to store final result   */
+   19          /*                U32 hex_val is the HEX input to be converted into dec.          */ 
+   20          /* Return Types :                                                                 */
+   21          /* Description  : Converts the Hex value to dec and ultimate to corresponding     */
+   22          /*                ASCII. It can convert any no from 0- 0xffff ffff                */
+   23          /**********************************************************************************/
+   24          
+   25          U32 LIB_hex_dec(U8 *dec_arr, U32 hex_val)
+   26          {
+   27   1          U8  uc_cnt = 0;
+   28   1          U32 ui_div_fctr = 1;          // very important to initiate it at 1.
+   29   1          U32 ui_hex_val  = 0;
+   30   1       
+   31   1          ui_hex_val = hex_val;
+   32   1          while(ui_hex_val > 0)
+   33   1          {
+   34   2              ui_hex_val /= 10;
+   35   2              ++uc_cnt;
+   36   2              if(ui_hex_val == 0)
+   37   2              continue; 
+   38   2              ui_div_fctr *= 10;
+   39   2          }  
+   40   1          while(ui_div_fctr)
+   41   1          {
+   42   2              *dec_arr  = hex_val / ui_div_fctr;
+   43   2              *dec_arr += 0x30; 
+   44   2              dec_arr++;
+   45   2              hex_val  %= ui_div_fctr;
+   46   2              ui_div_fctr /= 10;
+   47   2          }
+   48   1          *dec_arr = '\0';
+   49   1          return uc_cnt;   // returning no of bytes in the dec array, this will be usefull in refreshing LCD or a
+             -ny display module.
+   50   1      }
+   51               
+   52          /**********************************************************************************/
+   53          /* Function Name: LIB_hex_ascii()                                                 */
+   54          /* Arguments    : U8  *hex_val                                                    */
+   55          /*                U8  *ascii_arr                                                  */
+   56          /* Return Types : NONE                                                            */
+   57          /* Description  :                                                                 */
+   58          /**********************************************************************************/
+ARM COMPILER V2.50a,  lib                                                                  22/05/13  17:19:50  PAGE 2   
+
+   59          
+   60          void LIB_hex_ascii(U8 *hex_val, U8 *ascii_arr)
+   61          {
+   62   1          U32 uc_temp = 0;
+   63   1          while(*hex_val)                                 // hex_val is the hex value array terminated by 0. 
+   64   1          {
+   65   2              uc_temp = *hex_val;
+   66   2              *ascii_arr = ((uc_temp >> 4) + 0x30);               // Higer nibble of the hex val 
+   67   2              if(*ascii_arr > 0x39)
+   68   2              {
+   69   3                  *ascii_arr += 7;
+   70   3              }
+   71   2              ascii_arr++;
+   72   2              *ascii_arr = ((*hex_val & 0x0f) + 0x30);            // Lower nibble of the hex val
+   73   2              if(*ascii_arr > 0x39)
+   74   2              {
+   75   3                  *ascii_arr += 7;
+   76   3              }
+   77   2              ascii_arr++;
+   78   2              hex_val++;
+   79   2          }
+   80   1      }
+   81          /**********************************************************************************/
+   82          /* Function Name: LIB_dec_hex()                                                   */
+   83          /* Arguments    : U8 *dec_arr                                                     */
+   84          /*                                                                                */
+   85          /* Return Types : U32 ui_hex_val                                                  */
+   86          /* Description  :                                                                 */
+   87          /**********************************************************************************/
+   88          
+   89          U32 LIB_dec_hex(U8 *dec_arr)
+   90          {
+   91   1          U32 ui_mul_fctr = 1;
+   92   1          U32 ui_hex_val = 0;
+   93   1          U8  uc_strlen = 0;
+   94   1          
+   95   1          uc_strlen   = LIB_strlen(dec_arr);    // Finding string length in order to get end pointer of string 
+   96   1          dec_arr += (uc_strlen - 1);           // adding strlen - 1 in the starting pointer 
+   97   1          while(uc_strlen)
+   98   1          {
+   99   2              ui_hex_val += (( *dec_arr - 0x30 )  * ui_mul_fctr);
+  100   2              ui_mul_fctr *= 10; 
+  101   2              dec_arr--;
+  102   2              uc_strlen--;
+  103   2          }
+  104   1          return ui_hex_val;
+  105   1      }
+  106          
+  107          /**********************************************************************************/
+  108          /***************************  STRING  Functions   *********************************/
+  109          /**********************************************************************************/
+  110          /* Function name:  LIB_str_copy(U8* source_str, U8* dest_str, U8 no_bytes)        */
+  111          /* Description  :  returns 1 if i/p src string matches with the cmp string        */
+  112          /*                                                                                */
+  113          /* Input        :  U8* source_str, U8* dest_str, U8 no_bytes                      */                
+  114          /* Output       :  NONE                                                           */
+  115          /* Return Value :  NONE                                                           */
+  116          /**********************************************************************************/
+  117          
+  118          void LIB_str_copy(U8 *source_str, U8 *dest_str, U8 no_bytes)
+  119          {
+  120   1          U8 uc_count = 0;
+  121   1          for(uc_count = 0; uc_count < no_bytes; uc_count++)
+  122   1          {
+  123   2              *dest_str = *source_str;
+  124   2              dest_str++;
+ARM COMPILER V2.50a,  lib                                                                  22/05/13  17:19:50  PAGE 3   
+
+  125   2              source_str++;
+  126   2          }       
+  127   1      }
+  128          /**********************************************************************************
+  129           *Function name: LIB_str_cmp(U8 *src, U8 *cmp)
+  130           *Description  : returns 1 if i/p src string matches with the cmp string 
+  131           
+  132           *Input        :   U8 *src, U8 *cmp                                     
+  133           *Output       :   None
+  134           *Return Value :   0/1 
+  135          ***********************************************************************************/
+  136          
+  137          U8 LIB_str_cmp(U8 *src,U8 *cmp)
+  138          {
+  139   1        U8 str_temp;
+  140   1        for(str_temp = 0; *cmp!='\0'; str_temp++)
+  141   1          {
+  142   2           if(*src == *cmp)
+  143   2            {
+  144   3             src++;
+  145   3             cmp++;
+  146   3             if(*cmp == '\0')
+  147   3             return 1;
+  148   3            }
+  149   2           else
+  150   2             return 0;
+  151   2          } 
+  152   1      }
+  153          /**********************************************************************************/
+  154          /* Function Name: LIB_str_conc()                                                  */
+  155          /* Arguments    : U32   hex_val                                                   */
+  156          /*                U8  *ascii_arr (addresses are of fragmented arr are saved)      */
+  157          /* Return Types : NONE                                                            */
+  158          /* Description  : Concatinates two strings & saves it in third string             */
+  159          /**********************************************************************************/
+  160          
+  161          void LIB_str_conc(U8 *str1, U8 *str2, U8 *str_conc)
+  162          {
+  163   1       U8 *temp;
+  164   1       temp = str_conc;
+  165   1       while(*str1)
+  166   1       {
+  167   2        *str_conc = *str1;
+  168   2        str1++;
+  169   2        str_conc++;
+  170   2       }
+  171   1       while(*str2)
+  172   1       {
+  173   2        *str_conc = *str2;
+  174   2        str2++;
+  175   2        str_conc++;
+  176   2       }
+  177   1       *str_conc = '\0';
+  178   1      }
+  179          
+  180          /**********************************************************************************/
+  181          /* Function Name: LIB_str_conc1()                                                 */
+  182          /* Arguments    :                                                                 */
+  183          /*                                                                                */
+  184          /* Return Types : NONE                                                            */
+  185          /* Description  : Concatinates two strings & saves it in third string             */
+  186          /**********************************************************************************/
+  187          
+  188          void LIB_str_conc1(U8 *str1, U8 *str2, U8 *str_conc)
+  189          {
+  190   1       U8 *temp;
+ARM COMPILER V2.50a,  lib                                                                  22/05/13  17:19:50  PAGE 4   
+
+  191   1       temp = str_conc;
+  192   1       while(*str1 != '$')
+  193   1       {
+  194   2        *str_conc = *str1;
+  195   2        str1++;
+  196   2        str_conc++;
+  197   2       }
+  198   1       while(*str2)
+  199   1       {
+  200   2        *str_conc = *str2;
+  201   2        str2++;
+  202   2        str_conc++;
+  203   2       }
+  204   1       *str_conc = '\0';
+  205   1      }
+  206           
+  207          
+  208          /**********************************************************************************/
+  209          /* Function Name: LIB_strlen()                                                */
+  210          /* Arguments    : NONE                                                            */
+  211          /* Return Types : NONE                                                            */
+  212          /* Description  : calculates the byte                                             */
+  213          /**********************************************************************************/
+  214          
+  215          U16 LIB_strlen(U8 *str)
+  216          {
+  217   1       U16 uc_str_cnt = 0;
+  218   1       while(*str)
+  219   1       {
+  220   2        uc_str_cnt++;
+  221   2        str++;
+  222   2       }
+  223   1       return uc_str_cnt;
+  224   1      }
+  225          
+  226          /**********************************************************************************/
+  227          /* Function Name: LIB_frmt_arr()                                                  */
+  228          /* Arguments    : U8 *input_arr                                                   */
+  229          /*                U32 frmt_bytes                                                  */
+  230          /* Return Types : NONE                                                            */
+  231          /* Description  :                                                                 */
+  232          /**********************************************************************************/
+  233          
+  234          void LIB_frmt_arr(U8 *input_arr, U32 frmt_bytes)
+  235          {
+  236   1       while(frmt_bytes)
+  237   1       {
+  238   2        *input_arr = '\0';
+  239   2        input_arr++;
+  240   2        frmt_bytes--;
+  241   2       }
+  242   1      }
+  243          
+  244          /**********************************************************************************/
+  245          /* Function Name: LIB_frag_arr()                                                  */
+  246          /* Arguments    : U8   *input_arr                                                 */
+  247          /*                U32  *add_arr (addresses are of fragmented arr are saved)       */
+  248          /*                U8   delim (delimeter used for fragmenting array)               */
+  249          /* Return Types : NONE                                                            */
+  250          /* Description  :                                                                 */
+  251          /**********************************************************************************/
+  252          
+  253          U8 LIB_frag_arr(U8 *input_arr, U32 *add_arr, U8 delim)
+  254          {
+  255   1        U8  uc_delim_cnt = 0;
+  256   1        
+ARM COMPILER V2.50a,  lib                                                                  22/05/13  17:19:50  PAGE 5   
+
+  257   1        *add_arr = (U32)input_arr;
+  258   1        add_arr++;
+  259   1      
+  260   1        while(*input_arr != '\0')
+  261   1        {
+  262   2         if(*input_arr == delim)
+  263   2         {
+  264   3          uc_delim_cnt++;
+  265   3          *add_arr = (U32)(input_arr + 2); 
+  266   3          add_arr++;
+  267   3         }
+  268   2         input_arr++;
+  269   2        }
+  270   1        
+  271   1       return uc_delim_cnt;
+  272   1      }
+  273          
+*** WARNING C180 IN LINE 152 OF lib.c: 'LIB_str_cmp?T': not every path returns a value
+ARM COMPILER V2.50a,  lib                                                                  22/05/13  17:19:50  PAGE 6   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+
+*** EXTERNALS:
+ EXTERN CODE16 (?C?UDIV?T)
+
+
+
+*** PUBLICS:
+ PUBLIC         LIB_hex_dec?T
+ PUBLIC         LIB_dec_hex?T
+ PUBLIC         LIB_hex_ascii?T
+ PUBLIC         LIB_str_copy?T
+ PUBLIC         LIB_str_cmp?T
+ PUBLIC         LIB_str_conc?T
+ PUBLIC         LIB_str_conc1?T
+ PUBLIC         LIB_frmt_arr?T
+ PUBLIC         LIB_strlen?T
+ PUBLIC         LIB_frag_arr?T
+
+
+
+*** CODE SEGMENT '?PR?LIB_hex_dec?T?lib':
+   25: U32 LIB_hex_dec(U8 *dec_arr, U32 hex_val)
+ 00000000  B5F0      PUSH        {R4-R7,LR}
+ 00000002  1C0D      MOV         R5,R1 ; hex_val
+ 00000004  ---- Variable 'hex_val' assigned to Register 'R5' ----
+ 00000004  1C03      MOV         R3,R0 ; dec_arr
+ 00000006  ---- Variable 'dec_arr' assigned to Register 'R3' ----
+   26: {
+ 00000006            ; SCOPE-START
+   27:     U8  uc_cnt = 0;
+ 00000006  2200      MOV         R2,#0x0
+ 00000008  ---- Variable 'uc_cnt' assigned to Register 'R2' ----
+   28:     U32 ui_div_fctr = 1;          // very important to initiate it at 1.
+ 00000008  2401      MOV         R4,#0x1
+ 0000000A  ---- Variable 'ui_div_fctr' assigned to Register 'R4' ----
+   29:     U32 ui_hex_val  = 0;
+ 0000000A  2600      MOV         R6,#0x0
+ 0000000C  ---- Variable 'ui_hex_val' assigned to Register 'R6' ----
+   31:     ui_hex_val = hex_val;
+ 0000000C  1C2E      MOV         R6,R5 ; hex_val
+   32:      while(ui_hex_val > 0)
+ 0000000E  E00D      B           L_1  ; T=0x0000002C
+ 00000010          L_3:
+   34:           ui_hex_val /= 10;
+ 00000010  1C30      MOV         R0,R6 ; ui_hex_val
+ 00000012  270A      MOV         R7,#0xA
+ 00000014  1C39      MOV         R1,R7
+ 00000016  F7FF      BL          ?C?UDIV?T  ; T=0x0001  (1) ; ?C?UDIV?T
+ 00000018  FFF3      BL          ?C?UDIV?T  ; T=0x0001  (2) ; ?C?UDIV?T
+ 0000001A  1C08      MOV         R0,R1
+ 0000001C  1C06      MOV         R6,R0 ; ui_hex_val
+   35:           ++uc_cnt;
+ 0000001E  3201      ADD         R2,#0x1
+ 00000020  0612      LSL         R2,R2,#0x18
+ 00000022  0E12      LSR         R2,R2,#0x18
+   36:           if(ui_hex_val == 0)
+ 00000024  1C30      MOV         R0,R6 ; ui_hex_val
+ 00000026  2800      CMP         R0,#0x0 ; ui_hex_val
+ 00000028  D000      BEQ         L_1  ; T=0x0000002C
+   38:           ui_div_fctr *= 10;
+ 0000002A  437C      MUL         R4,R7
+   39:      }  
+ 0000002C          L_1:
+ 0000002C  1C30      MOV         R0,R6 ; ui_hex_val
+ 0000002E  2800      CMP         R0,#0x0 ; ui_hex_val
+ 00000030  D8EE      BHI         L_3  ; T=0x00000010
+   40:      while(ui_div_fctr)
+ 00000032  E01A      B           L_6  ; T=0x0000006A
+ARM COMPILER V2.50a,  lib                                                                  22/05/13  17:19:50  PAGE 7   
+
+ 00000034          L_8:
+   42:           *dec_arr  = hex_val / ui_div_fctr;
+ 00000034  1C21      MOV         R1,R4 ; ui_div_fctr
+ 00000036  1C28      MOV         R0,R5 ; hex_val
+ 00000038  F7FF      BL          ?C?UDIV?T  ; T=0x0001  (1) ; ?C?UDIV?T
+ 0000003A  FFE2      BL          ?C?UDIV?T  ; T=0x0001  (2) ; ?C?UDIV?T
+ 0000003C  1C08      MOV         R0,R1
+ 0000003E  0601      LSL         R1,R0,#0x18
+ 00000040  0E09      LSR         R1,R1,#0x18
+ 00000042  1C18      MOV         R0,R3 ; dec_arr
+ 00000044  7001      STRB        R1,[R0,#0x0] ; dec_arr
+   43:           *dec_arr += 0x30; 
+ 00000046  1C18      MOV         R0,R3 ; dec_arr
+ 00000048  7801      LDRB        R1,[R0,#0x0] ; dec_arr
+ 0000004A  3130      ADD         R1,#0x30
+ 0000004C  1C18      MOV         R0,R3 ; dec_arr
+ 0000004E  7001      STRB        R1,[R0,#0x0] ; dec_arr
+   44:           dec_arr++;
+ 00000050  3301      ADD         R3,#0x1
+   45:           hex_val  %= ui_div_fctr;
+ 00000052  1C21      MOV         R1,R4 ; ui_div_fctr
+ 00000054  1C28      MOV         R0,R5 ; hex_val
+ 00000056  F7FF      BL          ?C?UDIV?T  ; T=0x0001  (1) ; ?C?UDIV?T
+ 00000058  FFD3      BL          ?C?UDIV?T  ; T=0x0001  (2) ; ?C?UDIV?T
+ 0000005A  1C01      MOV         R1,R0
+ 0000005C  1C0D      MOV         R5,R1 ; hex_val
+   46:           ui_div_fctr /= 10;
+ 0000005E  1C20      MOV         R0,R4 ; ui_div_fctr
+ 00000060  210A      MOV         R1,#0xA
+ 00000062  F7FF      BL          ?C?UDIV?T  ; T=0x0001  (1) ; ?C?UDIV?T
+ 00000064  FFCD      BL          ?C?UDIV?T  ; T=0x0001  (2) ; ?C?UDIV?T
+ 00000066  1C08      MOV         R0,R1
+ 00000068  1C04      MOV         R4,R0 ; ui_div_fctr
+   47:      }
+ 0000006A          L_6:
+ 0000006A  1C20      MOV         R0,R4 ; ui_div_fctr
+ 0000006C  2800      CMP         R0,#0x0 ; ui_div_fctr
+ 0000006E  D1E1      BNE         L_8  ; T=0x00000034
+   48:      *dec_arr = '\0';
+ 00000070  2100      MOV         R1,#0x0
+ 00000072  1C18      MOV         R0,R3 ; dec_arr
+ 00000074  7001      STRB        R1,[R0,#0x0] ; dec_arr
+   49:      return uc_cnt;   // returning no of bytes in the dec array, this will be usefull in refreshing LCD or any displ
+             -ay module.
+ 00000076  1C10      MOV         R0,R2 ; uc_cnt
+ 00000078  0600      LSL         R0,R0,#0x18 ; uc_cnt
+ 0000007A  0E00      LSR         R0,R0,#0x18
+ 0000007C            ; SCOPE-END
+   50: }
+ 0000007C  BCF0      POP         {R4-R7}
+ 0000007E  BC08      POP         {R3}
+ 00000080  4718      BX          R3
+ 00000082          ENDP ; 'LIB_hex_dec?T'
+
+
+*** CODE SEGMENT '?PR?LIB_hex_ascii?T?lib':
+   60: void LIB_hex_ascii(U8 *hex_val, U8 *ascii_arr)
+ 00000000  B410      PUSH        {R4}
+ 00000002  ---- Variable 'ascii_arr' assigned to Register 'R1' ----
+ 00000002  ---- Variable 'hex_val' assigned to Register 'R0' ----
+   61: {
+ 00000002            ; SCOPE-START
+   62:     U32 uc_temp = 0;
+ 00000002  2200      MOV         R2,#0x0
+ 00000004  ---- Variable 'uc_temp' assigned to Register 'R2' ----
+   63:     while(*hex_val)                                 // hex_val is the hex value array terminated by 0. 
+ 00000004  E026      B           L_11  ; T=0x00000054
+ 00000006          L_13:
+ARM COMPILER V2.50a,  lib                                                                  22/05/13  17:19:50  PAGE 8   
+
+   65:         uc_temp = *hex_val;
+ 00000006  1C02      MOV         R2,R0 ; hex_val
+ 00000008  7812      LDRB        R2,[R2,#0x0] ; hex_val
+   66:         *ascii_arr = ((uc_temp >> 4) + 0x30);               // Higer nibble of the hex val 
+ 0000000A  1C14      MOV         R4,R2 ; uc_temp
+ 0000000C  0924      LSR         R4,R4,#0x4 ; uc_temp
+ 0000000E  3430      ADD         R4,#0x30
+ 00000010  0624      LSL         R4,R4,#0x18
+ 00000012  0E24      LSR         R4,R4,#0x18
+ 00000014  1C0B      MOV         R3,R1 ; ascii_arr
+ 00000016  701C      STRB        R4,[R3,#0x0] ; ascii_arr
+   67:           if(*ascii_arr > 0x39)
+ 00000018  1C0B      MOV         R3,R1 ; ascii_arr
+ 0000001A  781B      LDRB        R3,[R3,#0x0] ; ascii_arr
+ 0000001C  2B39      CMP         R3,#0x39
+ 0000001E  DD04      BLE         L_15  ; T=0x0000002A
+   69:                *ascii_arr += 7;
+ 00000020  1C0B      MOV         R3,R1 ; ascii_arr
+ 00000022  781C      LDRB        R4,[R3,#0x0] ; ascii_arr
+ 00000024  3407      ADD         R4,#0x7
+ 00000026  1C0B      MOV         R3,R1 ; ascii_arr
+ 00000028  701C      STRB        R4,[R3,#0x0] ; ascii_arr
+   70:           }
+ 0000002A          L_15:
+   71:         ascii_arr++;
+ 0000002A  3101      ADD         R1,#0x1
+   72:         *ascii_arr = ((*hex_val & 0x0f) + 0x30);            // Lower nibble of the hex val
+ 0000002C  1C03      MOV         R3,R0 ; hex_val
+ 0000002E  781C      LDRB        R4,[R3,#0x0] ; hex_val
+ 00000030  230F      MOV         R3,#0xF
+ 00000032  401C      AND         R4,R3
+ 00000034  3430      ADD         R4,#0x30
+ 00000036  0624      LSL         R4,R4,#0x18
+ 00000038  0E24      LSR         R4,R4,#0x18
+ 0000003A  1C0B      MOV         R3,R1 ; ascii_arr
+ 0000003C  701C      STRB        R4,[R3,#0x0] ; ascii_arr
+   73:           if(*ascii_arr > 0x39)
+ 0000003E  1C0B      MOV         R3,R1 ; ascii_arr
+ 00000040  781B      LDRB        R3,[R3,#0x0] ; ascii_arr
+ 00000042  2B39      CMP         R3,#0x39
+ 00000044  DD04      BLE         L_16  ; T=0x00000050
+   75:                *ascii_arr += 7;
+ 00000046  1C0B      MOV         R3,R1 ; ascii_arr
+ 00000048  781C      LDRB        R4,[R3,#0x0] ; ascii_arr
+ 0000004A  3407      ADD         R4,#0x7
+ 0000004C  1C0B      MOV         R3,R1 ; ascii_arr
+ 0000004E  701C      STRB        R4,[R3,#0x0] ; ascii_arr
+   76:           }
+ 00000050          L_16:
+   77:           ascii_arr++;
+ 00000050  3101      ADD         R1,#0x1
+   78:            hex_val++;
+ 00000052  3001      ADD         R0,#0x1
+   79:      }
+ 00000054          L_11:
+ 00000054  1C03      MOV         R3,R0 ; hex_val
+ 00000056  781B      LDRB        R3,[R3,#0x0] ; hex_val
+ 00000058  2B00      CMP         R3,#0x0
+ 0000005A  D1D4      BNE         L_13  ; T=0x00000006
+ 0000005C            ; SCOPE-END
+   80: }
+ 0000005C  BC10      POP         {R4}
+ 0000005E  4770      BX          R14
+ 00000060          ENDP ; 'LIB_hex_ascii?T'
+
+
+*** CODE SEGMENT '?PR?LIB_dec_hex?T?lib':
+   89: U32 LIB_dec_hex(U8 *dec_arr)
+ARM COMPILER V2.50a,  lib                                                                  22/05/13  17:19:50  PAGE 9   
+
+ 00000000  B5F0      PUSH        {R4-R7,LR}
+ 00000002  1C07      MOV         R7,R0 ; dec_arr
+ 00000004  ---- Variable 'dec_arr' assigned to Register 'R7' ----
+   90: {
+ 00000004            ; SCOPE-START
+   91:     U32 ui_mul_fctr = 1;
+ 00000004  2601      MOV         R6,#0x1
+ 00000006  ---- Variable 'ui_mul_fctr' assigned to Register 'R6' ----
+   92:     U32 ui_hex_val = 0;
+ 00000006  2400      MOV         R4,#0x0
+ 00000008  ---- Variable 'ui_hex_val' assigned to Register 'R4' ----
+   93:     U8  uc_strlen = 0;
+ 00000008  2500      MOV         R5,#0x0
+ 0000000A  ---- Variable 'uc_strlen' assigned to Register 'R5' ----
+   95:     uc_strlen   = LIB_strlen(dec_arr);    // Finding string length in order to get end pointer of string 
+ 0000000A  1C38      MOV         R0,R7 ; dec_arr
+ 0000000C  F7FF      BL          LIB_strlen?T  ; T=0x0001  (1)
+ 0000000E  FFF8      BL          LIB_strlen?T  ; T=0x0001  (2)
+ 00000010  0605      LSL         R5,R0,#0x18 ; LIB_strlen?T
+ 00000012  0E2D      LSR         R5,R5,#0x18
+   96:     dec_arr += (uc_strlen - 1);           // adding strlen - 1 in the starting pointer 
+ 00000014  1C28      MOV         R0,R5 ; uc_strlen
+ 00000016  0601      LSL         R1,R0,#0x18 ; uc_strlen
+ 00000018  0E09      LSR         R1,R1,#0x18
+ 0000001A  3901      SUB         R1,#0x1
+ 0000001C  187F      ADD         R7,R1 ; dec_arr
+   97:     while(uc_strlen)
+ 0000001E  E00B      B           L_17  ; T=0x00000038
+ 00000020          L_19:
+   99:         ui_hex_val += (( *dec_arr - 0x30 )  * ui_mul_fctr);
+ 00000020  1C38      MOV         R0,R7 ; dec_arr
+ 00000022  7800      LDRB        R0,[R0,#0x0] ; dec_arr
+ 00000024  3830      SUB         R0,#0x30
+ 00000026  1C31      MOV         R1,R6 ; ui_mul_fctr
+ 00000028  4348      MUL         R0,R1 ; ui_mul_fctr
+ 0000002A  1824      ADD         R4,R0 ; ui_hex_val
+  100:         ui_mul_fctr *= 10; 
+ 0000002C  200A      MOV         R0,#0xA
+ 0000002E  4346      MUL         R6,R0
+  101:         dec_arr--;
+ 00000030  3F01      SUB         R7,#0x1
+  102:         uc_strlen--;
+ 00000032  3D01      SUB         R5,#0x1
+ 00000034  062D      LSL         R5,R5,#0x18
+ 00000036  0E2D      LSR         R5,R5,#0x18
+  103:     }
+ 00000038          L_17:
+ 00000038  1C28      MOV         R0,R5 ; uc_strlen
+ 0000003A  2800      CMP         R0,#0x0 ; uc_strlen
+ 0000003C  D1F0      BNE         L_19  ; T=0x00000020
+  104:     return ui_hex_val;
+ 0000003E  1C20      MOV         R0,R4 ; ui_hex_val
+ 00000040            ; SCOPE-END
+  105: }
+ 00000040  BCF0      POP         {R4-R7}
+ 00000042  BC08      POP         {R3}
+ 00000044  4718      BX          R3
+ 00000046          ENDP ; 'LIB_dec_hex?T'
+
+
+*** CODE SEGMENT '?PR?LIB_str_copy?T?lib':
+  118: void LIB_str_copy(U8 *source_str, U8 *dest_str, U8 no_bytes)
+ 00000000  B430      PUSH        {R4-R5}
+ 00000002  ---- Variable 'no_bytes' assigned to Register 'R2' ----
+ 00000002  ---- Variable 'dest_str' assigned to Register 'R1' ----
+ 00000002  ---- Variable 'source_str' assigned to Register 'R0' ----
+  119: {
+ 00000002            ; SCOPE-START
+ARM COMPILER V2.50a,  lib                                                                  22/05/13  17:19:50  PAGE 10  
+
+  120:     U8 uc_count = 0;
+ 00000002  2400      MOV         R4,#0x0
+ 00000004  1C23      MOV         R3,R4 ; uc_count
+ 00000006  ---- Variable 'uc_count' assigned to Register 'R3' ----
+  121:     for(uc_count = 0; uc_count < no_bytes; uc_count++)
+ 00000006  1C23      MOV         R3,R4 ; uc_count
+ 00000008  E008      B           L_24  ; T=0x0000001C
+ 0000000A          L_25:
+  123:         *dest_str = *source_str;
+ 0000000A  1C04      MOV         R4,R0 ; source_str
+ 0000000C  7825      LDRB        R5,[R4,#0x0] ; source_str
+ 0000000E  1C0C      MOV         R4,R1 ; dest_str
+ 00000010  7025      STRB        R5,[R4,#0x0] ; dest_str
+  124:         dest_str++;
+ 00000012  3101      ADD         R1,#0x1
+  125:         source_str++;
+ 00000014  3001      ADD         R0,#0x1
+  126:     }        
+ 00000016  3301      ADD         R3,#0x1
+ 00000018  061B      LSL         R3,R3,#0x18
+ 0000001A  0E1B      LSR         R3,R3,#0x18
+ 0000001C          L_24:
+ 0000001C  1C14      MOV         R4,R2 ; no_bytes
+ 0000001E  0625      LSL         R5,R4,#0x18 ; no_bytes
+ 00000020  0E2D      LSR         R5,R5,#0x18
+ 00000022  1C1C      MOV         R4,R3 ; uc_count
+ 00000024  0624      LSL         R4,R4,#0x18 ; uc_count
+ 00000026  0E24      LSR         R4,R4,#0x18
+ 00000028  42AC      CMP         R4,R5
+ 0000002A  D3EE      BCC         L_25  ; T=0x0000000A
+ 0000002C            ; SCOPE-END
+  127: }
+ 0000002C  BC30      POP         {R4-R5}
+ 0000002E  4770      BX          R14
+ 00000030          ENDP ; 'LIB_str_copy?T'
+
+
+*** CODE SEGMENT '?PR?LIB_str_cmp?T?lib':
+  137: U8 LIB_str_cmp(U8 *src,U8 *cmp)
+ 00000000  B410      PUSH        {R4}
+ 00000002  ---- Variable 'cmp' assigned to Register 'R1' ----
+ 00000002  1C03      MOV         R3,R0 ; src
+ 00000004  ---- Variable 'src' assigned to Register 'R3' ----
+  138: {
+ 00000004            ; SCOPE-START
+  140:   for(str_temp = 0; *cmp!='\0'; str_temp++)
+ 00000004  2200      MOV         R2,#0x0
+ 00000006  ---- Variable 'str_temp' assigned to Register 'R2' ----
+ 00000006  E012      B           L_29  ; T=0x0000002E
+ 00000008          L_30:
+  142:      if(*src == *cmp)
+ 00000008  1C08      MOV         R0,R1 ; cmp
+ 0000000A  7804      LDRB        R4,[R0,#0x0] ; cmp
+ 0000000C  1C18      MOV         R0,R3 ; src
+ 0000000E  7800      LDRB        R0,[R0,#0x0] ; src
+ 00000010  42A0      CMP         R0,R4
+ 00000012  D107      BNE         L_32  ; T=0x00000024
+  144:        src++;
+ 00000014  3301      ADD         R3,#0x1
+  145:        cmp++;
+ 00000016  3101      ADD         R1,#0x1
+  146:        if(*cmp == '\0')
+ 00000018  1C08      MOV         R0,R1 ; cmp
+ 0000001A  7800      LDRB        R0,[R0,#0x0] ; cmp
+ 0000001C  2800      CMP         R0,#0x0
+ 0000001E  D103      BNE         L_27  ; T=0x00000028
+  147:        return 1;
+ 00000020  2001      MOV         R0,#0x1
+ARM COMPILER V2.50a,  lib                                                                  22/05/13  17:19:50  PAGE 11  
+
+ 00000022  E008      B           L_34  ; T=0x00000036
+  148:       }
+ 00000024          L_32:
+  150:        return 0;
+ 00000024  2000      MOV         R0,#0x0
+ 00000026  E006      B           L_34  ; T=0x00000036
+  151:     } 
+ 00000028          L_27:
+ 00000028  3201      ADD         R2,#0x1
+ 0000002A  0612      LSL         R2,R2,#0x18
+ 0000002C  0E12      LSR         R2,R2,#0x18
+ 0000002E          L_29:
+ 0000002E  1C0C      MOV         R4,R1 ; cmp
+ 00000030  7824      LDRB        R4,[R4,#0x0] ; cmp
+ 00000032  2C00      CMP         R4,#0x0
+ 00000034  D1E8      BNE         L_30  ; T=0x00000008
+ 00000036            ; SCOPE-END
+  152: }
+ 00000036          L_34:
+ 00000036  BC10      POP         {R4}
+ 00000038  4770      BX          R14
+ 0000003A          ENDP ; 'LIB_str_cmp?T'
+
+
+*** CODE SEGMENT '?PR?LIB_str_conc?T?lib':
+  161: void LIB_str_conc(U8 *str1, U8 *str2, U8 *str_conc)
+ 00000000  B410      PUSH        {R4}
+ 00000002  ---- Variable 'str_conc' assigned to Register 'R2' ----
+ 00000002  ---- Variable 'str2' assigned to Register 'R1' ----
+ 00000002  ---- Variable 'str1' assigned to Register 'R0' ----
+  162: {
+ 00000002            ; SCOPE-START
+  165:  while(*str1)
+ 00000002  E005      B           L_36  ; T=0x00000010
+ 00000004          L_38:
+  167:   *str_conc = *str1;
+ 00000004  1C03      MOV         R3,R0 ; str1
+ 00000006  781C      LDRB        R4,[R3,#0x0] ; str1
+ 00000008  1C13      MOV         R3,R2 ; str_conc
+ 0000000A  701C      STRB        R4,[R3,#0x0] ; str_conc
+  168:   str1++;
+ 0000000C  3001      ADD         R0,#0x1
+  169:   str_conc++;
+ 0000000E  3201      ADD         R2,#0x1
+  170:  }
+ 00000010          L_36:
+ 00000010  1C03      MOV         R3,R0 ; str1
+ 00000012  781B      LDRB        R3,[R3,#0x0] ; str1
+ 00000014  2B00      CMP         R3,#0x0
+ 00000016  D1F5      BNE         L_38  ; T=0x00000004
+  171:  while(*str2)
+ 00000018  E005      B           L_40  ; T=0x00000026
+ 0000001A          L_42:
+  173:   *str_conc = *str2;
+ 0000001A  1C08      MOV         R0,R1 ; str2
+ 0000001C  7803      LDRB        R3,[R0,#0x0] ; str2
+ 0000001E  1C10      MOV         R0,R2 ; str_conc
+ 00000020  7003      STRB        R3,[R0,#0x0] ; str_conc
+  174:   str2++;
+ 00000022  3101      ADD         R1,#0x1
+  175:   str_conc++;
+ 00000024  3201      ADD         R2,#0x1
+  176:  }
+ 00000026          L_40:
+ 00000026  1C08      MOV         R0,R1 ; str2
+ 00000028  7800      LDRB        R0,[R0,#0x0] ; str2
+ 0000002A  2800      CMP         R0,#0x0
+ 0000002C  D1F5      BNE         L_42  ; T=0x0000001A
+ARM COMPILER V2.50a,  lib                                                                  22/05/13  17:19:50  PAGE 12  
+
+  177:  *str_conc = '\0';
+ 0000002E  2100      MOV         R1,#0x0
+ 00000030  1C10      MOV         R0,R2 ; str_conc
+ 00000032  7001      STRB        R1,[R0,#0x0] ; str_conc
+ 00000034            ; SCOPE-END
+  178: }
+ 00000034  BC10      POP         {R4}
+ 00000036  4770      BX          R14
+ 00000038          ENDP ; 'LIB_str_conc?T'
+
+
+*** CODE SEGMENT '?PR?LIB_str_conc1?T?lib':
+  188: void LIB_str_conc1(U8 *str1, U8 *str2, U8 *str_conc)
+ 00000000  B410      PUSH        {R4}
+ 00000002  ---- Variable 'str_conc' assigned to Register 'R2' ----
+ 00000002  ---- Variable 'str2' assigned to Register 'R1' ----
+ 00000002  ---- Variable 'str1' assigned to Register 'R0' ----
+  189: {
+ 00000002            ; SCOPE-START
+  192:  while(*str1 != '$')
+ 00000002  E005      B           L_44  ; T=0x00000010
+ 00000004          L_46:
+  194:   *str_conc = *str1;
+ 00000004  1C03      MOV         R3,R0 ; str1
+ 00000006  781C      LDRB        R4,[R3,#0x0] ; str1
+ 00000008  1C13      MOV         R3,R2 ; str_conc
+ 0000000A  701C      STRB        R4,[R3,#0x0] ; str_conc
+  195:   str1++;
+ 0000000C  3001      ADD         R0,#0x1
+  196:   str_conc++;
+ 0000000E  3201      ADD         R2,#0x1
+  197:  }
+ 00000010          L_44:
+ 00000010  1C03      MOV         R3,R0 ; str1
+ 00000012  781B      LDRB        R3,[R3,#0x0] ; str1
+ 00000014  2B24      CMP         R3,#0x24
+ 00000016  D1F5      BNE         L_46  ; T=0x00000004
+  198:  while(*str2)
+ 00000018  E005      B           L_48  ; T=0x00000026
+ 0000001A          L_50:
+  200:   *str_conc = *str2;
+ 0000001A  1C08      MOV         R0,R1 ; str2
+ 0000001C  7803      LDRB        R3,[R0,#0x0] ; str2
+ 0000001E  1C10      MOV         R0,R2 ; str_conc
+ 00000020  7003      STRB        R3,[R0,#0x0] ; str_conc
+  201:   str2++;
+ 00000022  3101      ADD         R1,#0x1
+  202:   str_conc++;
+ 00000024  3201      ADD         R2,#0x1
+  203:  }
+ 00000026          L_48:
+ 00000026  1C08      MOV         R0,R1 ; str2
+ 00000028  7800      LDRB        R0,[R0,#0x0] ; str2
+ 0000002A  2800      CMP         R0,#0x0
+ 0000002C  D1F5      BNE         L_50  ; T=0x0000001A
+  204:  *str_conc = '\0';
+ 0000002E  2100      MOV         R1,#0x0
+ 00000030  1C10      MOV         R0,R2 ; str_conc
+ 00000032  7001      STRB        R1,[R0,#0x0] ; str_conc
+ 00000034            ; SCOPE-END
+  205: }
+ 00000034  BC10      POP         {R4}
+ 00000036  4770      BX          R14
+ 00000038          ENDP ; 'LIB_str_conc1?T'
+
+
+*** CODE SEGMENT '?PR?LIB_strlen?T?lib':
+  215: U16 LIB_strlen(U8 *str)
+ 00000000  ---- Variable 'str' assigned to Register 'R0' ----
+  216: {
+ARM COMPILER V2.50a,  lib                                                                  22/05/13  17:19:50  PAGE 13  
+
+ 00000000            ; SCOPE-START
+  217:  U16 uc_str_cnt = 0;
+ 00000000  2100      MOV         R1,#0x0
+ 00000002  ---- Variable 'uc_str_cnt' assigned to Register 'R1' ----
+  218:  while(*str)
+ 00000002  E003      B           L_52  ; T=0x0000000C
+ 00000004          L_54:
+  220:   uc_str_cnt++;
+ 00000004  3101      ADD         R1,#0x1
+ 00000006  0409      LSL         R1,R1,#0x10
+ 00000008  0C09      LSR         R1,R1,#0x10
+  221:   str++;
+ 0000000A  3001      ADD         R0,#0x1
+  222:  }
+ 0000000C          L_52:
+ 0000000C  1C02      MOV         R2,R0 ; str
+ 0000000E  7812      LDRB        R2,[R2,#0x0] ; str
+ 00000010  2A00      CMP         R2,#0x0
+ 00000012  D1F7      BNE         L_54  ; T=0x00000004
+  223:  return uc_str_cnt;
+ 00000014  1C08      MOV         R0,R1 ; uc_str_cnt
+ 00000016  0400      LSL         R0,R0,#0x10 ; uc_str_cnt
+ 00000018  0C00      LSR         R0,R0,#0x10
+ 0000001A            ; SCOPE-END
+  224: }
+ 0000001A  4770      BX          R14
+ 0000001C          ENDP ; 'LIB_strlen?T'
+
+
+*** CODE SEGMENT '?PR?LIB_frmt_arr?T?lib':
+  234: void LIB_frmt_arr(U8 *input_arr, U32 frmt_bytes)
+ 00000000  ---- Variable 'frmt_bytes' assigned to Register 'R1' ----
+ 00000000  ---- Variable 'input_arr' assigned to Register 'R0' ----
+  236:  while(frmt_bytes)
+ 00000000  E004      B           L_57  ; T=0x0000000C
+ 00000002          L_59:
+  238:   *input_arr = '\0';
+ 00000002  2300      MOV         R3,#0x0
+ 00000004  1C02      MOV         R2,R0 ; input_arr
+ 00000006  7013      STRB        R3,[R2,#0x0] ; input_arr
+  239:   input_arr++;
+ 00000008  3001      ADD         R0,#0x1
+  240:   frmt_bytes--;
+ 0000000A  3901      SUB         R1,#0x1
+  241:  }
+ 0000000C          L_57:
+ 0000000C  1C0A      MOV         R2,R1 ; frmt_bytes
+ 0000000E  2A00      CMP         R2,#0x0 ; frmt_bytes
+ 00000010  D1F7      BNE         L_59  ; T=0x00000002
+  242: }
+ 00000012  4770      BX          R14
+ 00000014          ENDP ; 'LIB_frmt_arr?T'
+
+
+*** CODE SEGMENT '?PR?LIB_frag_arr?T?lib':
+  253: U8 LIB_frag_arr(U8 *input_arr, U32 *add_arr, U8 delim)
+ 00000000  B430      PUSH        {R4-R5}
+ 00000002  ---- Variable 'delim' assigned to Register 'R2' ----
+ 00000002  ---- Variable 'add_arr' assigned to Register 'R1' ----
+ 00000002  ---- Variable 'input_arr' assigned to Register 'R0' ----
+  254: {
+ 00000002            ; SCOPE-START
+  255:   U8  uc_delim_cnt = 0;
+ 00000002  2300      MOV         R3,#0x0
+ 00000004  ---- Variable 'uc_delim_cnt' assigned to Register 'R3' ----
+  257:   *add_arr = (U32)input_arr;
+ 00000004  1C05      MOV         R5,R0 ; input_arr
+ 00000006  1C0C      MOV         R4,R1 ; add_arr
+ 00000008  6025      STR         R5,[R4,#0x0] ; add_arr
+  258:   add_arr++;
+ARM COMPILER V2.50a,  lib                                                                  22/05/13  17:19:50  PAGE 14  
+
+ 0000000A  3104      ADD         R1,#0x4
+  260:   while(*input_arr != '\0')
+ 0000000C  E00F      B           L_61  ; T=0x0000002E
+ 0000000E          L_63:
+  262:    if(*input_arr == delim)
+ 0000000E  1C04      MOV         R4,R0 ; input_arr
+ 00000010  7824      LDRB        R4,[R4,#0x0] ; input_arr
+ 00000012  1C15      MOV         R5,R2 ; delim
+ 00000014  062D      LSL         R5,R5,#0x18 ; delim
+ 00000016  0E2D      LSR         R5,R5,#0x18
+ 00000018  42AC      CMP         R4,R5
+ 0000001A  D107      BNE         L_65  ; T=0x0000002C
+  264:     uc_delim_cnt++;
+ 0000001C  3301      ADD         R3,#0x1
+ 0000001E  061B      LSL         R3,R3,#0x18
+ 00000020  0E1B      LSR         R3,R3,#0x18
+  265:     *add_arr = (U32)(input_arr + 2); 
+ 00000022  1C05      MOV         R5,R0 ; input_arr
+ 00000024  3502      ADD         R5,#0x2
+ 00000026  1C0C      MOV         R4,R1 ; add_arr
+ 00000028  6025      STR         R5,[R4,#0x0] ; add_arr
+  266:     add_arr++;
+ 0000002A  3104      ADD         R1,#0x4
+  267:    }
+ 0000002C          L_65:
+  268:    input_arr++;
+ 0000002C  3001      ADD         R0,#0x1
+  269:   }
+ 0000002E          L_61:
+ 0000002E  1C04      MOV         R4,R0 ; input_arr
+ 00000030  7824      LDRB        R4,[R4,#0x0] ; input_arr
+ 00000032  2C00      CMP         R4,#0x0
+ 00000034  D1EB      BNE         L_63  ; T=0x0000000E
+  271:  return uc_delim_cnt;
+ 00000036  1C18      MOV         R0,R3 ; uc_delim_cnt
+ 00000038  0600      LSL         R0,R0,#0x18 ; uc_delim_cnt
+ 0000003A  0E00      LSR         R0,R0,#0x18
+ 0000003C            ; SCOPE-END
+  272: }
+ 0000003C  BC30      POP         {R4-R5}
+ 0000003E  4770      BX          R14
+ 00000040          ENDP ; 'LIB_frag_arr?T'
+
+
+
+Module Information          Static
+----------------------------------
+  code size            =    ------
+  data size            =    ------
+  const size           =    ------
+End of Module Information.
+
+
+ARM COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)

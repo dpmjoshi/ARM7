@@ -1,0 +1,366 @@
+ARM COMPILER V2.50a,  app                                                                  03/04/13  17:09:35  PAGE 1   
+
+
+ARM COMPILER V2.50a, COMPILATION OF MODULE app
+OBJECT MODULE PLACED IN app.OBJ
+COMPILER INVOKED BY: C:\Keil\ARM\BIN\CA.exe app.c THUMB BROWSE DEBUG TABS(4) 
+
+stmt  level    source
+
+    1          #include"includes.h"
+    2          #define     PAGE_SIZE        128
+    3          #define     DEVICE_ADDR      0XA0
+    4          
+    5          
+    6          void APP_default_page()
+    7          {
+    8   1          clrscr();
+    9   1          lcd_line2_disp("NCL Mobile", 3);
+   10   1      }
+   11          
+   12          /**********************************************************************************/
+   13          /* Function Name: APP_phone_dial                                                  */
+   14          /* Arguments    : *phone_no                                                               */
+   15          /* Return Types :                                                                 */
+   16          /* Description  :                                                                 */
+   17          /**********************************************************************************/
+   18          
+   19          
+   20          U8 APP_phone_dial(U8 *phone_no)
+   21          {
+   22   1        U8 uc_cnt = 10;
+   23   1        U8 uc_temp_key = 0;
+   24   1        U8 *uc_ptr;
+   25   1        U8 uc_phone_no[20] = {0};
+   26   1        clrscr();
+   27   1        lcd_line1_disp("Phone:",0);
+   28   1        lcd_line4_disp("Call",0);
+   29   1        lcd_line4_disp("Cancel",14);
+   30   1        ms_delay(8000);
+   31   1      
+   32   1        uc_ptr = &uc_phone_no[0];
+   33   1        while(uc_temp_key != 'E')
+   34   1        {
+   35   2          uc_temp_key = get_key(0);
+   36   2          if((uc_temp_key >= '0') && (uc_temp_key <= '9'))
+   37   2          {
+   38   3              *uc_ptr = uc_temp_key;
+   39   3              uc_ptr++;
+   40   3          }
+   41   2          else if(uc_temp_key == 'A')
+   42   2          {
+   43   3           if(uc_ptr >= &uc_phone_no[0])
+   44   3           {      
+   45   4             if(uc_ptr > &uc_phone_no[0])
+   46   4              {
+   47   5                  uc_ptr--;
+   48   5              }
+   49   4              *uc_ptr = ' ';
+   50   4           }
+   51   3          }
+   52   2          else if(uc_temp_key == 'D')
+   53   2          {
+   54   3           return 0;
+   55   3          }
+   56   2          lcd_line1_disp(&uc_phone_no[0], 7);
+   57   2          ms_delay(1100);
+   58   2        }
+   59   1        *uc_ptr = '\0';
+ARM COMPILER V2.50a,  app                                                                  03/04/13  17:09:35  PAGE 2   
+
+   60   1      
+   61   1        uc_cnt = LIB_strlen(&uc_phone_no[0]);
+   62   1        if(uc_cnt > 0)
+   63   1        {
+   64   2          LIB_str_copy(&uc_phone_no[0], phone_no, uc_cnt+1);
+   65   2          return 1;
+   66   2        }
+   67   1        else
+   68   1        {
+   69   2          return 2;
+   70   2        }
+   71   1      }
+   72          /**********************************************************************************/
+   73          /* Function Name: APP_keypad                                                      */
+   74          /* Arguments    :                                                                 */
+   75          /* Return Types :                                                                 */
+   76          /* Description  :                                                                 */
+   77          /**********************************************************************************/
+   78          
+   79          void APP_keypad()
+   80          {
+   81   1          U8 uc_key = 0;
+   82   1              
+   83   1          uc_key = get_key(0);
+   84   1      }
+   85          
+   86          
+ARM COMPILER V2.50a,  app                                                                  03/04/13  17:09:35  PAGE 3   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+
+*** EXTERNALS:
+ EXTERN CODE16 (ms_delay?T)
+ EXTERN CODE16 (LIB_str_copy?T)
+ EXTERN CODE16 (LIB_strlen?T)
+ EXTERN CODE16 (get_key?T)
+ EXTERN CODE16 (clrscr?T)
+ EXTERN CODE16 (lcd_line1_disp?T)
+ EXTERN CODE16 (lcd_line2_disp?T)
+ EXTERN CODE16 (lcd_line4_disp?T)
+
+
+
+*** PUBLICS:
+ PUBLIC         APP_phone_dial?T
+ PUBLIC         APP_default_page?T
+ PUBLIC         APP_keypad?T
+
+
+
+*** DATA SEGMENT '?CON?app':
+ 00000000          ??S_4:
+ 00000000            DB          'Cancel',0x00
+ 00000007          ??S_3:
+ 00000007            DB          'Call',0x00
+ 0000000C          ??S_2:
+ 0000000C            DB          'Phone:',0x00
+ 00000013          ??S_1:
+ 00000013            DB          'NCL Mobile',0x00
+ 0000001E            ALIGN       4
+ 00000020          ?tpl?0001:
+ 00000020           BEGIN_INIT
+ 00000020  00        DB          0x0
+ 00000021            SPACE       19
+ 00000034           END_INIT
+
+*** CODE SEGMENT '?PR?APP_default_page?T?app':
+    6: void APP_default_page()
+ 00000000  B500      PUSH        {LR}
+    8:     clrscr();
+ 00000002  F7FF      BL          clrscr?T  ; T=0x0001  (1)
+ 00000004  FFFD      BL          clrscr?T  ; T=0x0001  (2)
+    9:     lcd_line2_disp("NCL Mobile", 3);
+ 00000006  4800      LDR         R0,=??S_1 ; ??S_1
+ 00000008  2103      MOV         R1,#0x3
+ 0000000A  F7FF      BL          lcd_line2_disp?T  ; T=0x0001  (1)
+ 0000000C  FFF9      BL          lcd_line2_disp?T  ; T=0x0001  (2)
+   10: }
+ 0000000E  BC08      POP         {R3}
+ 00000010  4718      BX          R3
+ 00000012          ENDP ; 'APP_default_page?T'
+
+
+*** CODE SEGMENT '?PR?APP_phone_dial?T?app':
+   20: U8 APP_phone_dial(U8 *phone_no)
+ 00000000  B5F0      PUSH        {R4-R7,LR}
+ 00000002  1C04      MOV         R4,R0 ; phone_no
+ 00000004  ---- Variable 'phone_no' assigned to Register 'R4' ----
+ 00000004  B085      SUB         R13,#0x14
+   21: {
+ 00000006            ; SCOPE-START
+   22:   U8 uc_cnt = 10;
+ 00000006  260A      MOV         R6,#0xA
+ 00000008  ---- Variable 'uc_cnt' assigned to Register 'R6' ----
+   23:   U8 uc_temp_key = 0;
+ 00000008  2700      MOV         R7,#0x0
+ 0000000A  ---- Variable 'uc_temp_key' assigned to Register 'R7' ----
+   25:   U8 uc_phone_no[20] = {0};
+ 0000000A  4800      LDR         R1,=?tpl?0001 ; ?tpl?0001
+ 0000000C  A800      ADD         R0,R13,#0x0
+ 0000000E  2214      MOV         R2,#0x14
+ARM COMPILER V2.50a,  app                                                                  03/04/13  17:09:35  PAGE 4   
+
+ 00000010          L_16:
+ 00000010  780B      LDRB        R3,[R1,#0x0]
+ 00000012  7003      STRB        R3,[R0,#0x0]
+ 00000014  1C49      ADD         R1,R1,#0x1
+ 00000016  1C40      ADD         R0,R0,#0x1
+ 00000018  1E52      SUB         R2,R2,#0x1
+ 0000001A  D1F9      BNE         L_16  ; T=0x00000010
+   26:   clrscr();
+ 0000001C  F7FF      BL          clrscr?T  ; T=0x0001  (1)
+ 0000001E  FFF0      BL          clrscr?T  ; T=0x0001  (2)
+   27:   lcd_line1_disp("Phone:",0);
+ 00000020  4800      LDR         R0,=??S_2 ; ??S_2
+ 00000022  2100      MOV         R1,#0x0
+ 00000024  F7FF      BL          lcd_line1_disp?T  ; T=0x0001  (1)
+ 00000026  FFEC      BL          lcd_line1_disp?T  ; T=0x0001  (2)
+   28:   lcd_line4_disp("Call",0);
+ 00000028  4800      LDR         R0,=??S_3 ; ??S_3
+ 0000002A  2100      MOV         R1,#0x0
+ 0000002C  F7FF      BL          lcd_line4_disp?T  ; T=0x0001  (1)
+ 0000002E  FFE8      BL          lcd_line4_disp?T  ; T=0x0001  (2)
+   29:   lcd_line4_disp("Cancel",14);
+ 00000030  4800      LDR         R0,=??S_4 ; ??S_4
+ 00000032  210E      MOV         R1,#0xE
+ 00000034  F7FF      BL          lcd_line4_disp?T  ; T=0x0001  (1)
+ 00000036  FFE4      BL          lcd_line4_disp?T  ; T=0x0001  (2)
+   30:   ms_delay(8000);
+ 00000038  4800      LDR         R0,=0x1F40
+ 0000003A  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000003C  FFE1      BL          ms_delay?T  ; T=0x0001  (2)
+   32:   uc_ptr = &uc_phone_no[0];
+ 0000003E  AD00      ADD         R5,R13,#0x0
+ 00000040  ---- Variable 'uc_ptr' assigned to Register 'R5' ----
+   33:   while(uc_temp_key != 'E')
+ 00000040  E030      B           L_1  ; T=0x000000A4
+ 00000042          L_3:
+   35:       uc_temp_key = get_key(0);
+ 00000042  2000      MOV         R0,#0x0
+ 00000044  F7FF      BL          get_key?T  ; T=0x0001  (1)
+ 00000046  FFDC      BL          get_key?T  ; T=0x0001  (2)
+ 00000048  1C07      MOV         R7,R0 ; uc_temp_key
+   36:       if((uc_temp_key >= '0') && (uc_temp_key <= '9'))
+ 0000004A  0600      LSL         R0,R0,#0x18 ; uc_temp_key
+ 0000004C  0E00      LSR         R0,R0,#0x18
+ 0000004E  2830      CMP         R0,#0x30
+ 00000050  DB09      BLT         L_5  ; T=0x00000066
+ 00000052  1C38      MOV         R0,R7 ; uc_temp_key
+ 00000054  0600      LSL         R0,R0,#0x18 ; uc_temp_key
+ 00000056  0E00      LSR         R0,R0,#0x18
+ 00000058  2839      CMP         R0,#0x39
+ 0000005A  DC04      BGT         L_5  ; T=0x00000066
+   38:         *uc_ptr = uc_temp_key;
+ 0000005C  1C39      MOV         R1,R7 ; uc_temp_key
+ 0000005E  1C28      MOV         R0,R5 ; uc_ptr
+ 00000060  7001      STRB        R1,[R0,#0x0] ; uc_ptr
+   39:         uc_ptr++;
+ 00000062  3501      ADD         R5,#0x1
+   40:     }
+ 00000064  E017      B           L_6  ; T=0x00000096
+ 00000066          L_5:
+   41:     else if(uc_temp_key == 'A')
+ 00000066  1C38      MOV         R0,R7 ; uc_temp_key
+ 00000068  0600      LSL         R0,R0,#0x18 ; uc_temp_key
+ 0000006A  0E00      LSR         R0,R0,#0x18
+ 0000006C  2841      CMP         R0,#0x41
+ 0000006E  D10B      BNE         L_7  ; T=0x00000088
+   43:      if(uc_ptr >= &uc_phone_no[0])
+ARM COMPILER V2.50a,  app                                                                  03/04/13  17:09:35  PAGE 5   
+
+ 00000070  A900      ADD         R1,R13,#0x0
+ 00000072  1C28      MOV         R0,R5 ; uc_ptr
+ 00000074  4288      CMP         R0,R1 ; uc_ptr
+ 00000076  D30E      BCC         L_6  ; T=0x00000096
+   45:        if(uc_ptr > &uc_phone_no[0])
+ 00000078  1C28      MOV         R0,R5 ; uc_ptr
+ 0000007A  4288      CMP         R0,R1 ; uc_ptr
+ 0000007C  D900      BLS         L_9  ; T=0x00000080
+   47:             uc_ptr--;
+ 0000007E  3D01      SUB         R5,#0x1
+   48:         }
+ 00000080          L_9:
+   49:         *uc_ptr = ' ';
+ 00000080  2120      MOV         R1,#0x20
+ 00000082  1C28      MOV         R0,R5 ; uc_ptr
+ 00000084  7001      STRB        R1,[R0,#0x0] ; uc_ptr
+   51:     }
+ 00000086  E006      B           L_6  ; T=0x00000096
+ 00000088          L_7:
+   52:     else if(uc_temp_key == 'D')
+ 00000088  1C38      MOV         R0,R7 ; uc_temp_key
+ 0000008A  0600      LSL         R0,R0,#0x18 ; uc_temp_key
+ 0000008C  0E00      LSR         R0,R0,#0x18
+ 0000008E  2844      CMP         R0,#0x44
+ 00000090  D101      BNE         L_6  ; T=0x00000096
+   54:      return 0;
+ 00000092  2000      MOV         R0,#0x0
+ 00000094  E024      B           L_12  ; T=0x000000E0
+   55:     }
+ 00000096          L_6:
+   56:     lcd_line1_disp(&uc_phone_no[0], 7);
+ 00000096  A800      ADD         R0,R13,#0x0
+ 00000098  2107      MOV         R1,#0x7
+ 0000009A  F7FF      BL          lcd_line1_disp?T  ; T=0x0001  (1)
+ 0000009C  FFB1      BL          lcd_line1_disp?T  ; T=0x0001  (2)
+   57:     ms_delay(1100);
+ 0000009E  4800      LDR         R0,=0x44C
+ 000000A0  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 000000A2  FFAE      BL          ms_delay?T  ; T=0x0001  (2)
+   58:   }
+ 000000A4          L_1:
+ 000000A4  1C38      MOV         R0,R7 ; uc_temp_key
+ 000000A6  0600      LSL         R0,R0,#0x18 ; uc_temp_key
+ 000000A8  0E00      LSR         R0,R0,#0x18
+ 000000AA  2845      CMP         R0,#0x45
+ 000000AC  D1C9      BNE         L_3  ; T=0x00000042
+   59:   *uc_ptr = '\0';
+ 000000AE  2100      MOV         R1,#0x0
+ 000000B0  1C28      MOV         R0,R5 ; uc_ptr
+ 000000B2  7001      STRB        R1,[R0,#0x0] ; uc_ptr
+   61:   uc_cnt = LIB_strlen(&uc_phone_no[0]);
+ 000000B4  AD00      ADD         R5,R13,#0x0
+ 000000B6  1C28      MOV         R0,R5
+ 000000B8  F7FF      BL          LIB_strlen?T  ; T=0x0001  (1)
+ 000000BA  FFA2      BL          LIB_strlen?T  ; T=0x0001  (2)
+ 000000BC  0606      LSL         R6,R0,#0x18 ; LIB_strlen?T
+ 000000BE  0E36      LSR         R6,R6,#0x18
+   62:   if(uc_cnt > 0)
+ 000000C0  1C30      MOV         R0,R6 ; uc_cnt
+ 000000C2  0600      LSL         R0,R0,#0x18 ; uc_cnt
+ 000000C4  0E00      LSR         R0,R0,#0x18
+ 000000C6  2800      CMP         R0,#0x0
+ 000000C8  DD09      BLE         L_13  ; T=0x000000DE
+   64:       LIB_str_copy(&uc_phone_no[0], phone_no, uc_cnt+1);
+ 000000CA  1C30      MOV         R0,R6 ; uc_cnt
+ 000000CC  0602      LSL         R2,R0,#0x18 ; uc_cnt
+ARM COMPILER V2.50a,  app                                                                  03/04/13  17:09:35  PAGE 6   
+
+ 000000CE  0E12      LSR         R2,R2,#0x18
+ 000000D0  3201      ADD         R2,#0x1
+ 000000D2  1C28      MOV         R0,R5
+ 000000D4  1C21      MOV         R1,R4 ; phone_no
+ 000000D6  F7FF      BL          LIB_str_copy?T  ; T=0x0001  (1)
+ 000000D8  FF93      BL          LIB_str_copy?T  ; T=0x0001  (2)
+   65:       return 1;
+ 000000DA  2001      MOV         R0,#0x1
+ 000000DC  E000      B           L_12  ; T=0x000000E0
+   66:   }
+ 000000DE          L_13:
+   69:        return 2;
+ 000000DE  2002      MOV         R0,#0x2
+   70:   }
+ 000000E0            ; SCOPE-END
+   71: }
+ 000000E0          L_12:
+ 000000E0  B005      ADD         R13,#0x14
+ 000000E2  BCF0      POP         {R4-R7}
+ 000000E4  BC08      POP         {R3}
+ 000000E6  4718      BX          R3
+ 000000E8          ENDP ; 'APP_phone_dial?T'
+
+
+*** CODE SEGMENT '?PR?APP_keypad?T?app':
+   79: void APP_keypad()
+ 00000000  B510      PUSH        {R4,LR}
+   80: {
+ 00000002            ; SCOPE-START
+   81:     U8 uc_key = 0;
+ 00000002  2400      MOV         R4,#0x0
+ 00000004  ---- Variable 'uc_key' assigned to Register 'R4' ----
+   83:      uc_key = get_key(0);
+ 00000004  2000      MOV         R0,#0x0
+ 00000006  F7FF      BL          get_key?T  ; T=0x0001  (1)
+ 00000008  FFFB      BL          get_key?T  ; T=0x0001  (2)
+ 0000000A  1C04      MOV         R4,R0 ; uc_key
+ 0000000C            ; SCOPE-END
+   84: }
+ 0000000C  BC10      POP         {R4}
+ 0000000E  BC08      POP         {R3}
+ 00000010  4718      BX          R3
+ 00000012          ENDP ; 'APP_keypad?T'
+
+
+
+Module Information          Static
+----------------------------------
+  code size            =    ------
+  data size            =    ------
+  const size           =        52
+End of Module Information.
+
+
+ARM COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

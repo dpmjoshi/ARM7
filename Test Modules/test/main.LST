@@ -1,0 +1,922 @@
+ARM COMPILER V2.40e,  main                                                                 30/04/12  17:52:58  PAGE 1   
+
+
+ARM COMPILER V2.40e, COMPILATION OF MODULE main
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\ARM\BIN\CA.exe main.c THUMB BROWSE DEBUG TABS(4) 
+
+stmt  level    source
+
+    1          #include"includes.h"
+    2          //************************************************************//
+    3          #define no_recv_byte      14
+    4          #define COOLER_ON         1<<19
+    5          #define HEATER_ON         1<<20
+    6          #define SSR_ON            1<<21
+    7          #define BUZZER            1<<22
+    8          
+    9          
+   10          U8 uart1_set[30]         = {"\n\rUART1 connected at 9600-8-N"};
+   11          U8 uart0_set[30]         = {"\n\rUART0 connected at 9600-8-N"};
+   12          U8 welcome_note1[25]     = {"Reaction  Controller"};
+   13          U8 welcome_note2[20]     = {"NCL-Pune"};
+   14          U8 lcd_data_sys_chk[20]  = {"Initializing"};
+   15          
+   16          U32 Ui_sample1 = 0;
+   17          U32 Ui_sample2 = 0;
+   18          U32 Ui_sample3 = 0;
+   19          U32 Ui_sample4 = 0;
+   20          U32 Ui_sample5 = 0;
+   21          U32 Ui_sample6 = 0;
+   22          U32 Ui_sample7 = 0;
+   23          U32 Ui_sample8 = 0;
+   24          U32 Ui_sample9 = 0;
+   25          
+   26          //*************************Flags*******************************//
+   27          U8 Uc_user_mode_flag = 4;
+   28          
+   29          
+   30          
+   31          void main()
+   32          {   
+   33   1        PINSEL0 |= 0X00050005;     // selecting UART0 and UART1
+   34   1        PINSEL1 |= 0X00080000;
+   35   1        IO1DIR  |= 0X0FFF0000;     //pins 1.16 to 1.23 output pins
+   36   1        IO0DIR  |= 0X003E0C00;     //port 0 rs and en as output
+   37   1        IO0CLR   = 0X00FF0000;    
+   38   1        
+   39   1        IO0SET   = 0X0FF00400;
+   40   1        IO0CLR   = BUZZER;
+   41   1      
+   42   1        //*************************************//
+   43   1        //         Initialisations             //
+   44   1        //*************************************//
+   45   1        lcd_init();
+   46   1        irq_init();
+   47   1        uart_init();
+   48   1        adc_init();
+   49   1        //wdt_init();
+   50   1        pwm5_init();
+   51   1        timer1_init_interrupt();
+   52   1        rtc_init_interrupt();
+   53   1        
+   54   1        //*************************************//
+   55   1        //          Welcome Note               //
+   56   1        //*************************************//
+   57   1        lcd_line2_disp(&welcome_note1[0],0);
+   58   1        lcd_line3_disp(&welcome_note2[0],6);
+   59   1        ms_delay(50000);
+ARM COMPILER V2.40e,  main                                                                 30/04/12  17:52:58  PAGE 2   
+
+   60   1        clrscr();
+   61   1        lcd_line1_disp(&lcd_data_sys_chk[0],0);
+   62   1        display_dots();
+   63   1        display_dots();
+   64   1        //*************************************//
+   65   1        //  Displaying Static Messages         //
+   66   1        //*************************************//
+   67   1        clrscr();
+   68   1        default_page();
+   69   1        U0IER = 0;
+   70   1      
+   71   1        rtc_get_time();
+   72   1        lcd_line4_disp(&Uc_real_time[0],12);
+   73   1        lcd_line4_disp(&Uc_set_user_time[0],0);
+   74   1      
+   75   1        wdt_init();
+   76   1        while(1)
+   77   1        { 
+   78   2        
+   79   2          wdt_feed(0x03ffffff);
+   80   2          rtc_get_time();
+   81   2          lcd_line4_disp(&Uc_real_time[0],12);
+   82   2          if(wdt_timeout == 1)
+   83   2          {
+   84   3              wdt_timeout = 0;
+   85   3              lcd_line3_disp("WDEnable",12);
+   86   3          }
+   87   2          //*********************************************//
+   88   2          //      ADC input value                        //
+   89   2          //*********************************************//
+   90   2          if(Uc_adc_time_out_flag == 1)
+   91   2          {           
+   92   3              Uc_adc_time_out_flag = 0;
+   93   3              Ui_sample1 = adc1_getval();
+   94   3              ms_delay(800);
+   95   3              Ui_sample2 = adc1_getval();
+   96   3              ms_delay(800);
+   97   3              Ui_sample3 = adc1_getval();
+   98   3              ms_delay(800);
+   99   3              Ui_sample4 = adc1_getval();
+  100   3              ms_delay(800);
+  101   3              Ui_sample5 = adc1_getval();
+  102   3              adc_val_conv(Ui_sample1, Ui_sample2, Ui_sample3, Ui_sample4, Ui_sample5, 1);
+  103   3              temp_ctrl();
+  104   3              lcd_line1_disp(&Uc_dec_arr[1],5);
+  105   3              
+  106   3              
+  107   3                          
+  108   3              //*********Sending DATA to User desk*************//
+  109   3              //uart0_send_string("\n\r ");
+  110   3              uart0_send_byte((Ui_sample1 & 0xff));
+  111   3              uart1_send_byte(0x7E);
+  112   3              uart1_send_string(&Uc_dec_arr[1]);
+  113   3              uart1_send_byte('\0');
+  114   3              //**********************************************//
+  115   3              
+  116   3              Ui_sample1 = adc3_getval();
+  117   3              ms_delay(900);
+  118   3              Ui_sample2 = adc3_getval();
+  119   3              ms_delay(900);
+  120   3              Ui_sample3 = adc3_getval();
+  121   3              ms_delay(900);
+  122   3              Ui_sample4 = adc3_getval();
+  123   3              ms_delay(900);
+  124   3              Ui_sample5 = adc3_getval();
+  125   3              ms_delay(750);
+ARM COMPILER V2.40e,  main                                                                 30/04/12  17:52:58  PAGE 3   
+
+  126   3              Ui_sample6 = adc3_getval();
+  127   3              ms_delay(750);
+  128   3              Ui_sample7 = adc3_getval();
+  129   3              ms_delay(750);
+  130   3              Ui_sample8 = adc3_getval();
+  131   3              ms_delay(750);
+  132   3              Ui_sample9 = adc3_getval();
+  133   3              Ui_sample6 = ((Ui_sample6 + Ui_sample7 + Ui_sample8 + Ui_sample9) / 4);
+  134   3              Ui_sample5 = ((Ui_sample6 + Ui_sample5)/2);
+  135   3              adc_val_conv(Ui_sample1, Ui_sample2, Ui_sample3, Ui_sample4, Ui_sample5 , 0);
+  136   3              lcd_line3_disp(&Uc_dec_arr[1],5);
+  137   3              
+  138   3              //*********Sending DATA to User desk*************//
+  139   3              uart1_send_string(&Uc_dec_arr[1]);
+  140   3              //**********************************************//
+  141   3      
+  142   3          }
+  143   2      
+  144   2      
+  145   2          //*********************************************//
+  146   2          //   displaying Real Time & user Set Time      //
+  147   2          //*********************************************//
+  148   2          
+  149   2          if(Uc_alrm == 1)
+  150   2          {
+  151   3              Uc_alrm = 2;
+  152   3              pwm5_pulse_width(5000, 100);
+  153   3          }
+  154   2          /*
+  155   2          else if(Uc_alrm == 3)
+  156   2          {
+  157   2              if(Uc_user_dwn_sec == 0)
+  158   2              {
+  159   2                 Uc_user_dwn_sec  = 59;
+  160   2      
+  161   2                 if( (Uc_user_dwn_min +  Uc_user_dwn_hr) != 0)
+  162   2                  {   
+  163   2                      Uc_user_dwn_min -= 1;
+  164   2                  }
+  165   2                 Uc_set_user_time[3] = ((Uc_user_dwn_min / 10) + 0x30);
+  166   2                 Uc_set_user_time[4] = ((Uc_user_dwn_min % 10) + 0x30);
+  167   2              }
+  168   2              if(Uc_user_dwn_min == 0)
+  169   2              {
+  170   2                 Uc_user_dwn_min  = 59;
+  171   2                 if(Uc_user_dwn_hr != 0)
+  172   2                 {
+  173   2                      Uc_user_dwn_hr -= 1;
+  174   2                 }
+  175   2                 Uc_set_user_time[0] = ((Uc_user_dwn_hr / 10) + 0x30);
+  176   2                 Uc_set_user_time[1] = ((Uc_user_dwn_hr % 10) + 0x30);
+  177   2              }
+  178   2              Uc_set_user_time[6] = ((Uc_user_dwn_sec / 10) + 0x30);
+  179   2              Uc_set_user_time[7] = ((Uc_user_dwn_sec % 10) + 0x30);
+  180   2           }
+  181   2      
+  182   2           */
+  183   2          //*********************************************//
+  184   2          rtc_get_time();
+  185   2          lcd_line4_disp(&Uc_real_time[0],12);
+  186   2          lcd_line4_disp(&Uc_set_user_time[0],0);
+  187   2      
+  188   2          //*********************************************//
+  189   2          //          key press on background            //
+  190   2          //*********************************************//
+  191   2          Uc_key_temp = get_key(0);
+ARM COMPILER V2.40e,  main                                                                 30/04/12  17:52:58  PAGE 4   
+
+  192   2          if(Uc_key_temp == 'E')
+  193   2          {
+  194   3              Uc_key_temp = 0;
+  195   3              get_user_time();
+  196   3          }
+  197   2          else if((Uc_key_temp == '.')&(Uc_alrm == 2))
+  198   2          {
+  199   3              Uc_key_temp = 0;
+  200   3              Uc_alrm = 0;
+  201   3              pwm_disable();
+  202   3          }
+  203   2          else if(Uc_key_temp == 'A')
+  204   2          {
+  205   3              clrscr();
+  206   3              ms_delay(1000);
+  207   3              lcd_line2_disp("Emergency Stop!",3);
+  208   3              lcd_line4_disp("Cooling ON",5);
+  209   3              IO0CLR = SSR_ON;
+  210   3              IO0CLR = HEATER_ON;
+  211   3              IO0SET = COOLER_ON;
+  212   3              while(1);
+  213   3          }
+  214   2          else if(Uc_key_temp == 'D')
+  215   2          {
+  216   3              Uc_key_temp = 0;
+  217   3              rtc_change_time();
+  218   3          }
+  219   2      
+  220   2        }
+  221   1      }
+  222          
+  223          
+  224          
+  225          
+  226          
+  227          
+  228          
+ARM COMPILER V2.40e,  main                                                                 30/04/12  17:52:58  PAGE 5   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+
+*** EXTERNALS:
+ EXTERN CODE16 (uart_init?T)
+ EXTERN CODE16 (uart0_send_byte?T)
+ EXTERN CODE16 (uart1_send_byte?T)
+ EXTERN CODE16 (uart1_send_string?T)
+ EXTERN DATA (Uc_dec_arr)
+ EXTERN DATA (Uc_set_user_time)
+ EXTERN CODE16 (irq_init?T)
+ EXTERN CODE16 (default_page?T)
+ EXTERN CODE16 (get_user_time?T)
+ EXTERN CODE16 (temp_ctrl?T)
+ EXTERN CODE16 (adc_val_conv?T)
+ EXTERN DATA (Uc_adc_time_out_flag)
+ EXTERN CODE16 (lcd_init?T)
+ EXTERN CODE16 (clrscr?T)
+ EXTERN CODE16 (ms_delay?T)
+ EXTERN CODE16 (lcd_line1_disp?T)
+ EXTERN CODE16 (lcd_line2_disp?T)
+ EXTERN CODE16 (lcd_line3_disp?T)
+ EXTERN CODE16 (lcd_line4_disp?T)
+ EXTERN CODE16 (display_dots?T)
+ EXTERN CODE16 (rtc_init_interrupt?T)
+ EXTERN CODE16 (rtc_get_time?T)
+ EXTERN DATA (Uc_real_time)
+ EXTERN DATA (Uc_alrm)
+ EXTERN CODE16 (rtc_change_time?T)
+ EXTERN CODE16 (timer1_init_interrupt?T)
+ EXTERN CODE16 (adc_init?T)
+ EXTERN CODE16 (adc1_getval?T)
+ EXTERN CODE16 (adc3_getval?T)
+ EXTERN CODE16 (get_key?T)
+ EXTERN DATA (Uc_key_temp)
+ EXTERN CODE16 (pwm5_init?T)
+ EXTERN CODE16 (pwm5_pulse_width?T)
+ EXTERN CODE16 (pwm_disable?T)
+ EXTERN CODE16 (wdt_init?T)
+ EXTERN DATA (wdt_timeout)
+ EXTERN CODE16 (wdt_feed?T)
+ EXTERN NUMBER (__startup)
+
+
+
+*** PUBLICS:
+ PUBLIC         main
+ PUBLIC         uart1_set
+ PUBLIC         uart0_set
+ PUBLIC         welcome_note1
+ PUBLIC         welcome_note2
+ PUBLIC         lcd_data_sys_chk
+ PUBLIC         Ui_sample1
+ PUBLIC         Ui_sample2
+ PUBLIC         Ui_sample3
+ PUBLIC         Ui_sample4
+ PUBLIC         Ui_sample5
+ PUBLIC         Ui_sample6
+ PUBLIC         Ui_sample7
+ PUBLIC         Ui_sample8
+ PUBLIC         Ui_sample9
+ PUBLIC         Uc_user_mode_flag
+
+
+
+*** DATA SEGMENT '?CON?main':
+ 00000000          ??S_8:
+ 00000000            DB          'Cooling ON',0x00
+ 0000000B          ??S_7:
+ 0000000B            DB          'Emergency Stop!',0x00
+ARM COMPILER V2.40e,  main                                                                 30/04/12  17:52:58  PAGE 6   
+
+ 0000001B          ??S_6:
+ 0000001B            DB          'WDEnable',0x00
+
+*** DATA SEGMENT '?DT0?main':
+ 00000000          Ui_sample1:
+ 00000000           BEGIN_INIT
+ 00000000  00000000  DD          0x0
+ 00000004           END_INIT
+ 00000004          Ui_sample2:
+ 00000004           BEGIN_INIT
+ 00000004  00000000  DD          0x0
+ 00000008           END_INIT
+ 00000008          Ui_sample3:
+ 00000008           BEGIN_INIT
+ 00000008  00000000  DD          0x0
+ 0000000C           END_INIT
+ 0000000C          Ui_sample4:
+ 0000000C           BEGIN_INIT
+ 0000000C  00000000  DD          0x0
+ 00000010           END_INIT
+ 00000010          Ui_sample5:
+ 00000010           BEGIN_INIT
+ 00000010  00000000  DD          0x0
+ 00000014           END_INIT
+ 00000014          Ui_sample6:
+ 00000014           BEGIN_INIT
+ 00000014  00000000  DD          0x0
+ 00000018           END_INIT
+ 00000018          Ui_sample7:
+ 00000018           BEGIN_INIT
+ 00000018  00000000  DD          0x0
+ 0000001C           END_INIT
+ 0000001C          Ui_sample8:
+ 0000001C           BEGIN_INIT
+ 0000001C  00000000  DD          0x0
+ 00000020           END_INIT
+ 00000020          Ui_sample9:
+ 00000020           BEGIN_INIT
+ 00000020  00000000  DD          0x0
+ 00000024           END_INIT
+ 00000024          uart1_set:
+ 00000024           BEGIN_INIT
+ 00000024            DB          0x0A,0x0D,'UART1 connected at 9600-8-N',0x00
+ 00000042           END_INIT
+ 00000042          uart0_set:
+ 00000042           BEGIN_INIT
+ 00000042            DB          0x0A,0x0D,'UART0 connected at 9600-8-N',0x00
+ 00000060           END_INIT
+ 00000060          welcome_note1:
+ 00000060           BEGIN_INIT
+ 00000060            DB          'Reaction  Controller',0x00
+ 00000075            SPACE       4
+ 00000079           END_INIT
+ 00000079          welcome_note2:
+ 00000079           BEGIN_INIT
+ 00000079            DB          'NCL-Pune',0x00
+ 00000082            SPACE       11
+ 0000008D           END_INIT
+ 0000008D          lcd_data_sys_chk:
+ 0000008D           BEGIN_INIT
+ 0000008D            DB          'Initializing',0x00
+ 0000009A            SPACE       7
+ 000000A1           END_INIT
+ 000000A1          Uc_user_mode_flag:
+ 000000A1           BEGIN_INIT
+ 000000A1  04        DB          0x4
+ 000000A2           END_INIT
+ARM COMPILER V2.40e,  main                                                                 30/04/12  17:52:58  PAGE 7   
+
+
+
+
+*** CODE SEGMENT '?PR?main?main':
+   31: void main()
+ 00000000  B500      PUSH        {LR}
+   33:   PINSEL0 |= 0X00050005;     // selecting UART0 and UART1
+ 00000002  4800      LDR         R2,=0x50005
+ 00000004  4800      LDR         R0,=0xE002C000
+ 00000006  6801      LDR         R1,[R0,#0x0]
+ 00000008  4311      ORR         R1,R2
+ 0000000A  6001      STR         R1,[R0,#0x0]
+   34:   PINSEL1 |= 0X00080000;
+ 0000000C  4800      LDR         R2,=0x80000
+ 0000000E  4800      LDR         R0,=0xE002C004
+ 00000010  6801      LDR         R1,[R0,#0x0]
+ 00000012  4311      ORR         R1,R2
+ 00000014  6001      STR         R1,[R0,#0x0]
+   35:   IO1DIR  |= 0X0FFF0000;     //pins 1.16 to 1.23 output pins
+ 00000016  4800      LDR         R2,=0xFFF0000
+ 00000018  4800      LDR         R0,=0xE0028018
+ 0000001A  6801      LDR         R1,[R0,#0x0]
+ 0000001C  4311      ORR         R1,R2
+ 0000001E  6001      STR         R1,[R0,#0x0]
+   36:   IO0DIR  |= 0X003E0C00;     //port 0 rs and en as output
+ 00000020  4800      LDR         R2,=0x3E0C00
+ 00000022  4800      LDR         R0,=0xE0028008
+ 00000024  6801      LDR         R1,[R0,#0x0]
+ 00000026  4311      ORR         R1,R2
+ 00000028  6001      STR         R1,[R0,#0x0]
+   37:   IO0CLR   = 0X00FF0000;    
+ 0000002A  4800      LDR         R1,=0xFF0000
+ 0000002C  4800      LDR         R0,=0xE002800C
+ 0000002E  6001      STR         R1,[R0,#0x0]
+   39:   IO0SET   = 0X0FF00400;
+ 00000030  4800      LDR         R1,=0xFF00400
+ 00000032  4800      LDR         R0,=0xE0028004
+ 00000034  6001      STR         R1,[R0,#0x0]
+   40:   IO0CLR   = BUZZER;
+ 00000036  4800      LDR         R1,=0x400000
+ 00000038  4800      LDR         R0,=0xE002800C
+ 0000003A  6001      STR         R1,[R0,#0x0]
+   45:   lcd_init();
+ 0000003C  F7FF      BL          lcd_init?T  ; T=0x0001  (1)
+ 0000003E  FFE0      BL          lcd_init?T  ; T=0x0001  (2)
+   46:   irq_init();
+ 00000040  F7FF      BL          irq_init?T  ; T=0x0001  (1)
+ 00000042  FFDE      BL          irq_init?T  ; T=0x0001  (2)
+   47:   uart_init();
+ 00000044  F7FF      BL          uart_init?T  ; T=0x0001  (1)
+ 00000046  FFDC      BL          uart_init?T  ; T=0x0001  (2)
+   48:   adc_init();
+ 00000048  F7FF      BL          adc_init?T  ; T=0x0001  (1)
+ 0000004A  FFDA      BL          adc_init?T  ; T=0x0001  (2)
+   50:   pwm5_init();
+ 0000004C  F7FF      BL          pwm5_init?T  ; T=0x0001  (1)
+ 0000004E  FFD8      BL          pwm5_init?T  ; T=0x0001  (2)
+   51:   timer1_init_interrupt();
+ 00000050  F7FF      BL          timer1_init_interrupt?T  ; T=0x0001  (1)
+ 00000052  FFD6      BL          timer1_init_interrupt?T  ; T=0x0001  (2)
+   52:   rtc_init_interrupt();
+ 00000054  F7FF      BL          rtc_init_interrupt?T  ; T=0x0001  (1)
+ 00000056  FFD4      BL          rtc_init_interrupt?T  ; T=0x0001  (2)
+   57:   lcd_line2_disp(&welcome_note1[0],0);
+ 00000058  4800      LDR         R0,=welcome_note1 ; welcome_note1
+ 0000005A  2100      MOV         R1,#0x0
+ 0000005C  F7FF      BL          lcd_line2_disp?T  ; T=0x0001  (1)
+ 0000005E  FFD0      BL          lcd_line2_disp?T  ; T=0x0001  (2)
+ARM COMPILER V2.40e,  main                                                                 30/04/12  17:52:58  PAGE 8   
+
+   58:   lcd_line3_disp(&welcome_note2[0],6);
+ 00000060  4800      LDR         R0,=welcome_note2 ; welcome_note2
+ 00000062  2106      MOV         R1,#0x6
+ 00000064  F7FF      BL          lcd_line3_disp?T  ; T=0x0001  (1)
+ 00000066  FFCC      BL          lcd_line3_disp?T  ; T=0x0001  (2)
+   59:   ms_delay(50000);
+ 00000068  4800      LDR         R0,=0xC350
+ 0000006A  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000006C  FFC9      BL          ms_delay?T  ; T=0x0001  (2)
+   60:   clrscr();
+ 0000006E  F7FF      BL          clrscr?T  ; T=0x0001  (1)
+ 00000070  FFC7      BL          clrscr?T  ; T=0x0001  (2)
+   61:   lcd_line1_disp(&lcd_data_sys_chk[0],0);
+ 00000072  4800      LDR         R0,=lcd_data_sys_chk ; lcd_data_sys_chk
+ 00000074  2100      MOV         R1,#0x0
+ 00000076  F7FF      BL          lcd_line1_disp?T  ; T=0x0001  (1)
+ 00000078  FFC3      BL          lcd_line1_disp?T  ; T=0x0001  (2)
+   62:   display_dots();
+ 0000007A  F7FF      BL          display_dots?T  ; T=0x0001  (1)
+ 0000007C  FFC1      BL          display_dots?T  ; T=0x0001  (2)
+   63:   display_dots();
+ 0000007E  F7FF      BL          display_dots?T  ; T=0x0001  (1)
+ 00000080  FFBF      BL          display_dots?T  ; T=0x0001  (2)
+   67:   clrscr();
+ 00000082  F7FF      BL          clrscr?T  ; T=0x0001  (1)
+ 00000084  FFBD      BL          clrscr?T  ; T=0x0001  (2)
+   68:   default_page();
+ 00000086  F7FF      BL          default_page?T  ; T=0x0001  (1)
+ 00000088  FFBB      BL          default_page?T  ; T=0x0001  (2)
+   69:   U0IER = 0;
+ 0000008A  2100      MOV         R1,#0x0
+ 0000008C  4800      LDR         R0,=0xE000C004
+ 0000008E  6001      STR         R1,[R0,#0x0]
+   71:   rtc_get_time();
+ 00000090  F7FF      BL          rtc_get_time?T  ; T=0x0001  (1)
+ 00000092  FFB6      BL          rtc_get_time?T  ; T=0x0001  (2)
+   72:   lcd_line4_disp(&Uc_real_time[0],12);
+ 00000094  4800      LDR         R0,=Uc_real_time ; Uc_real_time
+ 00000096  210C      MOV         R1,#0xC
+ 00000098  F7FF      BL          lcd_line4_disp?T  ; T=0x0001  (1)
+ 0000009A  FFB2      BL          lcd_line4_disp?T  ; T=0x0001  (2)
+   73:   lcd_line4_disp(&Uc_set_user_time[0],0);
+ 0000009C  4800      LDR         R0,=Uc_set_user_time ; Uc_set_user_time
+ 0000009E  2100      MOV         R1,#0x0
+ 000000A0  F7FF      BL          lcd_line4_disp?T  ; T=0x0001  (1)
+ 000000A2  FFAE      BL          lcd_line4_disp?T  ; T=0x0001  (2)
+   75:   wdt_init();
+ 000000A4  F7FF      BL          wdt_init?T  ; T=0x0001  (1)
+ 000000A6  FFAC      BL          wdt_init?T  ; T=0x0001  (2)
+   76:   while(1)
+ 000000A8          L_3:
+   79:       wdt_feed(0x03ffffff);
+ 000000A8  4800      LDR         R0,=0x3FFFFFF
+ 000000AA  F7FF      BL          wdt_feed?T  ; T=0x0001  (1)
+ 000000AC  FFA9      BL          wdt_feed?T  ; T=0x0001  (2)
+   80:     rtc_get_time();
+ 000000AE  F7FF      BL          rtc_get_time?T  ; T=0x0001  (1)
+ 000000B0  FFA7      BL          rtc_get_time?T  ; T=0x0001  (2)
+   81:     lcd_line4_disp(&Uc_real_time[0],12);
+ 000000B2  4800      LDR         R0,=Uc_real_time ; Uc_real_time
+ 000000B4  210C      MOV         R1,#0xC
+ 000000B6  F7FF      BL          lcd_line4_disp?T  ; T=0x0001  (1)
+ 000000B8  FFA3      BL          lcd_line4_disp?T  ; T=0x0001  (2)
+   82:     if(wdt_timeout == 1)
+ 000000BA  4800      LDR         R0,=wdt_timeout ; wdt_timeout
+ 000000BC  7800      LDRB        R0,[R0,#0x0] ; wdt_timeout
+ARM COMPILER V2.40e,  main                                                                 30/04/12  17:52:58  PAGE 9   
+
+ 000000BE  2801      CMP         R0,#0x1
+ 000000C0  D106      BNE         L_5  ; T=0x000000D0
+   84:         wdt_timeout = 0;
+ 000000C2  2100      MOV         R1,#0x0
+ 000000C4  4800      LDR         R0,=wdt_timeout ; wdt_timeout
+ 000000C6  7001      STRB        R1,[R0,#0x0] ; wdt_timeout
+   85:         lcd_line3_disp("WDEnable",12);
+ 000000C8  4800      LDR         R0,=??S_6 ; ??S_6
+ 000000CA  210C      MOV         R1,#0xC
+ 000000CC  F7FF      BL          lcd_line3_disp?T  ; T=0x0001  (1)
+ 000000CE  FF98      BL          lcd_line3_disp?T  ; T=0x0001  (2)
+   86:     }
+ 000000D0          L_5:
+   90:     if(Uc_adc_time_out_flag == 1)
+ 000000D0  4800      LDR         R0,=Uc_adc_time_out_flag ; Uc_adc_time_out_flag
+ 000000D2  7800      LDRB        R0,[R0,#0x0] ; Uc_adc_time_out_flag
+ 000000D4  2801      CMP         R0,#0x1
+ 000000D6  D000      BNE         $+4
+ 000000D8  E0B0      B           L_6  ; T=0x0000023C
+   92:         Uc_adc_time_out_flag = 0;
+ 000000DC  2100      MOV         R1,#0x0
+ 000000DE  4800      LDR         R0,=Uc_adc_time_out_flag ; Uc_adc_time_out_flag
+ 000000E0  7001      STRB        R1,[R0,#0x0] ; Uc_adc_time_out_flag
+   93:         Ui_sample1 = adc1_getval();
+ 000000E2  F7FF      BL          adc1_getval?T  ; T=0x0001  (1)
+ 000000E4  FF8D      BL          adc1_getval?T  ; T=0x0001  (2)
+ 000000E6  4800      LDR         R1,=Ui_sample1 ; Ui_sample1
+ 000000E8  6008      STR         R0,[R1,#0x0] ; Ui_sample1
+   94:         ms_delay(800);
+ 000000EA  48C8      LDR         R0,=0x320
+ 000000EC  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 000000EE  FF88      BL          ms_delay?T  ; T=0x0001  (2)
+   95:         Ui_sample2 = adc1_getval();
+ 000000F0  F7FF      BL          adc1_getval?T  ; T=0x0001  (1)
+ 000000F2  FF86      BL          adc1_getval?T  ; T=0x0001  (2)
+ 000000F4  4800      LDR         R1,=Ui_sample2 ; Ui_sample2
+ 000000F6  6008      STR         R0,[R1,#0x0] ; Ui_sample2
+   96:         ms_delay(800);
+ 000000F8  48C8      LDR         R0,=0x320
+ 000000FA  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 000000FC  FF81      BL          ms_delay?T  ; T=0x0001  (2)
+   97:         Ui_sample3 = adc1_getval();
+ 000000FE  F7FF      BL          adc1_getval?T  ; T=0x0001  (1)
+ 00000100  FF7F      BL          adc1_getval?T  ; T=0x0001  (2)
+ 00000102  4800      LDR         R1,=Ui_sample3 ; Ui_sample3
+ 00000104  6008      STR         R0,[R1,#0x0] ; Ui_sample3
+   98:         ms_delay(800);
+ 00000106  48C8      LDR         R0,=0x320
+ 00000108  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000010A  FF7A      BL          ms_delay?T  ; T=0x0001  (2)
+   99:         Ui_sample4 = adc1_getval();
+ 0000010C  F7FF      BL          adc1_getval?T  ; T=0x0001  (1)
+ 0000010E  FF78      BL          adc1_getval?T  ; T=0x0001  (2)
+ 00000110  4800      LDR         R1,=Ui_sample4 ; Ui_sample4
+ 00000112  6008      STR         R0,[R1,#0x0] ; Ui_sample4
+  100:         ms_delay(800);
+ 00000114  48C8      LDR         R0,=0x320
+ 00000116  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000118  FF73      BL          ms_delay?T  ; T=0x0001  (2)
+  101:         Ui_sample5 = adc1_getval();
+ 0000011A  F7FF      BL          adc1_getval?T  ; T=0x0001  (1)
+ 0000011C  FF71      BL          adc1_getval?T  ; T=0x0001  (2)
+ 0000011E  4800      LDR         R1,=Ui_sample5 ; Ui_sample5
+ 00000120  6008      STR         R0,[R1,#0x0] ; Ui_sample5
+  102:         adc_val_conv(Ui_sample1, Ui_sample2, Ui_sample3, Ui_sample4, Ui_sample5, 1);
+ 00000122  2001      MOV         R0,#0x1
+ARM COMPILER V2.40e,  main                                                                 30/04/12  17:52:58  PAGE 10  
+
+ 00000124  B401      PUSH        {R0}
+ 00000126  4800      LDR         R0,=Ui_sample5 ; Ui_sample5
+ 00000128  6800      LDR         R0,[R0,#0x0] ; Ui_sample5
+ 0000012A  B401      PUSH        {R0}
+ 0000012C  4800      LDR         R0,=Ui_sample1 ; Ui_sample1
+ 0000012E  6800      LDR         R0,[R0,#0x0] ; Ui_sample1
+ 00000130  4800      LDR         R1,=Ui_sample2 ; Ui_sample2
+ 00000132  6809      LDR         R1,[R1,#0x0] ; Ui_sample2
+ 00000134  4800      LDR         R2,=Ui_sample3 ; Ui_sample3
+ 00000136  6812      LDR         R2,[R2,#0x0] ; Ui_sample3
+ 00000138  4800      LDR         R3,=Ui_sample4 ; Ui_sample4
+ 0000013A  681B      LDR         R3,[R3,#0x0] ; Ui_sample4
+ 0000013C  F7FF      BL          adc_val_conv?T  ; T=0x0001  (1)
+ 0000013E  FF60      BL          adc_val_conv?T  ; T=0x0001  (2)
+ 00000140  B002      ADD         R13,#0x8
+  103:         temp_ctrl();
+ 00000142  F7FF      BL          temp_ctrl?T  ; T=0x0001  (1)
+ 00000144  FF5D      BL          temp_ctrl?T  ; T=0x0001  (2)
+  104:         lcd_line1_disp(&Uc_dec_arr[1],5);
+ 00000146  4800      LDR         R0,=Uc_dec_arr + 0x1 ; Uc_dec_arr+1
+ 00000148  2105      MOV         R1,#0x5
+ 0000014A  F7FF      BL          lcd_line1_disp?T  ; T=0x0001  (1)
+ 0000014C  FF59      BL          lcd_line1_disp?T  ; T=0x0001  (2)
+  110:         uart0_send_byte((Ui_sample1 & 0xff));
+ 0000014E  4800      LDR         R0,=Ui_sample1 ; Ui_sample1
+ 00000150  6800      LDR         R0,[R0,#0x0] ; Ui_sample1
+ 00000152  21FF      MOV         R1,#0xFF
+ 00000154  4008      AND         R0,R1
+ 00000156  F7FF      BL          uart0_send_byte?T  ; T=0x0001  (1)
+ 00000158  FF53      BL          uart0_send_byte?T  ; T=0x0001  (2)
+  111:         uart1_send_byte(0x7E);
+ 0000015A  207E      MOV         R0,#0x7E
+ 0000015C  F7FF      BL          uart1_send_byte?T  ; T=0x0001  (1)
+ 0000015E  FF50      BL          uart1_send_byte?T  ; T=0x0001  (2)
+  112:         uart1_send_string(&Uc_dec_arr[1]);
+ 00000160  4800      LDR         R0,=Uc_dec_arr + 0x1 ; Uc_dec_arr+1
+ 00000162  F7FF      BL          uart1_send_string?T  ; T=0x0001  (1)
+ 00000164  FF4D      BL          uart1_send_string?T  ; T=0x0001  (2)
+  113:         uart1_send_byte('\0');
+ 00000166  2000      MOV         R0,#0x0
+ 00000168  F7FF      BL          uart1_send_byte?T  ; T=0x0001  (1)
+ 0000016A  FF4A      BL          uart1_send_byte?T  ; T=0x0001  (2)
+  116:         Ui_sample1 = adc3_getval();
+ 0000016C  F7FF      BL          adc3_getval?T  ; T=0x0001  (1)
+ 0000016E  FF48      BL          adc3_getval?T  ; T=0x0001  (2)
+ 00000170  4800      LDR         R1,=Ui_sample1 ; Ui_sample1
+ 00000172  6008      STR         R0,[R1,#0x0] ; Ui_sample1
+  117:         ms_delay(900);
+ 00000174  48E1      LDR         R0,=0x384
+ 00000176  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000178  FF43      BL          ms_delay?T  ; T=0x0001  (2)
+  118:         Ui_sample2 = adc3_getval();
+ 0000017A  F7FF      BL          adc3_getval?T  ; T=0x0001  (1)
+ 0000017C  FF41      BL          adc3_getval?T  ; T=0x0001  (2)
+ 0000017E  4800      LDR         R1,=Ui_sample2 ; Ui_sample2
+ 00000180  6008      STR         R0,[R1,#0x0] ; Ui_sample2
+  119:         ms_delay(900);
+ 00000182  48E1      LDR         R0,=0x384
+ 00000184  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000186  FF3C      BL          ms_delay?T  ; T=0x0001  (2)
+  120:         Ui_sample3 = adc3_getval();
+ 00000188  F7FF      BL          adc3_getval?T  ; T=0x0001  (1)
+ 0000018A  FF3A      BL          adc3_getval?T  ; T=0x0001  (2)
+ 0000018C  4800      LDR         R1,=Ui_sample3 ; Ui_sample3
+ 0000018E  6008      STR         R0,[R1,#0x0] ; Ui_sample3
+  121:         ms_delay(900);
+ARM COMPILER V2.40e,  main                                                                 30/04/12  17:52:58  PAGE 11  
+
+ 00000190  48E1      LDR         R0,=0x384
+ 00000192  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000194  FF35      BL          ms_delay?T  ; T=0x0001  (2)
+  122:         Ui_sample4 = adc3_getval();
+ 00000196  F7FF      BL          adc3_getval?T  ; T=0x0001  (1)
+ 00000198  FF33      BL          adc3_getval?T  ; T=0x0001  (2)
+ 0000019A  4800      LDR         R1,=Ui_sample4 ; Ui_sample4
+ 0000019C  6008      STR         R0,[R1,#0x0] ; Ui_sample4
+  123:         ms_delay(900);
+ 0000019E  48E1      LDR         R0,=0x384
+ 000001A0  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 000001A2  FF2E      BL          ms_delay?T  ; T=0x0001  (2)
+  124:         Ui_sample5 = adc3_getval();
+ 000001A4  F7FF      BL          adc3_getval?T  ; T=0x0001  (1)
+ 000001A6  FF2C      BL          adc3_getval?T  ; T=0x0001  (2)
+ 000001A8  4800      LDR         R1,=Ui_sample5 ; Ui_sample5
+ 000001AA  6008      STR         R0,[R1,#0x0] ; Ui_sample5
+  125:         ms_delay(750);
+ 000001AC  4800      LDR         R0,=0x2EE
+ 000001AE  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 000001B0  FF27      BL          ms_delay?T  ; T=0x0001  (2)
+  126:         Ui_sample6 = adc3_getval();
+ 000001B2  F7FF      BL          adc3_getval?T  ; T=0x0001  (1)
+ 000001B4  FF25      BL          adc3_getval?T  ; T=0x0001  (2)
+ 000001B6  4800      LDR         R1,=Ui_sample6 ; Ui_sample6
+ 000001B8  6008      STR         R0,[R1,#0x0] ; Ui_sample6
+  127:         ms_delay(750);
+ 000001BA  4800      LDR         R0,=0x2EE
+ 000001BC  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 000001BE  FF20      BL          ms_delay?T  ; T=0x0001  (2)
+  128:         Ui_sample7 = adc3_getval();
+ 000001C0  F7FF      BL          adc3_getval?T  ; T=0x0001  (1)
+ 000001C2  FF1E      BL          adc3_getval?T  ; T=0x0001  (2)
+ 000001C4  4800      LDR         R1,=Ui_sample7 ; Ui_sample7
+ 000001C6  6008      STR         R0,[R1,#0x0] ; Ui_sample7
+  129:         ms_delay(750);
+ 000001C8  4800      LDR         R0,=0x2EE
+ 000001CA  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 000001CC  FF19      BL          ms_delay?T  ; T=0x0001  (2)
+  130:         Ui_sample8 = adc3_getval();
+ 000001CE  F7FF      BL          adc3_getval?T  ; T=0x0001  (1)
+ 000001D0  FF17      BL          adc3_getval?T  ; T=0x0001  (2)
+ 000001D2  4800      LDR         R1,=Ui_sample8 ; Ui_sample8
+ 000001D4  6008      STR         R0,[R1,#0x0] ; Ui_sample8
+  131:         ms_delay(750);
+ 000001D6  4800      LDR         R0,=0x2EE
+ 000001D8  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 000001DA  FF12      BL          ms_delay?T  ; T=0x0001  (2)
+  132:         Ui_sample9 = adc3_getval();
+ 000001DC  F7FF      BL          adc3_getval?T  ; T=0x0001  (1)
+ 000001DE  FF10      BL          adc3_getval?T  ; T=0x0001  (2)
+ 000001E0  4800      LDR         R1,=Ui_sample9 ; Ui_sample9
+ 000001E2  6008      STR         R0,[R1,#0x0] ; Ui_sample9
+  133:         Ui_sample6 = ((Ui_sample6 + Ui_sample7 + Ui_sample8 + Ui_sample9) / 4);
+ 000001E4  4800      LDR         R0,=Ui_sample7 ; Ui_sample7
+ 000001E6  6800      LDR         R0,[R0,#0x0] ; Ui_sample7
+ 000001E8  4800      LDR         R1,=Ui_sample6 ; Ui_sample6
+ 000001EA  6809      LDR         R1,[R1,#0x0] ; Ui_sample6
+ 000001EC  1809      ADD         R1,R0
+ 000001EE  4800      LDR         R0,=Ui_sample8 ; Ui_sample8
+ 000001F0  6800      LDR         R0,[R0,#0x0] ; Ui_sample8
+ 000001F2  1809      ADD         R1,R0
+ 000001F4  4800      LDR         R0,=Ui_sample9 ; Ui_sample9
+ 000001F6  6800      LDR         R0,[R0,#0x0] ; Ui_sample9
+ 000001F8  1809      ADD         R1,R0
+ 000001FA  0889      LSR         R1,R1,#0x2
+ARM COMPILER V2.40e,  main                                                                 30/04/12  17:52:58  PAGE 12  
+
+ 000001FC  4800      LDR         R0,=Ui_sample6 ; Ui_sample6
+ 000001FE  6001      STR         R1,[R0,#0x0] ; Ui_sample6
+  134:         Ui_sample5 = ((Ui_sample6 + Ui_sample5)/2);
+ 00000200  4800      LDR         R0,=Ui_sample5 ; Ui_sample5
+ 00000202  6800      LDR         R0,[R0,#0x0] ; Ui_sample5
+ 00000204  4800      LDR         R1,=Ui_sample6 ; Ui_sample6
+ 00000206  6809      LDR         R1,[R1,#0x0] ; Ui_sample6
+ 00000208  1809      ADD         R1,R0
+ 0000020A  0849      LSR         R1,R1,#0x1
+ 0000020C  4800      LDR         R0,=Ui_sample5 ; Ui_sample5
+ 0000020E  6001      STR         R1,[R0,#0x0] ; Ui_sample5
+  135:         adc_val_conv(Ui_sample1, Ui_sample2, Ui_sample3, Ui_sample4, Ui_sample5 , 0);
+ 00000210  2000      MOV         R0,#0x0
+ 00000212  B401      PUSH        {R0}
+ 00000214  4800      LDR         R0,=Ui_sample5 ; Ui_sample5
+ 00000216  6800      LDR         R0,[R0,#0x0] ; Ui_sample5
+ 00000218  B401      PUSH        {R0}
+ 0000021A  4800      LDR         R0,=Ui_sample1 ; Ui_sample1
+ 0000021C  6800      LDR         R0,[R0,#0x0] ; Ui_sample1
+ 0000021E  4800      LDR         R1,=Ui_sample2 ; Ui_sample2
+ 00000220  6809      LDR         R1,[R1,#0x0] ; Ui_sample2
+ 00000222  4800      LDR         R2,=Ui_sample3 ; Ui_sample3
+ 00000224  6812      LDR         R2,[R2,#0x0] ; Ui_sample3
+ 00000226  4800      LDR         R3,=Ui_sample4 ; Ui_sample4
+ 00000228  681B      LDR         R3,[R3,#0x0] ; Ui_sample4
+ 0000022A  F7FF      BL          adc_val_conv?T  ; T=0x0001  (1)
+ 0000022C  FEE9      BL          adc_val_conv?T  ; T=0x0001  (2)
+ 0000022E  B002      ADD         R13,#0x8
+  136:         lcd_line3_disp(&Uc_dec_arr[1],5);
+ 00000230  4800      LDR         R0,=Uc_dec_arr + 0x1 ; Uc_dec_arr+1
+ 00000232  2105      MOV         R1,#0x5
+ 00000234  F7FF      BL          lcd_line3_disp?T  ; T=0x0001  (1)
+ 00000236  FEE4      BL          lcd_line3_disp?T  ; T=0x0001  (2)
+  139:         uart1_send_string(&Uc_dec_arr[1]);
+ 00000238  4800      LDR         R0,=Uc_dec_arr + 0x1 ; Uc_dec_arr+1
+ 0000023A  F7FF      BL          uart1_send_string?T  ; T=0x0001  (1)
+ 0000023C  FEE1      BL          uart1_send_string?T  ; T=0x0001  (2)
+  142:     }
+ 0000023E          L_6:
+  149:     if(Uc_alrm == 1)
+ 0000023E  4800      LDR         R0,=Uc_alrm ; Uc_alrm
+ 00000240  7800      LDRB        R0,[R0,#0x0] ; Uc_alrm
+ 00000242  2801      CMP         R0,#0x1
+ 00000244  D105      BNE         L_7  ; T=0x00000252
+  151:         Uc_alrm = 2;
+ 00000246  2102      MOV         R1,#0x2
+ 00000248  4800      LDR         R0,=Uc_alrm ; Uc_alrm
+ 0000024A  7001      STRB        R1,[R0,#0x0] ; Uc_alrm
+  152:         pwm5_pulse_width(5000, 100);
+ 0000024C  4800      LDR         R0,=0x1388
+ 0000024E  2164      MOV         R1,#0x64
+ 00000250  F7FF      BL          pwm5_pulse_width?T  ; T=0x0001  (1)
+ 00000252  FED6      BL          pwm5_pulse_width?T  ; T=0x0001  (2)
+  153:     }
+ 00000254          L_7:
+  184:     rtc_get_time();
+ 00000254  F7FF      BL          rtc_get_time?T  ; T=0x0001  (1)
+ 00000256  FED4      BL          rtc_get_time?T  ; T=0x0001  (2)
+  185:     lcd_line4_disp(&Uc_real_time[0],12);
+ 00000258  4800      LDR         R0,=Uc_real_time ; Uc_real_time
+ 0000025A  210C      MOV         R1,#0xC
+ 0000025C  F7FF      BL          lcd_line4_disp?T  ; T=0x0001  (1)
+ 0000025E  FED0      BL          lcd_line4_disp?T  ; T=0x0001  (2)
+  186:     lcd_line4_disp(&Uc_set_user_time[0],0);
+ 00000260  4800      LDR         R0,=Uc_set_user_time ; Uc_set_user_time
+ 00000262  2100      MOV         R1,#0x0
+ARM COMPILER V2.40e,  main                                                                 30/04/12  17:52:58  PAGE 13  
+
+ 00000264  F7FF      BL          lcd_line4_disp?T  ; T=0x0001  (1)
+ 00000266  FECC      BL          lcd_line4_disp?T  ; T=0x0001  (2)
+  191:     Uc_key_temp = get_key(0);
+ 00000268  2000      MOV         R0,#0x0
+ 0000026A  F7FF      BL          get_key?T  ; T=0x0001  (1)
+ 0000026C  FEC9      BL          get_key?T  ; T=0x0001  (2)
+ 0000026E  4800      LDR         R1,=Uc_key_temp ; Uc_key_temp
+ 00000270  7008      STRB        R0,[R1,#0x0] ; Uc_key_temp
+  192:     if(Uc_key_temp == 'E')
+ 00000272  4800      LDR         R0,=Uc_key_temp ; Uc_key_temp
+ 00000274  7800      LDRB        R0,[R0,#0x0] ; Uc_key_temp
+ 00000276  1C04      MOV         R4,R0
+ 00000278  2C45      CMP         R4,#0x45
+ 0000027A  D104      BNE         L_8  ; T=0x00000286
+  194:         Uc_key_temp = 0;
+ 0000027C  2100      MOV         R1,#0x0
+ 0000027E  4800      LDR         R0,=Uc_key_temp ; Uc_key_temp
+ 00000280  7001      STRB        R1,[R0,#0x0] ; Uc_key_temp
+  195:         get_user_time();
+ 00000282  F7FF      BL          get_user_time?T  ; T=0x0001  (1)
+ 00000284  FEBD      BL          get_user_time?T  ; T=0x0001  (2)
+  196:     }
+ 00000286  E70F      B           L_3  ; T=0x000000A8
+ 00000288          L_8:
+  197:     else if((Uc_key_temp == '.')&(Uc_alrm == 2))
+ 00000288  4800      LDR         R0,=Uc_alrm ; Uc_alrm
+ 0000028A  7800      LDRB        R0,[R0,#0x0] ; Uc_alrm
+ 0000028C  2802      CMP         R0,#0x2
+ 0000028E  D100      BNE         L_11  ; T=0x00000292
+ 00000290  2101      MOV         R1,#0x1
+ 00000292  E7FF      B           L_12  ; T=0x00000294
+ 00000294          L_11:
+ 00000294  2100      MOV         R1,#0x0
+ 00000296          L_12:
+ 00000296  2C2E      CMP         R4,#0x2E
+ 00000298  D100      BNE         L_13  ; T=0x0000029C
+ 0000029A  2001      MOV         R0,#0x1
+ 0000029C  E7FF      B           L_14  ; T=0x0000029E
+ 0000029E          L_13:
+ 0000029E  2000      MOV         R0,#0x0
+ 000002A0          L_14:
+ 000002A0  4008      AND         R0,R1
+ 000002A2  2800      CMP         R0,#0x0
+ 000002A4  D006      BEQ         L_10  ; T=0x000002B4
+  199:         Uc_key_temp = 0;
+ 000002A6  2100      MOV         R1,#0x0
+ 000002A8  4800      LDR         R0,=Uc_key_temp ; Uc_key_temp
+ 000002AA  7001      STRB        R1,[R0,#0x0] ; Uc_key_temp
+  200:         Uc_alrm = 0;
+ 000002AC  4800      LDR         R0,=Uc_alrm ; Uc_alrm
+ 000002AE  7001      STRB        R1,[R0,#0x0] ; Uc_alrm
+  201:         pwm_disable();
+ 000002B0  F7FF      BL          pwm_disable?T  ; T=0x0001  (1)
+ 000002B2  FEA6      BL          pwm_disable?T  ; T=0x0001  (2)
+  202:     }
+ 000002B4  E6F8      B           L_3  ; T=0x000000A8
+ 000002B6          L_10:
+  203:     else if(Uc_key_temp == 'A')
+ 000002B6  2C41      CMP         R4,#0x41
+ 000002B8  D115      BNE         L_16  ; T=0x000002E6
+  205:         clrscr();
+ 000002BA  F7FF      BL          clrscr?T  ; T=0x0001  (1)
+ 000002BC  FEA1      BL          clrscr?T  ; T=0x0001  (2)
+  206:         ms_delay(1000);
+ 000002BE  48FA      LDR         R0,=0x3E8
+ 000002C0  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ARM COMPILER V2.40e,  main                                                                 30/04/12  17:52:58  PAGE 14  
+
+ 000002C2  FE9E      BL          ms_delay?T  ; T=0x0001  (2)
+  207:         lcd_line2_disp("Emergency Stop!",3);
+ 000002C4  4800      LDR         R0,=??S_7 ; ??S_7
+ 000002C6  2103      MOV         R1,#0x3
+ 000002C8  F7FF      BL          lcd_line2_disp?T  ; T=0x0001  (1)
+ 000002CA  FE9A      BL          lcd_line2_disp?T  ; T=0x0001  (2)
+  208:         lcd_line4_disp("Cooling ON",5);
+ 000002CC  4800      LDR         R0,=??S_8 ; ??S_8
+ 000002CE  2105      MOV         R1,#0x5
+ 000002D0  F7FF      BL          lcd_line4_disp?T  ; T=0x0001  (1)
+ 000002D2  FE96      BL          lcd_line4_disp?T  ; T=0x0001  (2)
+  209:         IO0CLR = SSR_ON;
+ 000002D4  4800      LDR         R1,=0x200000
+ 000002D6  4800      LDR         R0,=0xE002800C
+ 000002D8  6001      STR         R1,[R0,#0x0]
+  210:         IO0CLR = HEATER_ON;
+ 000002DA  4800      LDR         R1,=0x100000
+ 000002DC  4800      LDR         R0,=0xE002800C
+ 000002DE  6001      STR         R1,[R0,#0x0]
+  211:         IO0SET = COOLER_ON;
+ 000002E0  4800      LDR         R1,=0x80000
+ 000002E2  4800      LDR         R0,=0xE0028004
+ 000002E4  6001      STR         R1,[R0,#0x0]
+  212:         while(1);
+ 000002E6          L_17:
+ 000002E6  E7FE      B           L_17  ; T=0x000002E6
+  213:     }
+ 000002E8          L_16:
+  214:     else if(Uc_key_temp == 'D')
+ 000002E8  2C44      CMP         R4,#0x44
+ 000002EA  D000      BNE         $+4
+ 000002EC  E6DC      B           L_3  ; T=0x000000A8
+  216:         Uc_key_temp = 0;
+ 000002F0  2100      MOV         R1,#0x0
+ 000002F2  4800      LDR         R0,=Uc_key_temp ; Uc_key_temp
+ 000002F4  7001      STRB        R1,[R0,#0x0] ; Uc_key_temp
+  217:         rtc_change_time();
+ 000002F6  F7FF      BL          rtc_change_time?T  ; T=0x0001  (1)
+ 000002F8  FE83      BL          rtc_change_time?T  ; T=0x0001  (2)
+  220:   }
+ 000002FA  E6D5      B           L_3  ; T=0x000000A8
+  221: }
+ 000002FC  BC08      POP         {R3}
+ 000002FE  4718      BX          R3
+ 00000300          ENDP ; 'main'
+
+
+
+Module Information          Static
+----------------------------------
+  code size            =    ------
+  data size            =       162
+  const size           =        36
+End of Module Information.
+
+
+ARM COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

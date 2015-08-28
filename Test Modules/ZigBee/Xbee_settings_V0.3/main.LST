@@ -1,0 +1,357 @@
+ARM COMPILER V2.50a,  main                                                                 23/01/13  15:03:57  PAGE 1   
+
+
+ARM COMPILER V2.50a, COMPILATION OF MODULE main
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\ARM\BIN\CA.exe main.c THUMB BROWSE DEBUG TABS(4) 
+
+stmt  level    source
+
+    1          #include"includes.h"
+    2          //************************************************************//
+    3          #define no_recv_byte      14
+    4          #define COOLER_ON         1<<19
+    5          #define HEATER_ON         1<<20
+    6          #define SSR_ON            1<<21
+    7          #define BUZZER            1<<22
+    8          
+    9          
+   10          U8 uart1_set[30]         = {"\n\rUART1 connected at 9600-8-N"};
+   11          U8 uart0_set[30]         = {"\n\rUART0 connected at 9600-8-N"};
+   12          U8 welcome_note1[25]     = {"Reaction  Controller"};
+   13          U8 welcome_note2[20]     = {"NCL-Pune"};
+   14          U8 lcd_data_sys_chk[20]  = {"Initializing"};
+   15          U8 Uc_zigb_para[20]      = {"000000"};
+   16          
+   17          U32 Ui_sample1 = 0;
+   18          U32 Ui_sample2 = 0;
+   19          U32 Ui_sample3 = 0;
+   20          U32 Ui_sample4 = 0;
+   21          U32 Ui_sample5 = 0;
+   22          U32 Ui_sample6 = 0;
+   23          U32 Ui_sample7 = 0;
+   24          U32 Ui_sample8 = 0;
+   25          U32 Ui_sample9 = 0;
+   26          
+   27          //*************************Flags*******************************//
+   28          U8 Uc_user_mode_flag = 4;
+   29          
+   30          
+   31          
+   32          void main()
+   33          {   
+   34   1        PINSEL0 |= 0X00050005;     // selecting UART0 and UART1
+   35   1        PINSEL1 |= 0X00080000;
+   36   1        IO1DIR  |= 0X0FFF0000;     //pins 1.16 to 1.23 output pins
+   37   1        IO0DIR  |= 0X003E0C00;     //port 0 rs and en as output
+   38   1        IO0CLR   = 0X00FF0000;    
+   39   1        
+   40   1        IO0SET   = 0X0FF00400;
+   41   1        IO0CLR   = BUZZER;
+   42   1      
+   43   1        //*************************************//
+   44   1        //         Initialisations             //
+   45   1        //*************************************//
+   46   1        lcd_init();
+   47   1        irq_init();
+   48   1        uart_init();
+   49   1        adc_init();
+   50   1        //wdt_init();
+   51   1        pwm5_init();
+   52   1        timer1_init_interrupt();
+   53   1        rtc_init_interrupt();
+   54   1      
+   55   1        U1IER = 0;
+   56   1        
+   57   1        //*************************************//
+   58   1        //          Welcome Note               //
+   59   1        //*************************************//
+ARM COMPILER V2.50a,  main                                                                 23/01/13  15:03:57  PAGE 2   
+
+   60   1       
+   61   1        //*************************************//
+   62   1        //  Displaying Static Messages         //
+   63   1        //*************************************//
+   64   1        clrscr();
+   65   1        default_page();
+   66   1        U0IER = 0;
+   67   1        wdt_init();
+   68   1        while(1)
+   69   1        { 
+   70   2          wdt_feed(0x03ffffff);
+   71   2      
+   72   2          Uc_key_temp = get_key(0);
+   73   2      
+   74   2          if(Uc_key_temp == '1')
+   75   2          {
+   76   3              Uc_key_temp = 0;
+   77   3              clrscr();
+   78   3              ms_delay(8000);
+   79   3      
+   80   3              ZIGB_setting();
+   81   3              
+   82   3              default_page();
+   83   3              
+   84   3          }
+   85   2        }
+   86   1      }
+   87          
+   88          
+   89          
+   90          
+   91          
+   92          
+   93          
+ARM COMPILER V2.50a,  main                                                                 23/01/13  15:03:57  PAGE 3   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+
+*** EXTERNALS:
+ EXTERN CODE16 (uart_init?T)
+ EXTERN CODE16 (irq_init?T)
+ EXTERN CODE16 (default_page?T)
+ EXTERN CODE16 (lcd_init?T)
+ EXTERN CODE16 (clrscr?T)
+ EXTERN CODE16 (ms_delay?T)
+ EXTERN CODE16 (rtc_init_interrupt?T)
+ EXTERN CODE16 (timer1_init_interrupt?T)
+ EXTERN CODE16 (adc_init?T)
+ EXTERN CODE16 (get_key?T)
+ EXTERN DATA (Uc_key_temp)
+ EXTERN CODE16 (pwm5_init?T)
+ EXTERN CODE16 (wdt_init?T)
+ EXTERN CODE16 (wdt_feed?T)
+ EXTERN CODE16 (ZIGB_setting?T)
+ EXTERN NUMBER (__startup)
+
+
+
+*** PUBLICS:
+ PUBLIC         main
+ PUBLIC         uart1_set
+ PUBLIC         uart0_set
+ PUBLIC         welcome_note1
+ PUBLIC         welcome_note2
+ PUBLIC         lcd_data_sys_chk
+ PUBLIC         Uc_zigb_para
+ PUBLIC         Ui_sample1
+ PUBLIC         Ui_sample2
+ PUBLIC         Ui_sample3
+ PUBLIC         Ui_sample4
+ PUBLIC         Ui_sample5
+ PUBLIC         Ui_sample6
+ PUBLIC         Ui_sample7
+ PUBLIC         Ui_sample8
+ PUBLIC         Ui_sample9
+ PUBLIC         Uc_user_mode_flag
+
+
+
+*** DATA SEGMENT '?DT0?main':
+ 00000000          Ui_sample1:
+ 00000000           BEGIN_INIT
+ 00000000  00000000  DD          0x0
+ 00000004           END_INIT
+ 00000004          Ui_sample2:
+ 00000004           BEGIN_INIT
+ 00000004  00000000  DD          0x0
+ 00000008           END_INIT
+ 00000008          Ui_sample3:
+ 00000008           BEGIN_INIT
+ 00000008  00000000  DD          0x0
+ 0000000C           END_INIT
+ 0000000C          Ui_sample4:
+ 0000000C           BEGIN_INIT
+ 0000000C  00000000  DD          0x0
+ 00000010           END_INIT
+ 00000010          Ui_sample5:
+ 00000010           BEGIN_INIT
+ 00000010  00000000  DD          0x0
+ 00000014           END_INIT
+ 00000014          Ui_sample6:
+ 00000014           BEGIN_INIT
+ 00000014  00000000  DD          0x0
+ 00000018           END_INIT
+ 00000018          Ui_sample7:
+ARM COMPILER V2.50a,  main                                                                 23/01/13  15:03:57  PAGE 4   
+
+ 00000018           BEGIN_INIT
+ 00000018  00000000  DD          0x0
+ 0000001C           END_INIT
+ 0000001C          Ui_sample8:
+ 0000001C           BEGIN_INIT
+ 0000001C  00000000  DD          0x0
+ 00000020           END_INIT
+ 00000020          Ui_sample9:
+ 00000020           BEGIN_INIT
+ 00000020  00000000  DD          0x0
+ 00000024           END_INIT
+ 00000024          uart1_set:
+ 00000024           BEGIN_INIT
+ 00000024            DB          0x0A,0x0D,'UART1 connected at 9600-8-N',0x00
+ 00000042           END_INIT
+ 00000042          uart0_set:
+ 00000042           BEGIN_INIT
+ 00000042            DB          0x0A,0x0D,'UART0 connected at 9600-8-N',0x00
+ 00000060           END_INIT
+ 00000060          welcome_note1:
+ 00000060           BEGIN_INIT
+ 00000060            DB          'Reaction  Controller',0x00
+ 00000075            SPACE       4
+ 00000079           END_INIT
+ 00000079          welcome_note2:
+ 00000079           BEGIN_INIT
+ 00000079            DB          'NCL-Pune',0x00
+ 00000082            SPACE       11
+ 0000008D           END_INIT
+ 0000008D          lcd_data_sys_chk:
+ 0000008D           BEGIN_INIT
+ 0000008D            DB          'Initializing',0x00
+ 0000009A            SPACE       7
+ 000000A1           END_INIT
+ 000000A1          Uc_zigb_para:
+ 000000A1           BEGIN_INIT
+ 000000A1            DB          '000000',0x00
+ 000000A8            SPACE       13
+ 000000B5           END_INIT
+ 000000B5          Uc_user_mode_flag:
+ 000000B5           BEGIN_INIT
+ 000000B5  04        DB          0x4
+ 000000B6           END_INIT
+
+
+
+*** CODE SEGMENT '?PR?main?main':
+   32: void main()
+ 00000000  B500      PUSH        {LR}
+   34:   PINSEL0 |= 0X00050005;     // selecting UART0 and UART1
+ 00000002  4800      LDR         R2,=0x50005
+ 00000004  4800      LDR         R0,=0xE002C000
+ 00000006  6801      LDR         R1,[R0,#0x0]
+ 00000008  4311      ORR         R1,R2
+ 0000000A  6001      STR         R1,[R0,#0x0]
+   35:   PINSEL1 |= 0X00080000;
+ 0000000C  4800      LDR         R2,=0x80000
+ 0000000E  4800      LDR         R0,=0xE002C004
+ 00000010  6801      LDR         R1,[R0,#0x0]
+ 00000012  4311      ORR         R1,R2
+ 00000014  6001      STR         R1,[R0,#0x0]
+   36:   IO1DIR  |= 0X0FFF0000;     //pins 1.16 to 1.23 output pins
+ 00000016  4800      LDR         R2,=0xFFF0000
+ 00000018  4800      LDR         R0,=0xE0028018
+ 0000001A  6801      LDR         R1,[R0,#0x0]
+ 0000001C  4311      ORR         R1,R2
+ 0000001E  6001      STR         R1,[R0,#0x0]
+   37:   IO0DIR  |= 0X003E0C00;     //port 0 rs and en as output
+ARM COMPILER V2.50a,  main                                                                 23/01/13  15:03:57  PAGE 5   
+
+ 00000020  4800      LDR         R2,=0x3E0C00
+ 00000022  4800      LDR         R0,=0xE0028008
+ 00000024  6801      LDR         R1,[R0,#0x0]
+ 00000026  4311      ORR         R1,R2
+ 00000028  6001      STR         R1,[R0,#0x0]
+   38:   IO0CLR   = 0X00FF0000;    
+ 0000002A  4800      LDR         R1,=0xFF0000
+ 0000002C  4800      LDR         R0,=0xE002800C
+ 0000002E  6001      STR         R1,[R0,#0x0]
+   40:   IO0SET   = 0X0FF00400;
+ 00000030  4800      LDR         R1,=0xFF00400
+ 00000032  4800      LDR         R0,=0xE0028004
+ 00000034  6001      STR         R1,[R0,#0x0]
+   41:   IO0CLR   = BUZZER;
+ 00000036  4800      LDR         R1,=0x400000
+ 00000038  4800      LDR         R0,=0xE002800C
+ 0000003A  6001      STR         R1,[R0,#0x0]
+   46:   lcd_init();
+ 0000003C  F7FF      BL          lcd_init?T  ; T=0x0001  (1)
+ 0000003E  FFE0      BL          lcd_init?T  ; T=0x0001  (2)
+   47:   irq_init();
+ 00000040  F7FF      BL          irq_init?T  ; T=0x0001  (1)
+ 00000042  FFDE      BL          irq_init?T  ; T=0x0001  (2)
+   48:   uart_init();
+ 00000044  F7FF      BL          uart_init?T  ; T=0x0001  (1)
+ 00000046  FFDC      BL          uart_init?T  ; T=0x0001  (2)
+   49:   adc_init();
+ 00000048  F7FF      BL          adc_init?T  ; T=0x0001  (1)
+ 0000004A  FFDA      BL          adc_init?T  ; T=0x0001  (2)
+   51:   pwm5_init();
+ 0000004C  F7FF      BL          pwm5_init?T  ; T=0x0001  (1)
+ 0000004E  FFD8      BL          pwm5_init?T  ; T=0x0001  (2)
+   52:   timer1_init_interrupt();
+ 00000050  F7FF      BL          timer1_init_interrupt?T  ; T=0x0001  (1)
+ 00000052  FFD6      BL          timer1_init_interrupt?T  ; T=0x0001  (2)
+   53:   rtc_init_interrupt();
+ 00000054  F7FF      BL          rtc_init_interrupt?T  ; T=0x0001  (1)
+ 00000056  FFD4      BL          rtc_init_interrupt?T  ; T=0x0001  (2)
+   55:   U1IER = 0;
+ 00000058  2400      MOV         R4,#0x0
+ 0000005A  4800      LDR         R0,=0xE0010004
+ 0000005C  6004      STR         R4,[R0,#0x0]
+   64:   clrscr();
+ 0000005E  F7FF      BL          clrscr?T  ; T=0x0001  (1)
+ 00000060  FFCF      BL          clrscr?T  ; T=0x0001  (2)
+   65:   default_page();
+ 00000062  F7FF      BL          default_page?T  ; T=0x0001  (1)
+ 00000064  FFCD      BL          default_page?T  ; T=0x0001  (2)
+   66:   U0IER = 0;
+ 00000066  4800      LDR         R0,=0xE000C004
+ 00000068  6004      STR         R4,[R0,#0x0]
+   67:   wdt_init();
+ 0000006A  F7FF      BL          wdt_init?T  ; T=0x0001  (1)
+ 0000006C  FFC9      BL          wdt_init?T  ; T=0x0001  (2)
+   68:   while(1)
+ 0000006E          L_3:
+   70:       wdt_feed(0x03ffffff);
+ 0000006E  4800      LDR         R0,=0x3FFFFFF
+ 00000070  F7FF      BL          wdt_feed?T  ; T=0x0001  (1)
+ 00000072  FFC6      BL          wdt_feed?T  ; T=0x0001  (2)
+   72:     Uc_key_temp = get_key(0);
+ 00000074  2000      MOV         R0,#0x0
+ 00000076  F7FF      BL          get_key?T  ; T=0x0001  (1)
+ 00000078  FFC3      BL          get_key?T  ; T=0x0001  (2)
+ 0000007A  4800      LDR         R1,=Uc_key_temp ; Uc_key_temp
+ 0000007C  7008      STRB        R0,[R1,#0x0] ; Uc_key_temp
+ARM COMPILER V2.50a,  main                                                                 23/01/13  15:03:57  PAGE 6   
+
+   74:     if(Uc_key_temp == '1')
+ 0000007E  4800      LDR         R0,=Uc_key_temp ; Uc_key_temp
+ 00000080  7800      LDRB        R0,[R0,#0x0] ; Uc_key_temp
+ 00000082  2831      CMP         R0,#0x31
+ 00000084  D1F3      BNE         L_3  ; T=0x0000006E
+   76:         Uc_key_temp = 0;
+ 00000086  2100      MOV         R1,#0x0
+ 00000088  4800      LDR         R0,=Uc_key_temp ; Uc_key_temp
+ 0000008A  7001      STRB        R1,[R0,#0x0] ; Uc_key_temp
+   77:         clrscr();
+ 0000008C  F7FF      BL          clrscr?T  ; T=0x0001  (1)
+ 0000008E  FFB8      BL          clrscr?T  ; T=0x0001  (2)
+   78:         ms_delay(8000);
+ 00000090  4800      LDR         R0,=0x1F40
+ 00000092  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000094  FFB5      BL          ms_delay?T  ; T=0x0001  (2)
+   80:         ZIGB_setting();
+ 00000096  F7FF      BL          ZIGB_setting?T  ; T=0x0001  (1)
+ 00000098  FFB3      BL          ZIGB_setting?T  ; T=0x0001  (2)
+   82:         default_page();
+ 0000009A  F7FF      BL          default_page?T  ; T=0x0001  (1)
+ 0000009C  FFB1      BL          default_page?T  ; T=0x0001  (2)
+   85:   }
+ 0000009E  E7E6      B           L_3  ; T=0x0000006E
+   86: }
+ 000000A0  BC08      POP         {R3}
+ 000000A2  4718      BX          R3
+ 000000A4          ENDP ; 'main'
+
+
+
+Module Information          Static
+----------------------------------
+  code size            =    ------
+  data size            =       182
+  const size           =    ------
+End of Module Information.
+
+
+ARM COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,9 @@
+"Startup.obj",
+"lcd.obj",
+"main.obj",
+"rtc.obj",
+"timer.obj" 
+TO "EXT_INT_freq_measure" 
+CASE 
+CLASSES (DATA (0x40000000-0x40007FFF), 
+CODE (0x0-0x7FFFF), CONST (0x0-0x7FFFF)) 

@@ -1,0 +1,156 @@
+ARM COMPILER V2.50a,  wdt                                                                  23/01/13  15:03:57  PAGE 1   
+
+
+ARM COMPILER V2.50a, COMPILATION OF MODULE wdt
+OBJECT MODULE PLACED IN wdt.OBJ
+COMPILER INVOKED BY: C:\Keil\ARM\BIN\CA.exe wdt.c THUMB BROWSE DEBUG TABS(4) 
+
+stmt  level    source
+
+    1          #include"includes.h"
+    2          
+    3          void wdt_init(void);
+    4          void wdt_ISR(void)__irq;
+    5          
+    6          U8 wdt_timeout = 0; 
+    7          
+    8          
+    9          void wdt_init(void)
+   10          {
+   11   1          VICVectAddr0 = (U32)&wdt_ISR;
+   12   1          VICVectCntl0 = 0x20 | 0;
+   13   1          VICIntEnable = 1 << 0;
+   14   1          
+   15   1          WDTC   = 0x01ffffff;
+   16   1          WDMOD  = 0x00;
+   17   1          WDFEED = 0xAA;
+   18   1          WDFEED = 0x55;
+   19   1      }
+   20          
+   21          void wdt_ISR(void)__irq
+   22          {
+   23   1          
+   24   1          wdt_timeout = 1; 
+   25   1          WDMOD &= ~0x04;
+   26   1          VICVectAddr   = 0x00;
+   27   1          
+   28   1      }
+   29          
+   30          void wdt_feed(U32 feed_val)
+   31          {
+   32   1          WDTC   = feed_val;
+   33   1          WDFEED = 0xAA;
+   34   1          WDFEED = 0x55;
+   35   1      }
+   36          
+   37          
+ARM COMPILER V2.50a,  wdt                                                                  23/01/13  15:03:57  PAGE 2   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+
+*** PUBLICS:
+ PUBLIC         wdt_init?T
+ PUBLIC         wdt_feed?T
+ PUBLIC         wdt_ISR?A
+ PUBLIC         wdt_timeout
+
+
+
+*** DATA SEGMENT '?DT0?wdt':
+ 00000000          wdt_timeout:
+ 00000000           BEGIN_INIT
+ 00000000  00        DB          0x0
+ 00000001           END_INIT
+
+
+
+*** CODE SEGMENT '?PR?wdt_init?T?wdt':
+   11:     VICVectAddr0 = (U32)&wdt_ISR;
+ 00000000  4900      LDR         R1,=wdt_ISR?A ; wdt_ISR?A
+ 00000002  4800      LDR         R0,=0xFFFFF100
+ 00000004  6001      STR         R1,[R0,#0x0]
+   12:       VICVectCntl0 = 0x20 | 0;
+ 00000006  2120      MOV         R1,#0x20
+ 00000008  4800      LDR         R0,=0xFFFFF200
+ 0000000A  6001      STR         R1,[R0,#0x0]
+   13:       VICIntEnable = 1 << 0;
+ 0000000C  2101      MOV         R1,#0x1
+ 0000000E  4800      LDR         R0,=0xFFFFF010
+ 00000010  6001      STR         R1,[R0,#0x0]
+   15:     WDTC   = 0x01ffffff;
+ 00000012  4800      LDR         R1,=0x1FFFFFF
+ 00000014  4800      LDR         R0,=0xE0000004
+ 00000016  6001      STR         R1,[R0,#0x0]
+   16:     WDMOD  = 0x00;
+ 00000018  2100      MOV         R1,#0x0
+ 0000001A  4800      LDR         R0,=0xE0000000
+ 0000001C  7001      STRB        R1,[R0,#0x0]
+   17:     WDFEED = 0xAA;
+ 0000001E  21AA      MOV         R1,#0xAA
+ 00000020  4800      LDR         R0,=0xE0000008
+ 00000022  7001      STRB        R1,[R0,#0x0]
+   18:     WDFEED = 0x55;
+ 00000024  2155      MOV         R1,#0x55
+ 00000026  4800      LDR         R0,=0xE0000008
+ 00000028  7001      STRB        R1,[R0,#0x0]
+   19: }
+ 0000002A  4770      BX          R14
+ 0000002C          ENDP ; 'wdt_init?T'
+
+
+*** CODE SEGMENT '?PR?wdt_ISR?A?wdt':
+   21: void wdt_ISR(void)__irq
+ 00000000  E92D0003  STMDB       R13!,{R0-R1}
+   24:     wdt_timeout = 1; 
+ 00000004  E3A01001  MOV         R1,#0x1
+ 00000008  E5100000  LDR         R0,=wdt_timeout ; wdt_timeout
+ 0000000C  E5C01000  STRB        R1,[R0,#0x0] ; wdt_timeout
+   25:     WDMOD &= ~0x04;
+ 00000010  E3A0020E  MOV         R0,#0xE0000000
+ 00000014  E5D01000  LDRB        R1,[R0,#0x0]
+ 00000018  E20110FB  AND         R1,R1,#0x00FB
+ 0000001C  E5C01000  STRB        R1,[R0,#0x0]
+   26:     VICVectAddr   = 0x00;
+ 00000020  E3A01000  MOV         R1,#0x0
+ 00000024  E5100000  LDR         R0,=0xFFFFF030
+ 00000028  E5801000  STR         R1,[R0,#0x0]
+   28: }
+ 0000002C  E8BD0003  LDMIA       R13!,{R0-R1}
+ 00000030  E25EF004  SUBS        R15,R14,#0x0004
+ARM COMPILER V2.50a,  wdt                                                                  23/01/13  15:03:57  PAGE 3   
+
+ 00000034          ENDP ; 'wdt_ISR?A'
+
+
+*** CODE SEGMENT '?PR?wdt_feed?T?wdt':
+   30: void wdt_feed(U32 feed_val)
+ 00000000  ---- Variable 'feed_val' assigned to Register 'R0' ----
+   32:     WDTC   = feed_val;
+ 00000000  1C01      MOV         R1,R0 ; feed_val
+ 00000002  4800      LDR         R0,=0xE0000004
+ 00000004  6001      STR         R1,[R0,#0x0]
+   33:     WDFEED = 0xAA;
+ 00000006  21AA      MOV         R1,#0xAA
+ 00000008  4800      LDR         R0,=0xE0000008
+ 0000000A  7001      STRB        R1,[R0,#0x0]
+   34:     WDFEED = 0x55;
+ 0000000C  2155      MOV         R1,#0x55
+ 0000000E  4800      LDR         R0,=0xE0000008
+ 00000010  7001      STRB        R1,[R0,#0x0]
+   35: }
+ 00000012  4770      BX          R14
+ 00000014          ENDP ; 'wdt_feed?T'
+
+
+
+Module Information          Static
+----------------------------------
+  code size            =    ------
+  data size            =         1
+  const size           =    ------
+End of Module Information.
+
+
+ARM COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

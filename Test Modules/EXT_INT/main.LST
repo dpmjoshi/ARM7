@@ -1,0 +1,297 @@
+ARM COMPILER V2.50a,  main                                                                 21/12/12  17:19:53  PAGE 1   
+
+
+ARM COMPILER V2.50a, COMPILATION OF MODULE main
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\ARM\BIN\CA.exe main.c THUMB BROWSE DEBUG TABS(4) 
+
+stmt  level    source
+
+    1          #include"includes.h"
+    2          
+    3          #define OUT_PORT     1<<6
+    4          #define EINT0_MASK   0x01
+    5          #define EINT1_MASK   0x02
+    6          #define EINT2_MASK   0x04
+    7          #define EINT3_MASK   0x08
+    8          //*************************Flags*******************************//
+    9          
+   10          extern U32 Uc_freq_count = 0;
+   11          
+   12          
+   13          void ext_int1()__irq
+   14          {
+   15   1        Uc_freq_count += 1;
+   16   1        time1_measure(Uc_freq_count);
+   17   1        EXTINT = EINT1_MASK;
+   18   1        VICVectAddr   = 0x00;
+   19   1      }
+   20          
+   21          
+   22          void extint_init()
+   23          {
+   24   1      
+   25   1        EXTPOLAR  = EINT1_MASK;
+   26   1        EXTMODE   = EINT1_MASK;
+   27   1      
+   28   1        VICVectAddr6 = (U32)&ext_int1;
+   29   1        VICVectCntl6 = 0x20 | 15;
+   30   1        VICIntEnable = 1 << 15;
+   31   1      }
+   32          
+   33          
+   34          void main()
+   35          {   
+   36   1        //extint_init();
+   37   1        
+   38   1        PINSEL0 |= 0X000500c5;     // selecting UART0 and UART1
+   39   1        PINSEL1 |= 0X00080000;
+   40   1        IO1DIR  |= 0X0FFF0000;     //pins 1.16 to 1.23 output pins
+   41   1        IO0DIR  |= 0X003E0C40;     //port 0 rs and en as output
+   42   1        IO0CLR   = 0X00FF0000;    
+   43   1        
+   44   1        IO0SET   = 0X0FF00400;
+   45   1      
+   46   1        
+   47   1        //*************************************//
+   48   1        //         Initialisations             //
+   49   1        //*************************************//
+   50   1        rtc_init_interrupt();
+   51   1        lcd_init();
+   52   1        clrscr();
+   53   1        extint_init();
+   54   1        ms_delay(1000);
+   55   1        lcd_line1_disp("EXT INT2",0);
+   56   1        ms_delay(1000);
+   57   1        while(1)
+   58   1        { 
+   59   2         rtc_get_time();
+ARM COMPILER V2.50a,  main                                                                 21/12/12  17:19:53  PAGE 2   
+
+   60   2         lcd_line3_disp(&Uc_real_time[0],11);
+   61   2         /*
+   62   2         
+   63   2         if(Uc_rtc_flag == 1)
+   64   2         {
+   65   2              lcd_line3_disp("RTC int",0);
+   66   2              Uc_rtc_flag = 0;
+   67   2              time1_measure(Uc_freq_count);
+   68   2              Uc_freq_count = 0;
+   69   2      
+   70   2         }
+   71   2         */
+   72   2         IO0SET = OUT_PORT;
+   73   2         ms_delay(10000);
+   74   2         IO0CLR = OUT_PORT;
+   75   2         ms_delay(10000);
+   76   2      
+   77   2        }
+   78   1      }
+   79          
+   80          
+   81          
+   82          
+   83          
+   84          
+   85          
+ARM COMPILER V2.50a,  main                                                                 21/12/12  17:19:53  PAGE 3   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+
+*** EXTERNALS:
+ EXTERN CODE16 (lcd_init?T)
+ EXTERN CODE16 (clrscr?T)
+ EXTERN CODE16 (ms_delay?T)
+ EXTERN CODE16 (lcd_line1_disp?T)
+ EXTERN CODE16 (lcd_line3_disp?T)
+ EXTERN CODE16 (time1_measure?T)
+ EXTERN CODE16 (rtc_init_interrupt?T)
+ EXTERN CODE16 (rtc_get_time?T)
+ EXTERN DATA (Uc_real_time)
+ EXTERN CODE32 (time1_measure?A)
+ EXTERN NUMBER (__startup)
+
+
+
+*** PUBLICS:
+ PUBLIC         ext_int1?A
+ PUBLIC         extint_init?T
+ PUBLIC         main
+ PUBLIC         Uc_freq_count
+
+
+
+*** DATA SEGMENT '?CON?main':
+ 00000000          ??S_1:
+ 00000000            DB          'EXT INT2',0x00
+
+*** DATA SEGMENT '?DT0?main':
+ 00000000          Uc_freq_count:
+ 00000000           BEGIN_INIT
+ 00000000  00000000  DD          0x0
+ 00000004           END_INIT
+
+
+
+*** CODE SEGMENT '?PR?ext_int1?A?main':
+   13: void ext_int1()__irq
+ 00000000  E92D5F0F  STMDB       R13!,{R0-R3,R8-R12,LR}
+   15:   Uc_freq_count += 1;
+ 00000004  E5100000  LDR         R0,=Uc_freq_count ; Uc_freq_count
+ 00000008  E5901000  LDR         R1,[R0,#0x0] ; Uc_freq_count
+ 0000000C  E2811001  ADD         R1,R1,#0x0001
+ 00000010  E5100000  LDR         R0,=Uc_freq_count ; Uc_freq_count
+ 00000014  E5801000  STR         R1,[R0,#0x0] ; Uc_freq_count
+   16:   time1_measure(Uc_freq_count);
+ 00000018  E5100000  LDR         R0,=Uc_freq_count ; Uc_freq_count
+ 0000001C  E5900000  LDR         R0,[R0,#0x0] ; Uc_freq_count
+ 00000020  EBFFFFF6  BL          time1_measure?A  ; Targ=0x0
+   17:   EXTINT = EINT1_MASK;
+ 00000024  E3A01002  MOV         R1,#0x2
+ 00000028  E5100000  LDR         R0,=0xE01FC140
+ 0000002C  E5C01000  STRB        R1,[R0,#0x0]
+   18:   VICVectAddr   = 0x00;
+ 00000030  E3A01000  MOV         R1,#0x0
+ 00000034  E5100000  LDR         R0,=0xFFFFF030
+ 00000038  E5801000  STR         R1,[R0,#0x0]
+   19: }
+ 0000003C  E8BD5F0F  LDMIA       R13!,{R0-R3,R8-R12,LR}
+ 00000040  E25EF004  SUBS        R15,R14,#0x0004
+ 00000044          ENDP ; 'ext_int1?A'
+
+
+*** CODE SEGMENT '?PR?extint_init?T?main':
+   25:   EXTPOLAR  = EINT1_MASK;
+ 00000000  2102      MOV         R1,#0x2
+ 00000002  4800      LDR         R0,=0xE01FC14C
+ 00000004  7001      STRB        R1,[R0,#0x0]
+   26:   EXTMODE   = EINT1_MASK;
+ 00000006  4800      LDR         R0,=0xE01FC148
+ 00000008  7001      STRB        R1,[R0,#0x0]
+   28:   VICVectAddr6 = (U32)&ext_int1;
+ 0000000A  4900      LDR         R1,=ext_int1?A ; ext_int1?A
+ARM COMPILER V2.50a,  main                                                                 21/12/12  17:19:53  PAGE 4   
+
+ 0000000C  4800      LDR         R0,=0xFFFFF118
+ 0000000E  6001      STR         R1,[R0,#0x0]
+   29:   VICVectCntl6 = 0x20 | 15;
+ 00000010  212F      MOV         R1,#0x2F
+ 00000012  4800      LDR         R0,=0xFFFFF218
+ 00000014  6001      STR         R1,[R0,#0x0]
+   30:   VICIntEnable = 1 << 15;
+ 00000016  4800      LDR         R1,=0x8000
+ 00000018  4800      LDR         R0,=0xFFFFF010
+ 0000001A  6001      STR         R1,[R0,#0x0]
+   31: }
+ 0000001C  4770      BX          R14
+ 0000001E          ENDP ; 'extint_init?T'
+
+
+*** CODE SEGMENT '?PR?main?main':
+   34: void main()
+ 00000000  B500      PUSH        {LR}
+   38:   PINSEL0 |= 0X000500c5;     // selecting UART0 and UART1
+ 00000002  4800      LDR         R2,=0x500C5
+ 00000004  4800      LDR         R0,=0xE002C000
+ 00000006  6801      LDR         R1,[R0,#0x0]
+ 00000008  4311      ORR         R1,R2
+ 0000000A  6001      STR         R1,[R0,#0x0]
+   39:   PINSEL1 |= 0X00080000;
+ 0000000C  4800      LDR         R2,=0x80000
+ 0000000E  4800      LDR         R0,=0xE002C004
+ 00000010  6801      LDR         R1,[R0,#0x0]
+ 00000012  4311      ORR         R1,R2
+ 00000014  6001      STR         R1,[R0,#0x0]
+   40:   IO1DIR  |= 0X0FFF0000;     //pins 1.16 to 1.23 output pins
+ 00000016  4800      LDR         R2,=0xFFF0000
+ 00000018  4800      LDR         R0,=0xE0028018
+ 0000001A  6801      LDR         R1,[R0,#0x0]
+ 0000001C  4311      ORR         R1,R2
+ 0000001E  6001      STR         R1,[R0,#0x0]
+   41:   IO0DIR  |= 0X003E0C40;     //port 0 rs and en as output
+ 00000020  4800      LDR         R2,=0x3E0C40
+ 00000022  4800      LDR         R0,=0xE0028008
+ 00000024  6801      LDR         R1,[R0,#0x0]
+ 00000026  4311      ORR         R1,R2
+ 00000028  6001      STR         R1,[R0,#0x0]
+   42:   IO0CLR   = 0X00FF0000;    
+ 0000002A  4800      LDR         R1,=0xFF0000
+ 0000002C  4800      LDR         R0,=0xE002800C
+ 0000002E  6001      STR         R1,[R0,#0x0]
+   44:   IO0SET   = 0X0FF00400;
+ 00000030  4800      LDR         R1,=0xFF00400
+ 00000032  4800      LDR         R0,=0xE0028004
+ 00000034  6001      STR         R1,[R0,#0x0]
+   50:   rtc_init_interrupt();
+ 00000036  F7FF      BL          rtc_init_interrupt?T  ; T=0x0001  (1)
+ 00000038  FFE3      BL          rtc_init_interrupt?T  ; T=0x0001  (2)
+   51:   lcd_init();
+ 0000003A  F7FF      BL          lcd_init?T  ; T=0x0001  (1)
+ 0000003C  FFE1      BL          lcd_init?T  ; T=0x0001  (2)
+   52:   clrscr();
+ 0000003E  F7FF      BL          clrscr?T  ; T=0x0001  (1)
+ 00000040  FFDF      BL          clrscr?T  ; T=0x0001  (2)
+   53:   extint_init();
+ 00000042  F7FF      BL          extint_init?T  ; T=0x0001  (1)
+ 00000044  FFDD      BL          extint_init?T  ; T=0x0001  (2)
+   54:   ms_delay(1000);
+ 00000046  48FA      LDR         R0,=0x3E8
+ 00000048  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000004A  FFDA      BL          ms_delay?T  ; T=0x0001  (2)
+   55:   lcd_line1_disp("EXT INT2",0);
+ 0000004C  4800      LDR         R0,=??S_1 ; ??S_1
+ARM COMPILER V2.50a,  main                                                                 21/12/12  17:19:53  PAGE 5   
+
+ 0000004E  2100      MOV         R1,#0x0
+ 00000050  F7FF      BL          lcd_line1_disp?T  ; T=0x0001  (1)
+ 00000052  FFD6      BL          lcd_line1_disp?T  ; T=0x0001  (2)
+   56:   ms_delay(1000);
+ 00000054  48FA      LDR         R0,=0x3E8
+ 00000056  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000058  FFD3      BL          ms_delay?T  ; T=0x0001  (2)
+   57:   while(1)
+ 0000005A          L_3:
+   59:    rtc_get_time();
+ 0000005A  F7FF      BL          rtc_get_time?T  ; T=0x0001  (1)
+ 0000005C  FFD1      BL          rtc_get_time?T  ; T=0x0001  (2)
+   60:    lcd_line3_disp(&Uc_real_time[0],11);
+ 0000005E  4800      LDR         R0,=Uc_real_time ; Uc_real_time
+ 00000060  210B      MOV         R1,#0xB
+ 00000062  F7FF      BL          lcd_line3_disp?T  ; T=0x0001  (1)
+ 00000064  FFCD      BL          lcd_line3_disp?T  ; T=0x0001  (2)
+   72:    IO0SET = OUT_PORT;
+ 00000066  2140      MOV         R1,#0x40
+ 00000068  4800      LDR         R0,=0xE0028004
+ 0000006A  6001      STR         R1,[R0,#0x0]
+   73:    ms_delay(10000);
+ 0000006C  4800      LDR         R0,=0x2710
+ 0000006E  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000070  FFC7      BL          ms_delay?T  ; T=0x0001  (2)
+   74:    IO0CLR = OUT_PORT;
+ 00000072  2140      MOV         R1,#0x40
+ 00000074  4800      LDR         R0,=0xE002800C
+ 00000076  6001      STR         R1,[R0,#0x0]
+   75:    ms_delay(10000);
+ 00000078  4800      LDR         R0,=0x2710
+ 0000007A  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000007C  FFC1      BL          ms_delay?T  ; T=0x0001  (2)
+   77:   }
+ 0000007E  E7EC      B           L_3  ; T=0x0000005A
+   78: }
+ 00000080  BC08      POP         {R3}
+ 00000082  4718      BX          R3
+ 00000084          ENDP ; 'main'
+
+
+
+Module Information          Static
+----------------------------------
+  code size            =    ------
+  data size            =         4
+  const size           =         9
+End of Module Information.
+
+
+ARM COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

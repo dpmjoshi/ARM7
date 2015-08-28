@@ -1,0 +1,199 @@
+ARM COMPILER V2.50a,  rtc                                                                  05/11/12  13:06:27  PAGE 1   
+
+
+ARM COMPILER V2.50a, COMPILATION OF MODULE rtc
+OBJECT MODULE PLACED IN rtc.OBJ
+COMPILER INVOKED BY: C:\Keil\ARM\BIN\CA.exe rtc.c THUMB BROWSE DEBUG TABS(4) 
+
+stmt  level    source
+
+    1          #include"includes.h"
+    2          
+    3          void rtc_init();
+    4          void rtc_init_interrupt();
+    5          void rtc_ISR()__irq;
+    6          void rtc_get_time();
+    7          
+    8          
+    9          U8  Uc_real_time[9]  = {"00:00:00"};
+   10          U8  Uc_date[11]      = {"00/00/0000"};
+   11          U16 Uc_time_sec;
+   12          U8  Uc_alrm = 0;
+   13          
+   14          void rtc_init()
+   15          {
+   16   1          SEC     = 0;
+   17   1          MIN     = 02;
+   18   1          HOUR    = 11;
+   19   1      
+   20   1          DOM     = 28;
+   21   1          MONTH   = 02;
+   22   1          YEAR    = 2012;
+   23   1      
+   24   1          CCR     = 0x11;
+   25   1      }
+   26          
+   27          
+   28          void rtc_init_interrupt()
+   29          {
+   30   1          VICVectAddr0 = (U32)&rtc_ISR;
+   31   1          VICVectCntl0 = 0x20 | 13;
+   32   1          VICIntEnable = 1 << 13;
+   33   1      
+   34   1      /*  
+   35   1          SEC     = 0;
+   36   1          MIN     = 53;
+   37   1          HOUR    = 15;
+   38   1      
+   39   1          DOM     = 2;
+   40   1          MONTH   = 03;
+   41   1          YEAR    = 2012;
+   42   1      */  
+   43   1          AMR     = 0xF8;
+   44   1          CIIR    = 0x01;
+   45   1          CCR     = 0x11;
+   46   1      }
+   47          
+   48          //*******************************************************//
+   49          //*******************************************************//
+   50          
+   51          void rtc_ISR()__irq
+   52          {
+   53   1          if(ILR & 0x01)
+   54   1           {
+   55   2              //Uc_time_sec++;
+   56   2              Uc_fre = 1;
+*** ERROR C67 IN LINE 56 OF RTC.C: 'Uc_fre': undefined identifier
+   57   2              //T0TC   = 0;
+   58   2              ILR = 1;
+ARM COMPILER V2.50a,  rtc                                                                  05/11/12  13:06:27  PAGE 2   
+
+   59   2          
+   60   2           }
+   61   1          if(ILR & 0x02)
+   62   1           {
+   63   2              Uc_alrm = 1;
+   64   2              ILR = 2;
+   65   2          
+   66   2           }
+   67   1      
+   68   1          VICVectAddr   = 0x00;
+   69   1      }
+   70          //*******************************************************//
+   71          //*******************************************************//
+   72          void set_alarm(U8 alarm_hr, U8 alarm_min, U8 alarm_sec)
+   73          {
+   74   1          alarm_sec = alarm_sec + SEC;
+   75   1          if(alarm_sec > 59)
+   76   1          {
+   77   2              ALSEC      = alarm_sec - 59;
+   78   2              alarm_min += 1;
+   79   2          }
+   80   1          else
+   81   1          {
+   82   2              ALSEC = alarm_sec;
+   83   2          }
+   84   1      
+   85   1          alarm_min = alarm_min + MIN;
+   86   1          if(alarm_min > 59)
+   87   1          {
+   88   2              ALMIN      = alarm_min - 59;
+   89   2              alarm_hr  += 1;
+   90   2          }
+   91   1          else
+   92   1          {
+   93   2              ALMIN      = alarm_min;
+   94   2          }
+   95   1      
+   96   1          alarm_hr = alarm_hr + HOUR;
+   97   1          if(alarm_hr > 23)
+   98   1          {
+   99   2              ALHOUR      = alarm_hr - 23;
+  100   2          }
+  101   1          else
+  102   1          {
+  103   2              ALHOUR      = alarm_hr;
+  104   2          }
+  105   1      }
+  106          
+  107          
+  108          //**********************************************************//
+  109          
+  110          void rtc_get_time()
+  111          {
+  112   1          U16 us_temp_y, us_temp_yr;
+  113   1          U8 uc_temp;
+  114   1      
+  115   1          us_temp_y  = YEAR;
+  116   1          us_temp_y  = us_temp_y / 1000;
+  117   1          Uc_date[6] = us_temp_y + 0x30;
+  118   1          us_temp_y  = YEAR;
+  119   1          
+  120   1          us_temp_y  = us_temp_y % 1000;
+  121   1          us_temp_yr = us_temp_y;
+  122   1      
+  123   1          us_temp_y  = us_temp_y / 100;
+  124   1          Uc_date[7] = us_temp_y + 0x30;
+ARM COMPILER V2.50a,  rtc                                                                  05/11/12  13:06:27  PAGE 3   
+
+  125   1      
+  126   1          us_temp_y  = us_temp_yr;
+  127   1          us_temp_y  = us_temp_y % 100;
+  128   1          us_temp_yr = us_temp_y;
+  129   1                  
+  130   1          us_temp_y  = us_temp_y / 10;
+  131   1          Uc_date[8] = us_temp_y + 0x30;
+  132   1      
+  133   1          us_temp_y  = us_temp_yr;
+  134   1          us_temp_y  = us_temp_y % 10;
+  135   1          Uc_date[9] = us_temp_y + 0x30;
+  136   1      
+  137   1      
+  138   1          uc_temp    = MONTH;
+  139   1          uc_temp    = uc_temp / 10;
+  140   1          Uc_date[3] = uc_temp + 0x30;
+  141   1      
+  142   1          uc_temp    = MONTH;
+  143   1          uc_temp    = uc_temp % 10;      
+  144   1          Uc_date[4] = uc_temp + 0x30;
+  145   1      
+  146   1      
+  147   1          uc_temp    = DOM;
+  148   1          uc_temp    = uc_temp / 10;
+  149   1          Uc_date[0] = uc_temp + 0x30;
+  150   1      
+  151   1          uc_temp    = DOM;
+  152   1          uc_temp    = uc_temp % 10;      
+  153   1          Uc_date[1] = uc_temp + 0x30;
+  154   1      //********************************************************************************************
+  155   1          
+  156   1          uc_temp    = SEC;
+  157   1          uc_temp    = uc_temp / 10;
+  158   1          Uc_real_time[6] = uc_temp + 0x30;
+  159   1      
+  160   1          uc_temp    = SEC;
+  161   1          uc_temp    = uc_temp % 10;      
+  162   1          Uc_real_time[7] = uc_temp + 0x30;
+  163   1      
+  164   1      
+  165   1          uc_temp    = MIN;
+  166   1          uc_temp    = uc_temp / 10;
+  167   1          Uc_real_time[3] = uc_temp + 0x30;
+  168   1      
+  169   1          uc_temp    = MIN;
+  170   1          uc_temp    = uc_temp % 10;      
+  171   1          Uc_real_time[4] = uc_temp +0x30;
+  172   1      
+  173   1      
+  174   1          uc_temp    = HOUR;
+  175   1          uc_temp    = uc_temp / 10;
+  176   1          Uc_real_time[0] = uc_temp +0x30;
+  177   1      
+  178   1          uc_temp    = HOUR;
+  179   1          uc_temp    = uc_temp % 10;      
+  180   1          Uc_real_time[1] = uc_temp +0x30;
+  181   1      
+  182   1      
+  183   1      }
+
+ARM COMPILATION COMPLETE.  0 WARNING(S),  1 ERROR(S)

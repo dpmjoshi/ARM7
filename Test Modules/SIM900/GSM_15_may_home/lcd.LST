@@ -1,0 +1,921 @@
+ARM COMPILER V2.50a,  lcd                                                                  23/05/13  14:55:53  PAGE 1   
+
+
+ARM COMPILER V2.50a, COMPILATION OF MODULE lcd
+OBJECT MODULE PLACED IN lcd.OBJ
+COMPILER INVOKED BY: C:\Keil\ARM\BIN\CA.exe lcd.c THUMB BROWSE DEBUG TABS(4) 
+
+stmt  level    source
+
+    1          #include <LPC214X.H>
+    2          #include "type.h"
+    3          #include "lcd.h"
+    4          
+    5          #define RS 1 << 23
+    6          #define EN 1 << 22
+    7          #define DATA_MASK 0xff << 10
+    8          
+    9          
+   10          
+   11          
+   12          
+   13          
+   14          unsigned char k,data_ptr;
+   15          int *p,*s;
+   16          
+   17          void lcd_init()
+   18          {
+   19   1         //comdr(0x30);
+   20   1         IO0DIR |= DATA_MASK;
+   21   1         IO1DIR |= (RS | EN);
+   22   1      
+   23   1         comdr(0x30);  //2 line,5*7 matrix
+   24   1         ms_delay(40);
+   25   1         comdr(0x38);  //2 line,5*7 matrix
+   26   1         ms_delay(40);
+   27   1         comdr(0x01); //clear display
+   28   1         ms_delay(40);
+   29   1         comdr(0x06); //automatic rt shift cursor
+   30   1         ms_delay(40);
+   31   1         comdr(0x0C); //display on cursor on
+   32   1         ms_delay(50);
+   33   1      }
+   34          
+   35          
+   36          void datar(unsigned char data)
+   37           {
+   38   1         IO0CLR = DATA_MASK;
+   39   1         IO0SET = data << 10;
+   40   1         IO1SET = RS;     //RS=1
+   41   1         IO1SET = EN;     //EN=1
+   42   1         ms_delay(5);
+   43   1         IO1CLR = EN;     //EN=0
+   44   1      
+   45   1       }
+   46               
+   47           void comdr(unsigned char comd)
+   48           {  
+   49   1         IO0CLR = DATA_MASK;      
+   50   1         IO0SET = comd << 10;
+   51   1         IO1CLR = RS;     //RS=0
+   52   1         IO1SET = EN;     //EN=1
+   53   1         ms_delay(5);
+   54   1         IO1CLR = EN;      //EN=0
+   55   1      }
+   56          
+   57            
+   58          void clrscr()
+   59          {
+ARM COMPILER V2.50a,  lcd                                                                  23/05/13  14:55:53  PAGE 2   
+
+   60   1        comdr(0x01); //clear display
+   61   1        ms_delay(50);
+   62   1      }
+   63          
+   64          void cursur_on()
+   65          {
+   66   1          comdr(0x0F);    //display on cursor on
+   67   1          ms_delay(25);
+   68   1      }
+   69          
+   70          void cursur_off()
+   71          {
+   72   1          comdr(0x0C);    //display on cursor on
+   73   1          ms_delay(25);
+   74   1      }
+   75          
+   76          
+   77          void lcd_line_disp(U8 *line4_data, U8 position, U8 line_no)
+   78          {
+   79   1       U8 l;
+   80   1       switch(line_no)
+   81   1       {
+   82   2          case 1: position += 0x80;
+   83   2          break;
+   84   2          case 2: position += 0xC0;
+   85   2          break;
+   86   2          case 3: position += 0x90;
+   87   2          break;
+   88   2          case 4: position += 0xd0;
+   89   2          break;
+   90   2      
+   91   2       }
+   92   1       comdr(position);
+   93   1       ms_delay(5);
+   94   1       for(l=0; *line4_data!='\0'; l++)
+   95   1       {      
+   96   2        datar(*line4_data);
+   97   2        ms_delay(1);
+   98   2        line4_data++;
+   99   2       } 
+  100   1      }
+  101          
+  102          
+  103          
+  104          
+  105          
+  106           void lcd_line1_ch_disp(unsigned char line1_data, unsigned char position)
+  107          {
+  108   1       position += 0x80;
+  109   1       comdr(position);
+  110   1       ms_delay(5);
+  111   1       datar(line1_data);
+  112   1       ms_delay(1);
+  113   1      }
+  114          
+  115          
+  116           void lcd_line2_ch_disp(unsigned char line2_data, unsigned char position)
+  117          {
+  118   1       position += 0xc0;
+  119   1       comdr(position);
+  120   1       ms_delay(5);
+  121   1       datar(line2_data);
+  122   1       ms_delay(1);
+  123   1      }
+  124          
+  125           void lcd_line3_ch_disp(unsigned char line3_data, unsigned char position)
+ARM COMPILER V2.50a,  lcd                                                                  23/05/13  14:55:53  PAGE 3   
+
+  126          {
+  127   1       position += 0x94;
+  128   1       comdr(position);
+  129   1       ms_delay(5);
+  130   1       datar(line3_data);
+  131   1       ms_delay(1);
+  132   1      }
+  133          
+  134          void lcd_line4_ch_disp(unsigned char line4_data, unsigned char position)
+  135          {
+  136   1       position += 0xd4;
+  137   1       comdr(position);
+  138   1       ms_delay(5);
+  139   1       datar(line4_data);
+  140   1       ms_delay(1);
+  141   1      }
+  142          
+  143          
+  144          
+  145          
+  146          
+  147          void lcd_scroll_disp(unsigned char *scroll_data,  unsigned char position)
+  148          {
+  149   1       unsigned char i, j, *d;
+  150   1       
+  151   1      
+  152   1       position += 0x80;
+  153   1       d = scroll_data;       
+  154   1       comdr(position);
+  155   1       for(j = 15; j>0 ; j--)
+  156   1       {
+  157   2        position = j + 0x80;
+  158   2        comdr(position);
+  159   2        ms_delay(5);
+  160   2        for(i=0; *d!='\0'; i++)
+  161   2        {
+  162   3         datar(*d);
+  163   3         ms_delay(1);
+  164   3         d++;
+  165   3        }
+  166   2        d = scroll_data++;
+  167   2        ms_delay(9000);
+  168   2        clrscr();
+  169   2       }
+  170   1      }
+  171          
+  172          
+  173          
+  174          
+  175          
+  176          
+  177          
+  178             
+  179          
+  180          
+  181          void display_dots()
+  182          {
+  183   1       U8 b,m;
+  184   1        for(b=0;b<5;b++)
+  185   1          {
+  186   2          for(m=0;m<3;m++)
+  187   2              {
+  188   3                  comdr(0x8c+m);
+  189   3                  datar('.');
+  190   3                  ms_delay(1000);
+  191   3              }
+ARM COMPILER V2.50a,  lcd                                                                  23/05/13  14:55:53  PAGE 4   
+
+  192   2          for(m=0;m<3;m++)
+  193   2              {
+  194   3                  comdr(0x8e-m);
+  195   3                  datar(' ');
+  196   3                  ms_delay(9);
+  197   3              }
+  198   2          ms_delay(50);
+  199   2          }
+  200   1      }
+  201          /*
+  202          void ms_delay(unsigned int w)
+  203          {
+  204             U32 ui_cnt = 15000;
+  205             while(w > 0)
+  206                {
+  207                  while(ui_cnt > 0)
+  208                  {
+  209                      ui_cnt--;
+  210                  }
+  211                  ui_cnt = 15000;
+  212                }     
+  213          }
+  214          
+  215          */
+ARM COMPILER V2.50a,  lcd                                                                  23/05/13  14:55:53  PAGE 5   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+
+*** EXTERNALS:
+ EXTERN CODE16 (ms_delay?T)
+
+
+
+*** PUBLICS:
+ PUBLIC         lcd_init?T
+ PUBLIC         clrscr?T
+ PUBLIC         datar?T
+ PUBLIC         comdr?T
+ PUBLIC         cursur_on?T
+ PUBLIC         cursur_off?T
+ PUBLIC         lcd_line_disp?T
+ PUBLIC         lcd_line1_ch_disp?T
+ PUBLIC         lcd_line2_ch_disp?T
+ PUBLIC         lcd_line3_ch_disp?T
+ PUBLIC         lcd_line4_ch_disp?T
+ PUBLIC         display_dots?T
+ PUBLIC         lcd_scroll_disp?T
+ PUBLIC         k
+ PUBLIC         data_ptr
+ PUBLIC         p
+ PUBLIC         s
+
+
+
+*** DATA SEGMENT '?DT0?lcd':
+ 00000000          p:
+ 00000000            DS          4
+ 00000004          s:
+ 00000004            DS          4
+ 00000008          k:
+ 00000008            DS          1
+ 00000009          data_ptr:
+ 00000009            DS          1
+
+
+
+*** CODE SEGMENT '?PR?lcd_init?T?lcd':
+   17: void lcd_init()
+ 00000000  B500      PUSH        {LR}
+   20:    IO0DIR |= DATA_MASK;
+ 00000002  4800      LDR         R2,=0x3FC00
+ 00000004  4800      LDR         R0,=0xE0028008
+ 00000006  6801      LDR         R1,[R0,#0x0]
+ 00000008  4311      ORR         R1,R2
+ 0000000A  6001      STR         R1,[R0,#0x0]
+   21:    IO1DIR |= (RS | EN);
+ 0000000C  4800      LDR         R2,=0xC00000
+ 0000000E  4800      LDR         R0,=0xE0028018
+ 00000010  6801      LDR         R1,[R0,#0x0]
+ 00000012  4311      ORR         R1,R2
+ 00000014  6001      STR         R1,[R0,#0x0]
+   23:    comdr(0x30);  //2 line,5*7 matrix
+ 00000016  2030      MOV         R0,#0x30
+ 00000018  F7FF      BL          comdr?T  ; T=0x0001  (1)
+ 0000001A  FFF2      BL          comdr?T  ; T=0x0001  (2)
+   24:    ms_delay(40);
+ 0000001C  2028      MOV         R0,#0x28
+ 0000001E  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000020  FFEF      BL          ms_delay?T  ; T=0x0001  (2)
+   25:    comdr(0x38);  //2 line,5*7 matrix
+ 00000022  2038      MOV         R0,#0x38
+ 00000024  F7FF      BL          comdr?T  ; T=0x0001  (1)
+ 00000026  FFEC      BL          comdr?T  ; T=0x0001  (2)
+   26:    ms_delay(40);
+ 00000028  2028      MOV         R0,#0x28
+ 0000002A  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000002C  FFE9      BL          ms_delay?T  ; T=0x0001  (2)
+ARM COMPILER V2.50a,  lcd                                                                  23/05/13  14:55:53  PAGE 6   
+
+   27:    comdr(0x01); //clear display
+ 0000002E  2001      MOV         R0,#0x1
+ 00000030  F7FF      BL          comdr?T  ; T=0x0001  (1)
+ 00000032  FFE6      BL          comdr?T  ; T=0x0001  (2)
+   28:    ms_delay(40);
+ 00000034  2028      MOV         R0,#0x28
+ 00000036  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000038  FFE3      BL          ms_delay?T  ; T=0x0001  (2)
+   29:    comdr(0x06); //automatic rt shift cursor
+ 0000003A  2006      MOV         R0,#0x6
+ 0000003C  F7FF      BL          comdr?T  ; T=0x0001  (1)
+ 0000003E  FFE0      BL          comdr?T  ; T=0x0001  (2)
+   30:    ms_delay(40);
+ 00000040  2028      MOV         R0,#0x28
+ 00000042  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000044  FFDD      BL          ms_delay?T  ; T=0x0001  (2)
+   31:    comdr(0x0C); //display on cursor on
+ 00000046  200C      MOV         R0,#0xC
+ 00000048  F7FF      BL          comdr?T  ; T=0x0001  (1)
+ 0000004A  FFDA      BL          comdr?T  ; T=0x0001  (2)
+   32:    ms_delay(50);
+ 0000004C  2032      MOV         R0,#0x32
+ 0000004E  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000050  FFD7      BL          ms_delay?T  ; T=0x0001  (2)
+   33: }
+ 00000052  BC08      POP         {R3}
+ 00000054  4718      BX          R3
+ 00000056          ENDP ; 'lcd_init?T'
+
+
+*** CODE SEGMENT '?PR?datar?T?lcd':
+   36: void datar(unsigned char data)
+ 00000000  B500      PUSH        {LR}
+ 00000002  1C01      MOV         R1,R0 ; data
+ 00000004  ---- Variable 'data' assigned to Register 'R1' ----
+   38:    IO0CLR = DATA_MASK;
+ 00000004  4800      LDR         R2,=0x3FC00
+ 00000006  4800      LDR         R0,=0xE002800C
+ 00000008  6002      STR         R2,[R0,#0x0]
+   39:    IO0SET = data << 10;
+ 0000000A  1C08      MOV         R0,R1 ; data
+ 0000000C  0601      LSL         R1,R0,#0x18 ; data
+ 0000000E  0E09      LSR         R1,R1,#0x18
+ 00000010  0289      LSL         R1,R1,#0xA
+ 00000012  4800      LDR         R0,=0xE0028004
+ 00000014  6001      STR         R1,[R0,#0x0]
+   40:    IO1SET = RS;     //RS=1
+ 00000016  4800      LDR         R1,=0x800000
+ 00000018  4800      LDR         R0,=0xE0028014
+ 0000001A  6001      STR         R1,[R0,#0x0]
+   41:    IO1SET = EN;     //EN=1
+ 0000001C  4800      LDR         R1,=0x400000
+ 0000001E  4800      LDR         R0,=0xE0028014
+ 00000020  6001      STR         R1,[R0,#0x0]
+   42:    ms_delay(5);
+ 00000022  2005      MOV         R0,#0x5
+ 00000024  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000026  FFEC      BL          ms_delay?T  ; T=0x0001  (2)
+   43:    IO1CLR = EN;     //EN=0
+ 00000028  4800      LDR         R1,=0x400000
+ 0000002A  4800      LDR         R0,=0xE002801C
+ 0000002C  6001      STR         R1,[R0,#0x0]
+   45:  }
+ 0000002E  BC08      POP         {R3}
+ 00000030  4718      BX          R3
+ 00000032          ENDP ; 'datar?T'
+
+
+*** CODE SEGMENT '?PR?comdr?T?lcd':
+   47:  void comdr(unsigned char comd)
+ARM COMPILER V2.50a,  lcd                                                                  23/05/13  14:55:53  PAGE 7   
+
+ 00000000  B500      PUSH        {LR}
+ 00000002  1C01      MOV         R1,R0 ; comd
+ 00000004  ---- Variable 'comd' assigned to Register 'R1' ----
+   49:    IO0CLR = DATA_MASK;      
+ 00000004  4800      LDR         R2,=0x3FC00
+ 00000006  4800      LDR         R0,=0xE002800C
+ 00000008  6002      STR         R2,[R0,#0x0]
+   50:    IO0SET = comd << 10;
+ 0000000A  1C08      MOV         R0,R1 ; comd
+ 0000000C  0601      LSL         R1,R0,#0x18 ; comd
+ 0000000E  0E09      LSR         R1,R1,#0x18
+ 00000010  0289      LSL         R1,R1,#0xA
+ 00000012  4800      LDR         R0,=0xE0028004
+ 00000014  6001      STR         R1,[R0,#0x0]
+   51:    IO1CLR = RS;     //RS=0
+ 00000016  4800      LDR         R1,=0x800000
+ 00000018  4800      LDR         R0,=0xE002801C
+ 0000001A  6001      STR         R1,[R0,#0x0]
+   52:    IO1SET = EN;     //EN=1
+ 0000001C  4800      LDR         R1,=0x400000
+ 0000001E  4800      LDR         R0,=0xE0028014
+ 00000020  6001      STR         R1,[R0,#0x0]
+   53:    ms_delay(5);
+ 00000022  2005      MOV         R0,#0x5
+ 00000024  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000026  FFEC      BL          ms_delay?T  ; T=0x0001  (2)
+   54:    IO1CLR = EN;      //EN=0
+ 00000028  4800      LDR         R1,=0x400000
+ 0000002A  4800      LDR         R0,=0xE002801C
+ 0000002C  6001      STR         R1,[R0,#0x0]
+   55: }
+ 0000002E  BC08      POP         {R3}
+ 00000030  4718      BX          R3
+ 00000032          ENDP ; 'comdr?T'
+
+
+*** CODE SEGMENT '?PR?clrscr?T?lcd':
+   58: void clrscr()
+ 00000000  B500      PUSH        {LR}
+   60:   comdr(0x01); //clear display
+ 00000002  2001      MOV         R0,#0x1
+ 00000004  F7FF      BL          comdr?T  ; T=0x0001  (1)
+ 00000006  FFFC      BL          comdr?T  ; T=0x0001  (2)
+   61:   ms_delay(50);
+ 00000008  2032      MOV         R0,#0x32
+ 0000000A  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000000C  FFF9      BL          ms_delay?T  ; T=0x0001  (2)
+   62: }
+ 0000000E  BC08      POP         {R3}
+ 00000010  4718      BX          R3
+ 00000012          ENDP ; 'clrscr?T'
+
+
+*** CODE SEGMENT '?PR?cursur_on?T?lcd':
+   64: void cursur_on()
+ 00000000  B500      PUSH        {LR}
+   66:     comdr(0x0F);    //display on cursor on
+ 00000002  200F      MOV         R0,#0xF
+ 00000004  F7FF      BL          comdr?T  ; T=0x0001  (1)
+ 00000006  FFFC      BL          comdr?T  ; T=0x0001  (2)
+   67:       ms_delay(25);
+ 00000008  2019      MOV         R0,#0x19
+ 0000000A  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000000C  FFF9      BL          ms_delay?T  ; T=0x0001  (2)
+   68: }
+ 0000000E  BC08      POP         {R3}
+ 00000010  4718      BX          R3
+ 00000012          ENDP ; 'cursur_on?T'
+
+
+*** CODE SEGMENT '?PR?cursur_off?T?lcd':
+   70: void cursur_off()
+ARM COMPILER V2.50a,  lcd                                                                  23/05/13  14:55:53  PAGE 8   
+
+ 00000000  B500      PUSH        {LR}
+   72:     comdr(0x0C);    //display on cursor on
+ 00000002  200C      MOV         R0,#0xC
+ 00000004  F7FF      BL          comdr?T  ; T=0x0001  (1)
+ 00000006  FFFC      BL          comdr?T  ; T=0x0001  (2)
+   73:       ms_delay(25);
+ 00000008  2019      MOV         R0,#0x19
+ 0000000A  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000000C  FFF9      BL          ms_delay?T  ; T=0x0001  (2)
+   74: }
+ 0000000E  BC08      POP         {R3}
+ 00000010  4718      BX          R3
+ 00000012          ENDP ; 'cursur_off?T'
+
+
+*** CODE SEGMENT '?PR?lcd_line_disp?T?lcd':
+   77: void lcd_line_disp(U8 *line4_data, U8 position, U8 line_no)
+ 00000000  B530      PUSH        {R4-R5,LR}
+ 00000002  ---- Variable 'line_no' assigned to Register 'R2' ----
+ 00000002  ---- Variable 'position' assigned to Register 'R1' ----
+ 00000002  1C05      MOV         R5,R0 ; line4_data
+ 00000004  ---- Variable 'line4_data' assigned to Register 'R5' ----
+   78: {
+ 00000004            ; SCOPE-START
+   80:  switch(line_no)
+ 00000004  1C10      MOV         R0,R2 ; line_no
+ 00000006  2802      CMP         R0,#0x2 ; line_no
+ 00000008  D009      BEQ         L_3  ; T=0x0000001E
+ 0000000A  2803      CMP         R0,#0x3 ; line_no
+ 0000000C  D00B      BEQ         L_4  ; T=0x00000026
+ 0000000E  2804      CMP         R0,#0x4 ; line_no
+ 00000010  D00D      BEQ         L_5  ; T=0x0000002E
+ 00000012  2801      CMP         R0,#0x1 ; line_no
+ 00000014  D10E      BNE         L_1  ; T=0x00000034
+   82:      case 1:    position += 0x80;
+ 00000016          L_2:
+ 00000016  3180      ADD         R1,#0x80
+ 00000018  0609      LSL         R1,R1,#0x18
+ 0000001A  0E09      LSR         R1,R1,#0x18
+   83:     break;
+ 0000001C  E00A      B           L_1  ; T=0x00000034
+   84:     case 2: position += 0xC0;
+ 0000001E          L_3:
+ 0000001E  31C0      ADD         R1,#0xC0
+ 00000020  0609      LSL         R1,R1,#0x18
+ 00000022  0E09      LSR         R1,R1,#0x18
+   85:     break;
+ 00000024  E006      B           L_1  ; T=0x00000034
+   86:     case 3: position += 0x90;
+ 00000026          L_4:
+ 00000026  3190      ADD         R1,#0x90
+ 00000028  0609      LSL         R1,R1,#0x18
+ 0000002A  0E09      LSR         R1,R1,#0x18
+   87:     break;
+ 0000002C  E002      B           L_1  ; T=0x00000034
+   88:     case 4: position += 0xd0;
+ 0000002E          L_5:
+ 0000002E  31D0      ADD         R1,#0xD0
+ 00000030  0609      LSL         R1,R1,#0x18
+ 00000032  0E09      LSR         R1,R1,#0x18
+   91:  }
+ 00000034          L_1:
+   92:  comdr(position);
+ 00000034  1C08      MOV         R0,R1 ; position
+ 00000036  0600      LSL         R0,R0,#0x18 ; position
+ 00000038  0E00      LSR         R0,R0,#0x18
+ 0000003A  F7FF      BL          comdr?T  ; T=0x0001  (1)
+ 0000003C  FFE1      BL          comdr?T  ; T=0x0001  (2)
+ARM COMPILER V2.50a,  lcd                                                                  23/05/13  14:55:53  PAGE 9   
+
+   93:  ms_delay(5);
+ 0000003E  2005      MOV         R0,#0x5
+ 00000040  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000042  FFDE      BL          ms_delay?T  ; T=0x0001  (2)
+   94:  for(l=0; *line4_data!='\0'; l++)
+ 00000044  2400      MOV         R4,#0x0
+ 00000046  ---- Variable 'l' assigned to Register 'R4' ----
+ 00000046  E00A      B           L_8  ; T=0x0000005E
+ 00000048          L_9:
+   96:   datar(*line4_data);
+ 00000048  1C28      MOV         R0,R5 ; line4_data
+ 0000004A  7800      LDRB        R0,[R0,#0x0] ; line4_data
+ 0000004C  F7FF      BL          datar?T  ; T=0x0001  (1)
+ 0000004E  FFD8      BL          datar?T  ; T=0x0001  (2)
+   97:   ms_delay(1);
+ 00000050  2001      MOV         R0,#0x1
+ 00000052  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000054  FFD5      BL          ms_delay?T  ; T=0x0001  (2)
+   98:   line4_data++;
+ 00000056  3501      ADD         R5,#0x1
+   99:  } 
+ 00000058  3401      ADD         R4,#0x1
+ 0000005A  0624      LSL         R4,R4,#0x18
+ 0000005C  0E24      LSR         R4,R4,#0x18
+ 0000005E          L_8:
+ 0000005E  1C28      MOV         R0,R5 ; line4_data
+ 00000060  7800      LDRB        R0,[R0,#0x0] ; line4_data
+ 00000062  2800      CMP         R0,#0x0
+ 00000064  D1F0      BNE         L_9  ; T=0x00000048
+ 00000066            ; SCOPE-END
+  100: }
+ 00000066  BC30      POP         {R4-R5}
+ 00000068  BC08      POP         {R3}
+ 0000006A  4718      BX          R3
+ 0000006C          ENDP ; 'lcd_line_disp?T'
+
+
+*** CODE SEGMENT '?PR?lcd_line1_ch_disp?T?lcd':
+  106:  void lcd_line1_ch_disp(unsigned char line1_data, unsigned char position)
+ 00000000  B510      PUSH        {R4,LR}
+ 00000002  ---- Variable 'position' assigned to Register 'R1' ----
+ 00000002  1C04      MOV         R4,R0 ; line1_data
+ 00000004  ---- Variable 'line1_data' assigned to Register 'R4' ----
+  108:  position += 0x80;
+ 00000004  3180      ADD         R1,#0x80
+ 00000006  0609      LSL         R1,R1,#0x18
+ 00000008  0E09      LSR         R1,R1,#0x18
+  109:  comdr(position);
+ 0000000A  1C08      MOV         R0,R1 ; position
+ 0000000C  0600      LSL         R0,R0,#0x18 ; position
+ 0000000E  0E00      LSR         R0,R0,#0x18
+ 00000010  F7FF      BL          comdr?T  ; T=0x0001  (1)
+ 00000012  FFF6      BL          comdr?T  ; T=0x0001  (2)
+  110:  ms_delay(5);
+ 00000014  2005      MOV         R0,#0x5
+ 00000016  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000018  FFF3      BL          ms_delay?T  ; T=0x0001  (2)
+  111:  datar(line1_data);
+ 0000001A  1C20      MOV         R0,R4 ; line1_data
+ 0000001C  0600      LSL         R0,R0,#0x18 ; line1_data
+ 0000001E  0E00      LSR         R0,R0,#0x18
+ 00000020  F7FF      BL          datar?T  ; T=0x0001  (1)
+ 00000022  FFEE      BL          datar?T  ; T=0x0001  (2)
+  112:  ms_delay(1);
+ 00000024  2001      MOV         R0,#0x1
+ 00000026  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000028  FFEB      BL          ms_delay?T  ; T=0x0001  (2)
+  113: }
+ARM COMPILER V2.50a,  lcd                                                                  23/05/13  14:55:53  PAGE 10  
+
+ 0000002A  BC10      POP         {R4}
+ 0000002C  BC08      POP         {R3}
+ 0000002E  4718      BX          R3
+ 00000030          ENDP ; 'lcd_line1_ch_disp?T'
+
+
+*** CODE SEGMENT '?PR?lcd_line2_ch_disp?T?lcd':
+  116:  void lcd_line2_ch_disp(unsigned char line2_data, unsigned char position)
+ 00000000  B510      PUSH        {R4,LR}
+ 00000002  ---- Variable 'position' assigned to Register 'R1' ----
+ 00000002  1C04      MOV         R4,R0 ; line2_data
+ 00000004  ---- Variable 'line2_data' assigned to Register 'R4' ----
+  118:  position += 0xc0;
+ 00000004  31C0      ADD         R1,#0xC0
+ 00000006  0609      LSL         R1,R1,#0x18
+ 00000008  0E09      LSR         R1,R1,#0x18
+  119:  comdr(position);
+ 0000000A  1C08      MOV         R0,R1 ; position
+ 0000000C  0600      LSL         R0,R0,#0x18 ; position
+ 0000000E  0E00      LSR         R0,R0,#0x18
+ 00000010  F7FF      BL          comdr?T  ; T=0x0001  (1)
+ 00000012  FFF6      BL          comdr?T  ; T=0x0001  (2)
+  120:  ms_delay(5);
+ 00000014  2005      MOV         R0,#0x5
+ 00000016  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000018  FFF3      BL          ms_delay?T  ; T=0x0001  (2)
+  121:  datar(line2_data);
+ 0000001A  1C20      MOV         R0,R4 ; line2_data
+ 0000001C  0600      LSL         R0,R0,#0x18 ; line2_data
+ 0000001E  0E00      LSR         R0,R0,#0x18
+ 00000020  F7FF      BL          datar?T  ; T=0x0001  (1)
+ 00000022  FFEE      BL          datar?T  ; T=0x0001  (2)
+  122:  ms_delay(1);
+ 00000024  2001      MOV         R0,#0x1
+ 00000026  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000028  FFEB      BL          ms_delay?T  ; T=0x0001  (2)
+  123: }
+ 0000002A  BC10      POP         {R4}
+ 0000002C  BC08      POP         {R3}
+ 0000002E  4718      BX          R3
+ 00000030          ENDP ; 'lcd_line2_ch_disp?T'
+
+
+*** CODE SEGMENT '?PR?lcd_line3_ch_disp?T?lcd':
+  125:  void lcd_line3_ch_disp(unsigned char line3_data, unsigned char position)
+ 00000000  B510      PUSH        {R4,LR}
+ 00000002  ---- Variable 'position' assigned to Register 'R1' ----
+ 00000002  1C04      MOV         R4,R0 ; line3_data
+ 00000004  ---- Variable 'line3_data' assigned to Register 'R4' ----
+  127:  position += 0x94;
+ 00000004  3194      ADD         R1,#0x94
+ 00000006  0609      LSL         R1,R1,#0x18
+ 00000008  0E09      LSR         R1,R1,#0x18
+  128:  comdr(position);
+ 0000000A  1C08      MOV         R0,R1 ; position
+ 0000000C  0600      LSL         R0,R0,#0x18 ; position
+ 0000000E  0E00      LSR         R0,R0,#0x18
+ 00000010  F7FF      BL          comdr?T  ; T=0x0001  (1)
+ 00000012  FFF6      BL          comdr?T  ; T=0x0001  (2)
+  129:  ms_delay(5);
+ 00000014  2005      MOV         R0,#0x5
+ 00000016  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000018  FFF3      BL          ms_delay?T  ; T=0x0001  (2)
+  130:  datar(line3_data);
+ 0000001A  1C20      MOV         R0,R4 ; line3_data
+ 0000001C  0600      LSL         R0,R0,#0x18 ; line3_data
+ 0000001E  0E00      LSR         R0,R0,#0x18
+ 00000020  F7FF      BL          datar?T  ; T=0x0001  (1)
+ 00000022  FFEE      BL          datar?T  ; T=0x0001  (2)
+  131:  ms_delay(1);
+ARM COMPILER V2.50a,  lcd                                                                  23/05/13  14:55:53  PAGE 11  
+
+ 00000024  2001      MOV         R0,#0x1
+ 00000026  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000028  FFEB      BL          ms_delay?T  ; T=0x0001  (2)
+  132: }
+ 0000002A  BC10      POP         {R4}
+ 0000002C  BC08      POP         {R3}
+ 0000002E  4718      BX          R3
+ 00000030          ENDP ; 'lcd_line3_ch_disp?T'
+
+
+*** CODE SEGMENT '?PR?lcd_line4_ch_disp?T?lcd':
+  134: void lcd_line4_ch_disp(unsigned char line4_data, unsigned char position)
+ 00000000  B510      PUSH        {R4,LR}
+ 00000002  ---- Variable 'position' assigned to Register 'R1' ----
+ 00000002  1C04      MOV         R4,R0 ; line4_data
+ 00000004  ---- Variable 'line4_data' assigned to Register 'R4' ----
+  136:  position += 0xd4;
+ 00000004  31D4      ADD         R1,#0xD4
+ 00000006  0609      LSL         R1,R1,#0x18
+ 00000008  0E09      LSR         R1,R1,#0x18
+  137:  comdr(position);
+ 0000000A  1C08      MOV         R0,R1 ; position
+ 0000000C  0600      LSL         R0,R0,#0x18 ; position
+ 0000000E  0E00      LSR         R0,R0,#0x18
+ 00000010  F7FF      BL          comdr?T  ; T=0x0001  (1)
+ 00000012  FFF6      BL          comdr?T  ; T=0x0001  (2)
+  138:  ms_delay(5);
+ 00000014  2005      MOV         R0,#0x5
+ 00000016  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000018  FFF3      BL          ms_delay?T  ; T=0x0001  (2)
+  139:  datar(line4_data);
+ 0000001A  1C20      MOV         R0,R4 ; line4_data
+ 0000001C  0600      LSL         R0,R0,#0x18 ; line4_data
+ 0000001E  0E00      LSR         R0,R0,#0x18
+ 00000020  F7FF      BL          datar?T  ; T=0x0001  (1)
+ 00000022  FFEE      BL          datar?T  ; T=0x0001  (2)
+  140:  ms_delay(1);
+ 00000024  2001      MOV         R0,#0x1
+ 00000026  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000028  FFEB      BL          ms_delay?T  ; T=0x0001  (2)
+  141: }
+ 0000002A  BC10      POP         {R4}
+ 0000002C  BC08      POP         {R3}
+ 0000002E  4718      BX          R3
+ 00000030          ENDP ; 'lcd_line4_ch_disp?T'
+
+
+*** CODE SEGMENT '?PR?lcd_scroll_disp?T?lcd':
+  147: void lcd_scroll_disp(unsigned char *scroll_data,  unsigned char position)
+ 00000000  B5F0      PUSH        {R4-R7,LR}
+ 00000002  1C0F      MOV         R7,R1 ; position
+ 00000004  ---- Variable 'position' assigned to Register 'R7' ----
+ 00000004  1C06      MOV         R6,R0 ; scroll_data
+ 00000006  ---- Variable 'scroll_data' assigned to Register 'R6' ----
+ 00000006  B081      SUB         R13,#0x4
+  148: {
+ 00000008            ; SCOPE-START
+  152:  position += 0x80;
+ 00000008  3780      ADD         R7,#0x80
+ 0000000A  063F      LSL         R7,R7,#0x18
+ 0000000C  0E3F      LSR         R7,R7,#0x18
+  153:  d = scroll_data;       
+ 0000000E  1C35      MOV         R5,R6 ; scroll_data
+ 00000010  ---- Variable 'd' assigned to Register 'R5' ----
+  154:  comdr(position);
+ 00000010  1C38      MOV         R0,R7 ; position
+ 00000012  0600      LSL         R0,R0,#0x18 ; position
+ 00000014  0E00      LSR         R0,R0,#0x18
+ 00000016  F7FF      BL          comdr?T  ; T=0x0001  (1)
+ 00000018  FFF3      BL          comdr?T  ; T=0x0001  (2)
+ARM COMPILER V2.50a,  lcd                                                                  23/05/13  14:55:53  PAGE 12  
+
+  155:  for(j = 15; j>0 ; j--)
+ 0000001A  240F      MOV         R4,#0xF
+ 0000001C  ---- Variable 'j' assigned to Register 'R4' ----
+ 0000001C  E02B      B           L_13  ; T=0x00000076
+ 0000001E          L_14:
+  157:   position = j + 0x80;
+ 0000001E  1C20      MOV         R0,R4 ; j
+ 00000020  0607      LSL         R7,R0,#0x18 ; j
+ 00000022  0E3F      LSR         R7,R7,#0x18
+ 00000024  3780      ADD         R7,#0x80
+ 00000026  063F      LSL         R7,R7,#0x18
+ 00000028  0E3F      LSR         R7,R7,#0x18
+  158:   comdr(position);
+ 0000002A  1C38      MOV         R0,R7 ; position
+ 0000002C  0600      LSL         R0,R0,#0x18 ; position
+ 0000002E  0E00      LSR         R0,R0,#0x18
+ 00000030  F7FF      BL          comdr?T  ; T=0x0001  (1)
+ 00000032  FFE6      BL          comdr?T  ; T=0x0001  (2)
+  159:   ms_delay(5);
+ 00000034  2005      MOV         R0,#0x5
+ 00000036  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000038  FFE3      BL          ms_delay?T  ; T=0x0001  (2)
+  160:   for(i=0; *d!='\0'; i++)
+ 0000003A  2100      MOV         R1,#0x0
+ 0000003C  A800      ADD         R0,R13,#0x0
+ 0000003E  7001      STRB        R1,[R0,#0x0] ; i
+ 00000040  E00B      B           L_18  ; T=0x0000005A
+ 00000042          L_19:
+  162:    datar(*d);
+ 00000042  1C28      MOV         R0,R5 ; d
+ 00000044  7800      LDRB        R0,[R0,#0x0] ; d
+ 00000046  F7FF      BL          datar?T  ; T=0x0001  (1)
+ 00000048  FFDB      BL          datar?T  ; T=0x0001  (2)
+  163:    ms_delay(1);
+ 0000004A  2001      MOV         R0,#0x1
+ 0000004C  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000004E  FFD8      BL          ms_delay?T  ; T=0x0001  (2)
+  164:    d++;
+ 00000050  3501      ADD         R5,#0x1
+  165:   }
+ 00000052  A800      ADD         R0,R13,#0x0
+ 00000054  7801      LDRB        R1,[R0,#0x0] ; i
+ 00000056  3101      ADD         R1,#0x1
+ 00000058  7001      STRB        R1,[R0,#0x0] ; i
+ 0000005A          L_18:
+ 0000005A  1C28      MOV         R0,R5 ; d
+ 0000005C  7800      LDRB        R0,[R0,#0x0] ; d
+ 0000005E  2800      CMP         R0,#0x0
+ 00000060  D1EF      BNE         L_19  ; T=0x00000042
+  166:   d = scroll_data++;
+ 00000062  1C35      MOV         R5,R6 ; scroll_data
+ 00000064  3601      ADD         R6,#0x1
+  167:   ms_delay(9000);
+ 00000066  4800      LDR         R0,=0x2328
+ 00000068  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000006A  FFCA      BL          ms_delay?T  ; T=0x0001  (2)
+  168:   clrscr();
+ 0000006C  F7FF      BL          clrscr?T  ; T=0x0001  (1)
+ 0000006E  FFC8      BL          clrscr?T  ; T=0x0001  (2)
+  169:  }
+ 00000070  3C01      SUB         R4,#0x1
+ 00000072  0624      LSL         R4,R4,#0x18
+ 00000074  0E24      LSR         R4,R4,#0x18
+ 00000076          L_13:
+ 00000076  1C20      MOV         R0,R4 ; j
+ 00000078  0600      LSL         R0,R0,#0x18 ; j
+ARM COMPILER V2.50a,  lcd                                                                  23/05/13  14:55:53  PAGE 13  
+
+ 0000007A  0E00      LSR         R0,R0,#0x18
+ 0000007C  2800      CMP         R0,#0x0
+ 0000007E  DCCE      BGT         L_14  ; T=0x0000001E
+ 00000080            ; SCOPE-END
+  170: }
+ 00000080  B001      ADD         R13,#0x4
+ 00000082  BCF0      POP         {R4-R7}
+ 00000084  BC08      POP         {R3}
+ 00000086  4718      BX          R3
+ 00000088          ENDP ; 'lcd_scroll_disp?T'
+
+
+*** CODE SEGMENT '?PR?display_dots?T?lcd':
+  181: void display_dots()
+ 00000000  B530      PUSH        {R4-R5,LR}
+  182: {
+ 00000002            ; SCOPE-START
+  184:   for(b=0;b<5;b++)
+ 00000002  2400      MOV         R4,#0x0
+ 00000004  ---- Variable 'b' assigned to Register 'R4' ----
+ 00000004  E032      B           L_23  ; T=0x0000006C
+  186:     for(m=0;m<3;m++)
+ 00000006          L_30:
+ 00000006  2500      MOV         R5,#0x0
+ 00000008  ---- Variable 'm' assigned to Register 'R5' ----
+ 00000008  E00E      B           L_28  ; T=0x00000028
+ 0000000A          L_29:
+  188:             comdr(0x8c+m);
+ 0000000A  1C28      MOV         R0,R5 ; m
+ 0000000C  0600      LSL         R0,R0,#0x18 ; m
+ 0000000E  0E00      LSR         R0,R0,#0x18
+ 00000010  308C      ADD         R0,#0x8C
+ 00000012  F7FF      BL          comdr?T  ; T=0x0001  (1)
+ 00000014  FFF5      BL          comdr?T  ; T=0x0001  (2)
+  189:             datar('.');
+ 00000016  202E      MOV         R0,#0x2E
+ 00000018  F7FF      BL          datar?T  ; T=0x0001  (1)
+ 0000001A  FFF2      BL          datar?T  ; T=0x0001  (2)
+  190:             ms_delay(1000);
+ 0000001C  48FA      LDR         R0,=0x3E8
+ 0000001E  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000020  FFEF      BL          ms_delay?T  ; T=0x0001  (2)
+  191:         }
+ 00000022  3501      ADD         R5,#0x1
+ 00000024  062D      LSL         R5,R5,#0x18
+ 00000026  0E2D      LSR         R5,R5,#0x18
+ 00000028          L_28:
+ 00000028  1C28      MOV         R0,R5 ; m
+ 0000002A  0600      LSL         R0,R0,#0x18 ; m
+ 0000002C  0E00      LSR         R0,R0,#0x18
+ 0000002E  2803      CMP         R0,#0x3
+ 00000030  DBEB      BLT         L_29  ; T=0x0000000A
+  192:     for(m=0;m<3;m++)
+ 00000032  2500      MOV         R5,#0x0
+ 00000034  E00F      B           L_33  ; T=0x00000056
+ 00000036          L_34:
+  194:             comdr(0x8e-m);
+ 00000036  1C28      MOV         R0,R5 ; m
+ 00000038  0601      LSL         R1,R0,#0x18 ; m
+ 0000003A  0E09      LSR         R1,R1,#0x18
+ 0000003C  208E      MOV         R0,#0x8E
+ 0000003E  1A40      SUB         R0,R1
+ 00000040  F7FF      BL          comdr?T  ; T=0x0001  (1)
+ 00000042  FFDE      BL          comdr?T  ; T=0x0001  (2)
+  195:             datar(' ');
+ 00000044  2020      MOV         R0,#0x20
+ 00000046  F7FF      BL          datar?T  ; T=0x0001  (1)
+ 00000048  FFDB      BL          datar?T  ; T=0x0001  (2)
+ARM COMPILER V2.50a,  lcd                                                                  23/05/13  14:55:53  PAGE 14  
+
+  196:             ms_delay(9);
+ 0000004A  2009      MOV         R0,#0x9
+ 0000004C  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000004E  FFD8      BL          ms_delay?T  ; T=0x0001  (2)
+  197:         }
+ 00000050  3501      ADD         R5,#0x1
+ 00000052  062D      LSL         R5,R5,#0x18
+ 00000054  0E2D      LSR         R5,R5,#0x18
+ 00000056          L_33:
+ 00000056  1C28      MOV         R0,R5 ; m
+ 00000058  0600      LSL         R0,R0,#0x18 ; m
+ 0000005A  0E00      LSR         R0,R0,#0x18
+ 0000005C  2803      CMP         R0,#0x3
+ 0000005E  DBEA      BLT         L_34  ; T=0x00000036
+  198:     ms_delay(50);
+ 00000060  2032      MOV         R0,#0x32
+ 00000062  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000064  FFCD      BL          ms_delay?T  ; T=0x0001  (2)
+  199:     }
+ 00000066  3401      ADD         R4,#0x1
+ 00000068  0624      LSL         R4,R4,#0x18
+ 0000006A  0E24      LSR         R4,R4,#0x18
+ 0000006C          L_23:
+ 0000006C  1C20      MOV         R0,R4 ; b
+ 0000006E  0600      LSL         R0,R0,#0x18 ; b
+ 00000070  0E00      LSR         R0,R0,#0x18
+ 00000072  2805      CMP         R0,#0x5
+ 00000074  DBC7      BLT         L_30  ; T=0x00000006
+ 00000076            ; SCOPE-END
+  200: }
+ 00000076  BC30      POP         {R4-R5}
+ 00000078  BC08      POP         {R3}
+ 0000007A  4718      BX          R3
+ 0000007C          ENDP ; 'display_dots?T'
+
+
+
+Module Information          Static
+----------------------------------
+  code size            =    ------
+  data size            =        10
+  const size           =    ------
+End of Module Information.
+
+
+ARM COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

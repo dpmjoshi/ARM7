@@ -1,0 +1,1379 @@
+ARM COMPILER V2.50a,  gsm_app                                                              30/04/13  14:18:14  PAGE 1   
+
+
+ARM COMPILER V2.50a, COMPILATION OF MODULE gsm_app
+OBJECT MODULE PLACED IN gsm_app.OBJ
+COMPILER INVOKED BY: C:\Keil\ARM\BIN\CA.exe gsm_app.c THUMB BROWSE DEBUG TABS(4) 
+
+stmt  level    source
+
+    1          #include "includes.h"
+    2          
+    3          DIAL diallist[20];
+    4          DIAL *diallist_head;
+    5          DIAL *diallist_tail;
+    6          
+    7          
+    8          
+    9          
+   10          void GSM_APP_call()
+   11          {
+   12   1          U8 Uc_dial_stat = 0;
+   13   1          U8 phone_no[15];
+   14   1      
+   15   1          Uc_dial_stat = APP_phone_dial(phone_no);
+   16   1          if(Uc_dial_stat == 1)
+   17   1          {                                                                                           
+   18   2              clrscr();
+   19   2              ms_delay(10000);
+   20   2              lcd_line3_disp("Calling...",0);
+   21   2              lcd_line4_disp("End Call",12);
+   22   2              lcd_line2_disp(phone_no,0);
+   23   2              gsm_voice_call(phone_no);
+   24   2              rtc_get_time(time);
+   25   2              rtc_get_date(&date[0]);
+   26   2              uart0_tx_string(date);
+   27   2              GSM_APP_diallist_update(phone_no, time);
+   28   2              lcd_line_disp(time,12,1);
+   29   2          }
+   30   1          else if(Uc_dial_stat == 0)
+   31   1          {
+   32   2              clrscr();
+   33   2              ms_delay(5000);
+   34   2              lcd_line2_disp("Call Cancelled !",0);
+   35   2              ms_delay(20000);
+   36   2              APP_default_page();
+   37   2          }
+   38   1          else if(Uc_dial_stat == 2)
+   39   1          {
+   40   2              clrscr();
+   41   2              ms_delay(20000);
+   42   2              APP_default_page();
+   43   2          }   
+   44   1      }
+   45          
+   46          /**********************************************************************************/
+   47          /* Function Name: GSM_APP_diallist_init                                           */
+   48          /* Arguments    : U8 diallist_size - Configurable size of diallist, limited to 20 */
+   49          /* Return Types :                                                                 */
+   50          /* Description  :                                                                 */
+   51          /**********************************************************************************/
+   52          
+   53          void GSM_APP_diallist_init(U8 diallist_size)
+   54          {
+   55   1          DIAL *caller1;
+   56   1          DIAL *caller2;
+   57   1       
+   58   1          caller1 = &diallist[0];
+   59   1          caller2 = &diallist[1];
+ARM COMPILER V2.50a,  gsm_app                                                              30/04/13  14:18:14  PAGE 2   
+
+   60   1      
+   61   1          while(diallist_size)                  // Preparing a doubly link list 
+   62   1          {                                     
+   63   2              caller2->prev = caller1;          
+*** WARNING C91 IN LINE 63 OF GSM_APP.C: '=': pointer to different objects
+   64   2              caller1->next = caller2;    
+*** WARNING C91 IN LINE 64 OF GSM_APP.C: '=': pointer to different objects
+   65   2              caller1->cnt  = FREE;
+   66   2              caller1++;
+   67   2              caller2++;
+   68   2              diallist_size--; 
+   69   2          }
+   70   1      
+   71   1          diallist_head  = &diallist[0];         // Assigning Head of the list
+   72   1          diallist_tail  = diallist_head;        // At initialization Head & Tail are same.
+   73   1          caller1->next  = &diallist[0];         // making list circular. Caller1 is incremented in while and hence it
+             - will be the last no.
+*** WARNING C91 IN LINE 73 OF GSM_APP.C: '=': pointer to different objects
+   74   1          diallist_head->prev = caller1;         // providing a back link to the Head of list
+*** WARNING C91 IN LINE 74 OF GSM_APP.C: '=': pointer to different objects
+   75   1      }
+   76          
+   77          /**********************************************************************************/
+   78          /* Function Name: GSM_APP_diallist_show                                           */
+   79          /* Arguments    : *phone_no                                                       */
+   80          /* Return Types :                                                                 */
+   81          /* Description  :                                                                 */
+   82          /**********************************************************************************/
+   83          
+   84          U8 GSM_APP_diallist_show()
+   85          {
+   86   1          U8 uc_cnt = 0;
+   87   1          U8 key_temp = 0;
+   88   1          U8 opt = 0;
+   89   1          U8 *diallist_arr[10] = {"Call", "Delete", "Clear List", "Exit", " "};
+   90   1          
+   91   1          DIAL *diallist_temp;
+   92   1          DIAL *diallist_first;
+   93   1          DIAL *temp;
+   94   1        
+   95   1          clrscr();
+   96   1      
+   97   1          lcd_line_disp("Delete", 0, 4);
+   98   1          lcd_line_disp("Exit", 16, 4);
+   99   1          diallist_temp = diallist_head->prev;  // diallist_head 's prev node is allocated to diallist_temp    
+*** WARNING C91 IN LINE 99 OF GSM_APP.C: '=': pointer to different objects
+  100   1          diallist_first = diallist_head->prev; // diallist_head 's prev node is allocated to diallist_first   
+*** WARNING C91 IN LINE 100 OF GSM_APP.C: '=': pointer to different objects
+  101   1          while(1)
+  102   1          {       
+  103   2              for(uc_cnt = 1; uc_cnt < 4; uc_cnt++)   //   
+  104   2              {
+  105   3                  if(diallist_temp->cnt == NOT_FREE)
+  106   3                  {
+  107   4                      lcd_line_disp(diallist_temp->no, 0, uc_cnt);
+  108   4                      lcd_line_disp(diallist_temp->time, 12, uc_cnt);
+  109   4                      diallist_temp = diallist_temp->prev;    
+*** WARNING C91 IN LINE 109 OF GSM_APP.C: '=': pointer to different objects
+  110   4                  }
+  111   3              }
+  112   2              lcd_line_disp("Options", 0, 4);
+  113   2              lcd_line_disp("Exit", 16, 4);
+  114   2              key_temp = get_key(1);
+  115   2              ms_delay(100);
+  116   2      
+  117   2              if(key_temp == 'D')
+ARM COMPILER V2.50a,  gsm_app                                                              30/04/13  14:18:14  PAGE 3   
+
+  118   2              {
+  119   3                  APP_default_page();
+  120   3                  return 0;
+  121   3              }
+  122   2      
+  123   2              else if(key_temp == 'E')
+  124   2              {
+  125   3                  opt =  GSM_APP_options(diallist_arr, 4);
+  126   3                  
+  127   3                  if(opt == 1)
+  128   3                  {
+  129   4                      
+  130   4                  }
+  131   3                  else if(opt == 2)
+  132   3                  {
+  133   4                      diallist_temp = diallist_first->prev;
+*** WARNING C91 IN LINE 133 OF GSM_APP.C: '=': pointer to different objects
+  134   4                      GSM_APP_diallist_delete(diallist_first);
+  135   4                      diallist_first = diallist_temp;
+  136   4                      clrscr();       
+  137   4      
+  138   4                      uart0_tx_string("\r\n\ndiallist First: ");
+  139   4                      uart0_tx_string(diallist_first->no);
+  140   4                  
+  141   4                      temp  = diallist_head->prev;
+*** WARNING C91 IN LINE 141 OF GSM_APP.C: '=': pointer to different objects
+  142   4                      uart0_tx_string("\r\ndiallist Head: ");
+  143   4                      uart0_tx_string(temp->no);
+  144   4      
+  145   4                      uart0_tx_string("\r\ndiallist Tail: ");
+  146   4                      uart0_tx_string(diallist_tail->no);
+  147   4                  }
+  148   3      
+  149   3              }
+  150   2              else if(key_temp == 'C')   // Scroll DOWN                                                
+  151   2              {
+  152   3                  diallist_temp  = diallist_first->prev;
+*** WARNING C91 IN LINE 152 OF GSM_APP.C: '=': pointer to different objects
+  153   3                  if(diallist_temp->cnt == NOT_FREE)
+  154   3                  {
+  155   4                      clrscr();
+  156   4                      diallist_first = diallist_first->prev;
+*** WARNING C91 IN LINE 156 OF GSM_APP.C: '=': pointer to different objects
+  157   4      
+  158   4                      uart0_tx_string("\r\n\ndiallist First: ");
+  159   4                      uart0_tx_string(diallist_first->no);
+  160   4      
+  161   4                      temp  = diallist_head->prev;
+*** WARNING C91 IN LINE 161 OF GSM_APP.C: '=': pointer to different objects
+  162   4                      uart0_tx_string("\r\ndiallist Head: ");
+  163   4                      uart0_tx_string(temp->no);
+  164   4                  }
+  165   3                  else
+  166   3                  {
+  167   4                      diallist_temp  = diallist_first;    
+  168   4                  }
+  169   3      
+  170   3              }
+  171   2              else if(key_temp == 'B')    // Scroll UP
+  172   2              {
+  173   3                  diallist_temp  = diallist_first->next;  
+*** WARNING C91 IN LINE 173 OF GSM_APP.C: '=': pointer to different objects
+  174   3                  if(diallist_temp->cnt == NOT_FREE)
+  175   3                  {
+  176   4                      clrscr();
+  177   4                      diallist_first = diallist_first->next;
+ARM COMPILER V2.50a,  gsm_app                                                              30/04/13  14:18:14  PAGE 4   
+
+*** WARNING C91 IN LINE 177 OF GSM_APP.C: '=': pointer to different objects
+  178   4                      
+  179   4                      uart0_tx_string("\r\n\ndiallist First: ");
+  180   4                      uart0_tx_string(diallist_first->no);
+  181   4      
+  182   4                      temp  = diallist_head->prev;
+*** WARNING C91 IN LINE 182 OF GSM_APP.C: '=': pointer to different objects
+  183   4                      uart0_tx_string("\r\ndiallist Head: ");
+  184   4                      uart0_tx_string(temp->no);
+  185   4                  }
+  186   3                  else
+  187   3                  {
+  188   4                      diallist_temp  = diallist_first;    
+  189   4                  }
+  190   3              }
+  191   2      
+  192   2              diallist_temp  = diallist_first;
+  193   2          }
+  194   1      }
+  195          
+  196          /**********************************************************************************/
+  197          /* Function Name: GSM_APP_diallist_update                                         */
+  198          /* Arguments    : *phone_no, *time                                                */
+  199          /* Return Types :                                                                 */
+  200          /* Description  :                                                                 */
+  201          /**********************************************************************************/
+  202          
+  203          void GSM_APP_diallist_update(U8 *phone_no, U8 *time)
+  204          {
+  205   1          uart0_tx_string("\r\n\ ");
+  206   1          LIB_str_copy(phone_no, &diallist_head->no[0], 10);   // Common part for both cases 
+  207   1          LIB_str_copy(time, &diallist_head->time[0], 8);      // In any of the case New No is added at the Head of t
+             -he list
+  208   1          diallist_head->cnt = NOT_FREE;                       // after asigning Phone no and time stamp, the node is marked as NO
+             -T_FREE
+  209   1      
+  210   1          uart0_tx_string("\r\nDiallist Head: ");
+  211   1          uart0_tx_string(diallist_head->no);
+  212   1          uart0_tx_string("   ");
+  213   1          uart0_tx_string(diallist_head->time);
+  214   1      
+  215   1          uart0_tx_string("\r\nDiallist Tail: ");
+  216   1          uart0_tx_string(diallist_tail->no);
+  217   1          uart0_tx_string("   ");
+  218   1          uart0_tx_string(diallist_tail->time);
+  219   1      
+  220   1          if(diallist_head->next == diallist_tail)            // This is the case when list is full and hence head->next is
+             - pointing to the tail 
+*** WARNING C91 IN LINE 220 OF GSM_APP.C: '=': pointer to different objects
+  221   1          {
+  222   2              diallist_tail = diallist_tail->next;            // Tail & Head are shifted further by one position, and we get n
+             -ew Head & Tail for our list
+*** WARNING C91 IN LINE 222 OF GSM_APP.C: '=': pointer to different objects
+  223   2              diallist_head = diallist_head->next;
+*** WARNING C91 IN LINE 223 OF GSM_APP.C: '=': pointer to different objects
+  224   2              uart0_tx_string("\r\ncase 1");
+  225   2          }                                      
+  226   1          else 
+  227   1          {
+  228   2              uart0_tx_string("\r\ncase 2");                  // Head is traversing forward when list is empty or Head->next is no
+             -t tail
+  229   2              diallist_head = diallist_head->next;            // Tail will not change till the list gets full
+*** WARNING C91 IN LINE 229 OF GSM_APP.C: '=': pointer to different objects
+  230   2          }
+  231   1      }
+  232          
+ARM COMPILER V2.50a,  gsm_app                                                              30/04/13  14:18:14  PAGE 5   
+
+  233          /**********************************************************************************/
+  234          /* Function Name: GSM_APP_diallist_delete                                         */
+  235          /* Arguments    : DIAL *del_node                                                  */
+  236          /* Return Types : NONE                                                            */
+  237          /* Description  : Deletes a node specified by del_node                            */
+  238          /**********************************************************************************/
+  239          
+  240          void GSM_APP_diallist_delete(DIAL *del_node)
+  241          {
+  242   1          DIAL *delnext;                                      // delnext is the node next to del_node & it is used while detaching the node 
+             -from 
+  243   1          DIAL *temp;                                         // existing list
+  244   1          
+  245   1          if(del_node->cnt == NOT_FREE)                       // The node to be deleted must be a valid node, deleting empty node
+             - is useless. 
+  246   1          {
+  247   2              delnext = del_node->next;
+*** WARNING C91 IN LINE 247 OF GSM_APP.C: '=': pointer to different objects
+  248   2              if(diallist_head->next == diallist_tail)        // if Head->next is tail of list, it means that list is full
+*** WARNING C91 IN LINE 248 OF GSM_APP.C: '=': pointer to different objects
+  249   2              {
+  250   3                  if(del_node == diallist_head)               // case1: the deleted node itself is head,
+  251   3                  {                                           // In this case we must find a new Head & Tail for the list 
+  252   4                      diallist_tail = diallist_tail->next;    // Tail = Tail->next      New Tail
+*** WARNING C91 IN LINE 252 OF GSM_APP.C: '=': pointer to different objects
+  253   4                      diallist_head = diallist_head->next;    // Head = Head->next      New Head
+*** WARNING C91 IN LINE 253 OF GSM_APP.C: '=': pointer to different objects
+  254   4                  }
+  255   3              }                                               /*What if list is full & del_node is Tail ?  <------ FIX this */ 
+  256   2              else 
+  257   2              {
+  258   3                  if(del_node == diallist_tail)               // case2: List is not full but del_node is Tail of list
+  259   3                  {                                           // In this case we must find a Tail for the list 
+  260   4                      diallist_tail = diallist_tail->next;    // Tail = Tail->next      New Tail
+*** WARNING C91 IN LINE 260 OF GSM_APP.C: '=': pointer to different objects
+  261   4                                                              // When list partially filled the head is an empty node and one node ahead of last  
+  262   4                  }                                           // entered number.
+  263   3              }
+  264   2              /* detaching del_node from its position */
+  265   2              delnext->prev = del_node->prev;
+  266   2              temp = del_node->prev;
+*** WARNING C91 IN LINE 266 OF GSM_APP.C: '=': pointer to different objects
+  267   2              temp->next = delnext; 
+*** WARNING C91 IN LINE 267 OF GSM_APP.C: '=': pointer to different objects
+  268   2              del_node->cnt  = FREE;
+  269   2              /****************************************/ 
+  270   2       
+  271   2              /* Adding the deleted node after head */
+  272   2              del_node->next = diallist_head->next;            // Copying head->next link to del->next        
+  273   2              del_node->prev = diallist_head;                  // del's backlink will be Head
+*** WARNING C91 IN LINE 273 OF GSM_APP.C: '=': pointer to different objects
+  274   2              diallist_head->next = del_node;                  // Now head->next will be del (new node)
+*** WARNING C91 IN LINE 274 OF GSM_APP.C: '=': pointer to different objects
+  275   2              temp = del_node->next;                           // Assigning backlink of node next to del (new node) 
+*** WARNING C91 IN LINE 275 OF GSM_APP.C: '=': pointer to different objects
+  276   2              temp->prev = del_node;                            
+*** WARNING C91 IN LINE 276 OF GSM_APP.C: '=': pointer to different objects
+  277   2          }
+  278   1      }
+  279          
+  280          /**********************************************************************************/
+  281          /* Function Name: GSM_APP_options                                                 */
+  282          /* Arguments    : U8 **opt_disp, U8 opt_cnt                                       */
+  283          /* Return Types : NONE                                                            */
+  284          /* Description  :                                                                 */
+  285          /**********************************************************************************/
+ARM COMPILER V2.50a,  gsm_app                                                              30/04/13  14:18:14  PAGE 6   
+
+  286          
+  287          U8 GSM_APP_options(U8 **opt_disp, U8 opt_cnt)           // *opt_disp is an array of pointers, were each pointer w
+             -ill point  
+  288          {                                                       // to the option menu to be displayed
+  289   1          U8 temp_key = 0;    
+  290   1          U8 uc_cnt = 1;
+  291   1          U8 **temp_ptr;
+  292   1      
+  293   1          while(temp_key != 'D')
+  294   1          {
+  295   2              lcd_line_disp("                    ", 0, 3);
+  296   2              lcd_line_disp("                    ", 0, 4);
+  297   2              temp_ptr = opt_disp + (uc_cnt - 1);
+  298   2              lcd_line_disp(*temp_ptr, 0, 3);
+  299   2              temp_ptr++;
+  300   2              lcd_line_disp(*temp_ptr, 0, 4);
+  301   2           
+  302   2              temp_key = get_key(1);
+  303   2              ms_delay(200);
+  304   2              if(temp_key == 'B')
+  305   2              {
+  306   3                  if(uc_cnt >1)
+  307   3                  {
+  308   4                      uc_cnt -= 1;
+  309   4                  }
+  310   3              }
+  311   2              else if(temp_key == 'C')
+  312   2              {
+  313   3                  if(uc_cnt < opt_cnt)
+  314   3                  {
+  315   4                      uc_cnt += 1;
+  316   4                  }
+  317   3              }  
+  318   2              else if(temp_key == 'E')
+  319   2              {
+  320   3                  return uc_cnt;
+  321   3              }
+  322   2          }
+  323   1          clrscr();
+  324   1          return 0;       
+  325   1      }
+  326          
+  327          
+  328          
+  329          
+  330          
+ARM COMPILER V2.50a,  gsm_app                                                              30/04/13  14:18:14  PAGE 7   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+
+*** EXTERNALS:
+ EXTERN CODE16 (ms_delay?T)
+ EXTERN CODE16 (uart0_tx_string?T)
+ EXTERN CODE16 (APP_phone_dial?T)
+ EXTERN CODE16 (APP_default_page?T)
+ EXTERN CODE16 (rtc_get_time?T)
+ EXTERN CODE16 (rtc_get_date?T)
+ EXTERN DATA (time)
+ EXTERN DATA (date)
+ EXTERN CODE16 (gsm_voice_call?T)
+ EXTERN CODE16 (LIB_str_copy?T)
+ EXTERN CODE16 (get_key?T)
+ EXTERN CODE16 (clrscr?T)
+ EXTERN CODE16 (lcd_line2_disp?T)
+ EXTERN CODE16 (lcd_line3_disp?T)
+ EXTERN CODE16 (lcd_line4_disp?T)
+ EXTERN CODE16 (lcd_line_disp?T)
+
+
+
+*** PUBLICS:
+ PUBLIC         GSM_APP_diallist_init?T
+ PUBLIC         GSM_APP_diallist_update?T
+ PUBLIC         GSM_APP_diallist_show?T
+ PUBLIC         GSM_APP_diallist_delete?T
+ PUBLIC         GSM_APP_options?T
+ PUBLIC         GSM_APP_call?T
+ PUBLIC         diallist
+ PUBLIC         diallist_head
+ PUBLIC         diallist_tail
+
+
+
+*** DATA SEGMENT '?CON?gsm_app':
+ 00000000          ?tpl?0001:
+ 00000000           BEGIN_INIT
+ 00000000  00000000  DD          ??S_4
+ 00000004  00000000  DD          ??S_5
+ 00000008  00000000  DD          ??S_6
+ 0000000C  00000000  DD          ??S_7
+ 00000010  00000000  DD          ??S_8
+ 00000014            SPACE       20
+ 00000028           END_INIT
+ 00000028          ??S_19:
+ 00000028            DB          '                    ',0x00
+ 0000003D          ??S_18:
+ 0000003D            DB          0x0D,0x0A,'case 2',0x00
+ 00000046          ??S_17:
+ 00000046            DB          0x0D,0x0A,'case 1',0x00
+ 0000004F          ??S_16:
+ 0000004F            DB          0x0D,0x0A,'Diallist Tail: ',0x00
+ 00000061          ??S_15:
+ 00000061            DB          '   ',0x00
+ 00000065          ??S_14:
+ 00000065            DB          0x0D,0x0A,'Diallist Head: ',0x00
+ 00000077          ??S_13:
+ 00000077            DB          0x0D,0x0A,' ',0x00
+ 0000007B          ??S_12:
+ 0000007B            DB          0x0D,0x0A,'diallist Tail: ',0x00
+ 0000008D          ??S_11:
+ 0000008D            DB          0x0D,0x0A,'diallist Head: ',0x00
+ 0000009F          ??S_10:
+ 0000009F            DB          0x0D,0x0A,0x0A,'diallist First: ',0x00
+ 000000B3          ??S_9:
+ 000000B3            DB          'Options',0x00
+ 000000BB          ??S_8:
+ 000000BB            DB          ' ',0x00
+ARM COMPILER V2.50a,  gsm_app                                                              30/04/13  14:18:14  PAGE 8   
+
+ 000000BD          ??S_7:
+ 000000BD            DB          'Exit',0x00
+ 000000C2          ??S_6:
+ 000000C2            DB          'Clear List',0x00
+ 000000CD          ??S_5:
+ 000000CD            DB          'Delete',0x00
+ 000000D4          ??S_4:
+ 000000D4            DB          'Call',0x00
+ 000000D9          ??S_3:
+ 000000D9            DB          'Call Cancelled !',0x00
+ 000000EA          ??S_2:
+ 000000EA            DB          'End Call',0x00
+ 000000F3          ??S_1:
+ 000000F3            DB          'Calling...',0x00
+
+*** DATA SEGMENT '?DT0?gsm_app':
+ 00000000          diallist:
+ 00000000            DS          1200
+ 000004B0          diallist_head:
+ 000004B0            DS          4
+ 000004B4          diallist_tail:
+ 000004B4            DS          4
+
+
+
+*** CODE SEGMENT '?PR?GSM_APP_call?T?gsm_app':
+   10: void GSM_APP_call()
+ 00000000  B510      PUSH        {R4,LR}
+ 00000002  B084      SUB         R13,#0x10
+   11: {
+ 00000004            ; SCOPE-START
+   12:     U8 Uc_dial_stat = 0;
+ 00000004  2400      MOV         R4,#0x0
+ 00000006  ---- Variable 'Uc_dial_stat' assigned to Register 'R4' ----
+   15:     Uc_dial_stat = APP_phone_dial(phone_no);
+ 00000006  A800      ADD         R0,R13,#0x0
+ 00000008  F7FF      BL          APP_phone_dial?T  ; T=0x0001  (1)
+ 0000000A  FFFA      BL          APP_phone_dial?T  ; T=0x0001  (2)
+ 0000000C  1C04      MOV         R4,R0 ; Uc_dial_stat
+   16:     if(Uc_dial_stat == 1)
+ 0000000E  0600      LSL         R0,R0,#0x18 ; Uc_dial_stat
+ 00000010  0E00      LSR         R0,R0,#0x18
+ 00000012  2801      CMP         R0,#0x1
+ 00000014  D126      BNE         L_1  ; T=0x00000064
+   18:         clrscr();
+ 00000016  F7FF      BL          clrscr?T  ; T=0x0001  (1)
+ 00000018  FFF3      BL          clrscr?T  ; T=0x0001  (2)
+   19:            ms_delay(10000);
+ 0000001A  4800      LDR         R0,=0x2710
+ 0000001C  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000001E  FFF0      BL          ms_delay?T  ; T=0x0001  (2)
+   20:         lcd_line3_disp("Calling...",0);
+ 00000020  4800      LDR         R0,=??S_1 ; ??S_1
+ 00000022  2100      MOV         R1,#0x0
+ 00000024  F7FF      BL          lcd_line3_disp?T  ; T=0x0001  (1)
+ 00000026  FFEC      BL          lcd_line3_disp?T  ; T=0x0001  (2)
+   21:         lcd_line4_disp("End Call",12);
+ 00000028  4800      LDR         R0,=??S_2 ; ??S_2
+ 0000002A  210C      MOV         R1,#0xC
+ 0000002C  F7FF      BL          lcd_line4_disp?T  ; T=0x0001  (1)
+ 0000002E  FFE8      BL          lcd_line4_disp?T  ; T=0x0001  (2)
+   22:         lcd_line2_disp(phone_no,0);
+ 00000030  A800      ADD         R0,R13,#0x0
+ 00000032  2100      MOV         R1,#0x0
+ 00000034  F7FF      BL          lcd_line2_disp?T  ; T=0x0001  (1)
+ 00000036  FFE4      BL          lcd_line2_disp?T  ; T=0x0001  (2)
+   23:         gsm_voice_call(phone_no);
+ 00000038  A800      ADD         R0,R13,#0x0
+ 0000003A  F7FF      BL          gsm_voice_call?T  ; T=0x0001  (1)
+ARM COMPILER V2.50a,  gsm_app                                                              30/04/13  14:18:14  PAGE 9   
+
+ 0000003C  FFE1      BL          gsm_voice_call?T  ; T=0x0001  (2)
+   24:         rtc_get_time(time);
+ 0000003E  4800      LDR         R0,=time ; time
+ 00000040  F7FF      BL          rtc_get_time?T  ; T=0x0001  (1)
+ 00000042  FFDE      BL          rtc_get_time?T  ; T=0x0001  (2)
+   25:         rtc_get_date(&date[0]);
+ 00000044  4800      LDR         R0,=date ; date
+ 00000046  F7FF      BL          rtc_get_date?T  ; T=0x0001  (1)
+ 00000048  FFDB      BL          rtc_get_date?T  ; T=0x0001  (2)
+   26:         uart0_tx_string(date);
+ 0000004A  4800      LDR         R0,=date ; date
+ 0000004C  F7FF      BL          uart0_tx_string?T  ; T=0x0001  (1)
+ 0000004E  FFD8      BL          uart0_tx_string?T  ; T=0x0001  (2)
+   27:         GSM_APP_diallist_update(phone_no, time);
+ 00000050  A800      ADD         R0,R13,#0x0
+ 00000052  4800      LDR         R1,=time ; time
+ 00000054  F7FF      BL          GSM_APP_diallist_update?T  ; T=0x0001  (1)
+ 00000056  FFD4      BL          GSM_APP_diallist_update?T  ; T=0x0001  (2)
+   28:         lcd_line_disp(time,12,1);
+ 00000058  4800      LDR         R0,=time ; time
+ 0000005A  210C      MOV         R1,#0xC
+ 0000005C  2201      MOV         R2,#0x1
+ 0000005E  F7FF      BL          lcd_line_disp?T  ; T=0x0001  (1)
+ 00000060  FFCF      BL          lcd_line_disp?T  ; T=0x0001  (2)
+   29:     }
+ 00000062  E01F      B           L_2  ; T=0x000000A4
+ 00000064          L_1:
+   30:     else if(Uc_dial_stat == 0)
+ 00000064  1C20      MOV         R0,R4 ; Uc_dial_stat
+ 00000066  0600      LSL         R0,R0,#0x18 ; Uc_dial_stat
+ 00000068  0E00      LSR         R0,R0,#0x18
+ 0000006A  2800      CMP         R0,#0x0
+ 0000006C  D10E      BNE         L_3  ; T=0x0000008C
+   32:          clrscr();
+ 0000006E  F7FF      BL          clrscr?T  ; T=0x0001  (1)
+ 00000070  FFC7      BL          clrscr?T  ; T=0x0001  (2)
+   33:            ms_delay(5000);
+ 00000072  4800      LDR         R0,=0x1388
+ 00000074  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000076  FFC4      BL          ms_delay?T  ; T=0x0001  (2)
+   34:         lcd_line2_disp("Call Cancelled !",0);
+ 00000078  4800      LDR         R0,=??S_3 ; ??S_3
+ 0000007A  2100      MOV         R1,#0x0
+ 0000007C  F7FF      BL          lcd_line2_disp?T  ; T=0x0001  (1)
+ 0000007E  FFC0      BL          lcd_line2_disp?T  ; T=0x0001  (2)
+   35:         ms_delay(20000);
+ 00000080  4800      LDR         R0,=0x4E20
+ 00000082  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000084  FFBD      BL          ms_delay?T  ; T=0x0001  (2)
+   36:         APP_default_page();
+ 00000086  F7FF      BL          APP_default_page?T  ; T=0x0001  (1)
+ 00000088  FFBB      BL          APP_default_page?T  ; T=0x0001  (2)
+   37:     }
+ 0000008A  E00B      B           L_2  ; T=0x000000A4
+ 0000008C          L_3:
+   38:     else if(Uc_dial_stat == 2)
+ 0000008C  1C20      MOV         R0,R4 ; Uc_dial_stat
+ 0000008E  0600      LSL         R0,R0,#0x18 ; Uc_dial_stat
+ 00000090  0E00      LSR         R0,R0,#0x18
+ 00000092  2802      CMP         R0,#0x2
+ 00000094  D106      BNE         L_2  ; T=0x000000A4
+   40:         clrscr();
+ 00000096  F7FF      BL          clrscr?T  ; T=0x0001  (1)
+ 00000098  FFB3      BL          clrscr?T  ; T=0x0001  (2)
+   41:         ms_delay(20000);
+ 0000009A  4800      LDR         R0,=0x4E20
+ARM COMPILER V2.50a,  gsm_app                                                              30/04/13  14:18:14  PAGE 10  
+
+ 0000009C  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000009E  FFB0      BL          ms_delay?T  ; T=0x0001  (2)
+   42:         APP_default_page();
+ 000000A0  F7FF      BL          APP_default_page?T  ; T=0x0001  (1)
+ 000000A2  FFAE      BL          APP_default_page?T  ; T=0x0001  (2)
+   43:     }    
+ 000000A4          L_2:
+ 000000A4            ; SCOPE-END
+   44: }
+ 000000A4  B004      ADD         R13,#0x10
+ 000000A6  BC10      POP         {R4}
+ 000000A8  BC08      POP         {R3}
+ 000000AA  4718      BX          R3
+ 000000AC          ENDP ; 'GSM_APP_call?T'
+
+
+*** CODE SEGMENT '?PR?GSM_APP_diallist_init?T?gsm_app':
+   53: void GSM_APP_diallist_init(U8 diallist_size)
+ 00000000  B410      PUSH        {R4}
+ 00000002  ---- Variable 'diallist_size' assigned to Register 'R0' ----
+   54: {
+ 00000002            ; SCOPE-START
+   58:     caller1 = &diallist[0];
+ 00000002  4800      LDR         R2,=diallist ; diallist
+ 00000004  ---- Variable 'caller1' assigned to Register 'R2' ----
+   59:     caller2 = &diallist[1];
+ 00000004  4800      LDR         R1,=diallist + 0x3C ; diallist+60
+ 00000006  ---- Variable 'caller2' assigned to Register 'R1' ----
+   61:      while(diallist_size)                 // Preparing a doubly link list 
+ 00000006  E00D      B           L_6  ; T=0x00000024
+ 00000008          L_8:
+   63:          caller2->prev = caller1;          
+ 00000008  1C13      MOV         R3,R2 ; caller1
+ 0000000A  1C0C      MOV         R4,R1 ; caller2
+ 0000000C  63A3      STR         R3,[R4,#0x38]
+   64:         caller1->next = caller2;    
+ 0000000E  1C0B      MOV         R3,R1 ; caller2
+ 00000010  1C14      MOV         R4,R2 ; caller1
+ 00000012  6363      STR         R3,[R4,#0x34]
+   65:         caller1->cnt  = FREE;
+ 00000014  2400      MOV         R4,#0x0
+ 00000016  1C13      MOV         R3,R2 ; caller1
+ 00000018  701C      STRB        R4,[R3,#0x0] ; caller1
+   66:         caller1++;
+ 0000001A  323C      ADD         R2,#0x3C
+   67:         caller2++;
+ 0000001C  313C      ADD         R1,#0x3C
+   68:         diallist_size--; 
+ 0000001E  3801      SUB         R0,#0x1
+ 00000020  0600      LSL         R0,R0,#0x18
+ 00000022  0E00      LSR         R0,R0,#0x18
+   69:      }
+ 00000024          L_6:
+ 00000024  1C03      MOV         R3,R0 ; diallist_size
+ 00000026  2B00      CMP         R3,#0x0 ; diallist_size
+ 00000028  D1EE      BNE         L_8  ; T=0x00000008
+   71:     diallist_head  = &diallist[0];         // Assigning Head of the list
+ 0000002A  4800      LDR         R1,=diallist ; diallist
+ 0000002C  4800      LDR         R0,=diallist_head ; diallist_head
+ 0000002E  6001      STR         R1,[R0,#0x0] ; diallist_head
+   72:     diallist_tail  = diallist_head;        // At initialization Head & Tail are same.
+ 00000030  4800      LDR         R0,=diallist_head ; diallist_head
+ 00000032  6801      LDR         R1,[R0,#0x0] ; diallist_head
+ 00000034  4800      LDR         R0,=diallist_tail ; diallist_tail
+ 00000036  6001      STR         R1,[R0,#0x0] ; diallist_tail
+   73:     caller1->next  = &diallist[0];         // making list circular. Caller1 is incremented in while and hence it will be
+             - the last no.
+ 00000038  4800      LDR         R0,=diallist ; diallist
+ARM COMPILER V2.50a,  gsm_app                                                              30/04/13  14:18:14  PAGE 11  
+
+ 0000003A  1C11      MOV         R1,R2 ; caller1
+ 0000003C  6348      STR         R0,[R1,#0x34]
+   74:     diallist_head->prev = caller1;         // providing a back link to the Head of list
+ 0000003E  1C10      MOV         R0,R2 ; caller1
+ 00000040  4800      LDR         R1,=diallist_head ; diallist_head
+ 00000042  6809      LDR         R1,[R1,#0x0] ; diallist_head
+ 00000044  6388      STR         R0,[R1,#0x38]
+ 00000046            ; SCOPE-END
+   75: }
+ 00000046  BC10      POP         {R4}
+ 00000048  4770      BX          R14
+ 0000004A          ENDP ; 'GSM_APP_diallist_init?T'
+
+
+*** CODE SEGMENT '?PR?GSM_APP_diallist_show?T?gsm_app':
+   84: U8 GSM_APP_diallist_show()
+ 00000000  B5F0      PUSH        {R4-R7,LR}
+ 00000002  B08D      SUB         R13,#0x34
+ 00000004  ---- Variable 'temp' assigned to Register 'R5' ----
+   85: {
+ 00000004            ; SCOPE-START
+   86:     U8 uc_cnt = 0;
+ 00000004  2100      MOV         R1,#0x0
+ 00000006  A800      ADD         R0,R13,#0x0
+ 00000008  7001      STRB        R1,[R0,#0x0] ; uc_cnt
+   87:     U8 key_temp = 0;
+ 0000000A  A801      ADD         R0,R13,#0x4
+ 0000000C  7001      STRB        R1,[R0,#0x0] ; key_temp
+   88:     U8 opt = 0;
+ 0000000E  A802      ADD         R0,R13,#0x8
+ 00000010  7001      STRB        R1,[R0,#0x0] ; opt
+   89:     U8 *diallist_arr[10] = {"Call", "Delete", "Clear List", "Exit", " "};
+ 00000012  4800      LDR         R1,=?tpl?0001 ; ?tpl?0001
+ 00000014  A803      ADD         R0,R13,#0xC
+ 00000016  2228      MOV         R2,#0x28
+ 00000018          L_55:
+ 00000018  780B      LDRB        R3,[R1,#0x0]
+ 0000001A  7003      STRB        R3,[R0,#0x0]
+ 0000001C  1C49      ADD         R1,R1,#0x1
+ 0000001E  1C40      ADD         R0,R0,#0x1
+ 00000020  1E52      SUB         R2,R2,#0x1
+ 00000022  D1F9      BNE         L_55  ; T=0x00000018
+   95:     clrscr();
+ 00000024  F7FF      BL          clrscr?T  ; T=0x0001  (1)
+ 00000026  FFEC      BL          clrscr?T  ; T=0x0001  (2)
+   97:     lcd_line_disp("Delete", 0, 4);
+ 00000028  4800      LDR         R0,=??S_5 ; ??S_5
+ 0000002A  2100      MOV         R1,#0x0
+ 0000002C  2204      MOV         R2,#0x4
+ 0000002E  F7FF      BL          lcd_line_disp?T  ; T=0x0001  (1)
+ 00000030  FFE7      BL          lcd_line_disp?T  ; T=0x0001  (2)
+   98:     lcd_line_disp("Exit", 16, 4);
+ 00000032  4800      LDR         R0,=??S_7 ; ??S_7
+ 00000034  2110      MOV         R1,#0x10
+ 00000036  2204      MOV         R2,#0x4
+ 00000038  F7FF      BL          lcd_line_disp?T  ; T=0x0001  (1)
+ 0000003A  FFE2      BL          lcd_line_disp?T  ; T=0x0001  (2)
+   99:     diallist_temp = diallist_head->prev;  // diallist_head 's prev node is allocated to diallist_temp    
+ 0000003C  4800      LDR         R0,=diallist_head ; diallist_head
+ 0000003E  6800      LDR         R0,[R0,#0x0] ; diallist_head
+ 00000040  6B86      LDR         R6,[R0,#0x38]
+ 00000042  1C37      MOV         R7,R6 ; diallist_temp
+ 00000044  ---- Variable 'diallist_temp' assigned to Register 'R7' ----
+  100:     diallist_first = diallist_head->prev; // diallist_head 's prev node is allocated to diallist_first   
+ 00000044  ---- Variable 'diallist_first' assigned to Register 'R6' ----
+  103:         for(uc_cnt = 1; uc_cnt < 4; uc_cnt++)   //   
+ 00000044          L_18:
+ 00000044  2001      MOV         R0,#0x1
+ARM COMPILER V2.50a,  gsm_app                                                              30/04/13  14:18:14  PAGE 12  
+
+ 00000046  AC00      ADD         R4,R13,#0x0
+ 00000048  7020      STRB        R0,[R4,#0x0] ; uc_cnt
+ 0000004A  E018      B           L_16  ; T=0x0000007E
+ 0000004C          L_17:
+  105:             if(diallist_temp->cnt == NOT_FREE)
+ 0000004C  1C38      MOV         R0,R7 ; diallist_temp
+ 0000004E  7800      LDRB        R0,[R0,#0x0] ; diallist_temp
+ 00000050  2801      CMP         R0,#0x1
+ 00000052  D110      BNE         L_14  ; T=0x00000076
+  107:                 lcd_line_disp(diallist_temp->no, 0, uc_cnt);
+ 00000054  7820      LDRB        R0,[R4,#0x0] ; uc_cnt
+ 00000056  1C02      MOV         R2,R0
+ 00000058  1C38      MOV         R0,R7 ; diallist_temp
+ 0000005A  3001      ADD         R0,#0x1
+ 0000005C  2100      MOV         R1,#0x0
+ 0000005E  F7FF      BL          lcd_line_disp?T  ; T=0x0001  (1)
+ 00000060  FFCF      BL          lcd_line_disp?T  ; T=0x0001  (2)
+  108:                 lcd_line_disp(diallist_temp->time, 12, uc_cnt);
+ 00000062  A800      ADD         R0,R13,#0x0
+ 00000064  7800      LDRB        R0,[R0,#0x0] ; uc_cnt
+ 00000066  1C02      MOV         R2,R0
+ 00000068  1C38      MOV         R0,R7 ; diallist_temp
+ 0000006A  3029      ADD         R0,#0x29
+ 0000006C  210C      MOV         R1,#0xC
+ 0000006E  F7FF      BL          lcd_line_disp?T  ; T=0x0001  (1)
+ 00000070  FFC7      BL          lcd_line_disp?T  ; T=0x0001  (2)
+  109:                 diallist_temp = diallist_temp->prev;    
+ 00000072  1C38      MOV         R0,R7 ; diallist_temp
+ 00000074  6B87      LDR         R7,[R0,#0x38]
+  111:           }
+ 00000076          L_14:
+ 00000076  A800      ADD         R0,R13,#0x0
+ 00000078  7801      LDRB        R1,[R0,#0x0] ; uc_cnt
+ 0000007A  3101      ADD         R1,#0x1
+ 0000007C  7001      STRB        R1,[R0,#0x0] ; uc_cnt
+ 0000007E          L_16:
+ 0000007E  A800      ADD         R0,R13,#0x0
+ 00000080  7800      LDRB        R0,[R0,#0x0] ; uc_cnt
+ 00000082  2804      CMP         R0,#0x4
+ 00000084  DBE2      BLT         L_17  ; T=0x0000004C
+  112:         lcd_line_disp("Options", 0, 4);
+ 00000086  4800      LDR         R0,=??S_9 ; ??S_9
+ 00000088  2100      MOV         R1,#0x0
+ 0000008A  2204      MOV         R2,#0x4
+ 0000008C  F7FF      BL          lcd_line_disp?T  ; T=0x0001  (1)
+ 0000008E  FFB8      BL          lcd_line_disp?T  ; T=0x0001  (2)
+  113:         lcd_line_disp("Exit", 16, 4);
+ 00000090  4800      LDR         R0,=??S_7 ; ??S_7
+ 00000092  2110      MOV         R1,#0x10
+ 00000094  2204      MOV         R2,#0x4
+ 00000096  F7FF      BL          lcd_line_disp?T  ; T=0x0001  (1)
+ 00000098  FFB3      BL          lcd_line_disp?T  ; T=0x0001  (2)
+  114:         key_temp = get_key(1);
+ 0000009A  2001      MOV         R0,#0x1
+ 0000009C  F7FF      BL          get_key?T  ; T=0x0001  (1)
+ 0000009E  FFB0      BL          get_key?T  ; T=0x0001  (2)
+ 000000A0  A901      ADD         R1,R13,#0x4
+ 000000A2  7008      STRB        R0,[R1,#0x0] ; key_temp
+  115:         ms_delay(100);
+ 000000A4  2064      MOV         R0,#0x64
+ 000000A6  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 000000A8  FFAB      BL          ms_delay?T  ; T=0x0001  (2)
+  117:         if(key_temp == 'D')
+ 000000AA  A801      ADD         R0,R13,#0x4
+ 000000AC  7800      LDRB        R0,[R0,#0x0] ; key_temp
+ 000000AE  2844      CMP         R0,#0x44
+ARM COMPILER V2.50a,  gsm_app                                                              30/04/13  14:18:14  PAGE 13  
+
+ 000000B0  D104      BNE         L_20  ; T=0x000000BC
+  119:             APP_default_page();
+ 000000B2  F7FF      BL          APP_default_page?T  ; T=0x0001  (1)
+ 000000B4  FFA5      BL          APP_default_page?T  ; T=0x0001  (2)
+  120:             return 0;
+ 000000B6  2400      MOV         R4,#0x0
+ 000000B8  1C20      MOV         R0,R4
+ 000000BA  E075      B           L_21  ; T=0x000001A8
+  121:         }
+ 000000BC          L_20:
+  123:         else if(key_temp == 'E')
+ 000000BC  A801      ADD         R0,R13,#0x4
+ 000000BE  7800      LDRB        R0,[R0,#0x0] ; key_temp
+ 000000C0  2845      CMP         R0,#0x45
+ 000000C2  D12C      BNE         L_23  ; T=0x0000011E
+  125:             opt =  GSM_APP_options(diallist_arr, 4);
+ 000000C4  A803      ADD         R0,R13,#0xC
+ 000000C6  2104      MOV         R1,#0x4
+ 000000C8  F7FF      BL          GSM_APP_options?T  ; T=0x0001  (1)
+ 000000CA  FF9A      BL          GSM_APP_options?T  ; T=0x0001  (2)
+ 000000CC  A902      ADD         R1,R13,#0x8
+ 000000CE  7008      STRB        R0,[R1,#0x0] ; opt
+  127:             if(opt == 1)
+ 000000D0  7808      LDRB        R0,[R1,#0x0] ; opt
+ 000000D2  2801      CMP         R0,#0x1
+ 000000D4  D066      BEQ         L_22  ; T=0x000001A4
+  131:             else if(opt == 2)
+ 000000D6  2802      CMP         R0,#0x2
+ 000000D8  D164      BNE         L_22  ; T=0x000001A4
+  133:                 diallist_temp = diallist_first->prev;
+ 000000DA  1C30      MOV         R0,R6 ; diallist_first
+ 000000DC  6B87      LDR         R7,[R0,#0x38]
+  134:                 GSM_APP_diallist_delete(diallist_first);
+ 000000DE  1C30      MOV         R0,R6 ; diallist_first
+ 000000E0  F7FF      BL          GSM_APP_diallist_delete?T  ; T=0x0001  (1)
+ 000000E2  FF8E      BL          GSM_APP_diallist_delete?T  ; T=0x0001  (2)
+  135:                 diallist_first = diallist_temp;
+ 000000E4  1C3E      MOV         R6,R7 ; diallist_temp
+  136:                 clrscr();       
+ 000000E6  F7FF      BL          clrscr?T  ; T=0x0001  (1)
+ 000000E8  FF8B      BL          clrscr?T  ; T=0x0001  (2)
+  138:                 uart0_tx_string("\r\n\ndiallist First: ");
+ 000000EA  4800      LDR         R0,=??S_10 ; ??S_10
+ 000000EC  F7FF      BL          uart0_tx_string?T  ; T=0x0001  (1)
+ 000000EE  FF88      BL          uart0_tx_string?T  ; T=0x0001  (2)
+  139:                 uart0_tx_string(diallist_first->no);
+ 000000F0  1C30      MOV         R0,R6 ; diallist_first
+ 000000F2  3001      ADD         R0,#0x1
+ 000000F4  F7FF      BL          uart0_tx_string?T  ; T=0x0001  (1)
+ 000000F6  FF84      BL          uart0_tx_string?T  ; T=0x0001  (2)
+  141:                 temp  = diallist_head->prev;
+ 000000F8  4800      LDR         R0,=diallist_head ; diallist_head
+ 000000FA  6800      LDR         R0,[R0,#0x0] ; diallist_head
+ 000000FC  6B85      LDR         R5,[R0,#0x38]
+  142:                 uart0_tx_string("\r\ndiallist Head: ");
+ 000000FE  4800      LDR         R0,=??S_11 ; ??S_11
+ 00000100  F7FF      BL          uart0_tx_string?T  ; T=0x0001  (1)
+ 00000102  FF7E      BL          uart0_tx_string?T  ; T=0x0001  (2)
+  143:                 uart0_tx_string(temp->no);
+ 00000104  1C28      MOV         R0,R5 ; temp
+ 00000106  3001      ADD         R0,#0x1
+ 00000108  F7FF      BL          uart0_tx_string?T  ; T=0x0001  (1)
+ 0000010A  FF7A      BL          uart0_tx_string?T  ; T=0x0001  (2)
+  145:                 uart0_tx_string("\r\ndiallist Tail: ");
+ 0000010C  4800      LDR         R0,=??S_12 ; ??S_12
+ 0000010E  F7FF      BL          uart0_tx_string?T  ; T=0x0001  (1)
+ARM COMPILER V2.50a,  gsm_app                                                              30/04/13  14:18:14  PAGE 14  
+
+ 00000110  FF77      BL          uart0_tx_string?T  ; T=0x0001  (2)
+  146:                 uart0_tx_string(diallist_tail->no);
+ 00000112  4800      LDR         R0,=diallist_tail ; diallist_tail
+ 00000114  6800      LDR         R0,[R0,#0x0] ; diallist_tail
+ 00000116  3001      ADD         R0,#0x1
+ 00000118  F7FF      BL          uart0_tx_string?T  ; T=0x0001  (1)
+ 0000011A  FF72      BL          uart0_tx_string?T  ; T=0x0001  (2)
+  149:         }
+ 0000011C  E042      B           L_22  ; T=0x000001A4
+ 0000011E          L_23:
+  150:         else if(key_temp == 'C')   // Scroll DOWN                                                
+ 0000011E  A801      ADD         R0,R13,#0x4
+ 00000120  7800      LDRB        R0,[R0,#0x0] ; key_temp
+ 00000122  2843      CMP         R0,#0x43
+ 00000124  D11D      BNE         L_28  ; T=0x00000162
+  152:             diallist_temp  = diallist_first->prev;
+ 00000126  1C30      MOV         R0,R6 ; diallist_first
+ 00000128  6B87      LDR         R7,[R0,#0x38]
+  153:             if(diallist_temp->cnt == NOT_FREE)
+ 0000012A  1C38      MOV         R0,R7 ; diallist_temp
+ 0000012C  7800      LDRB        R0,[R0,#0x0] ; diallist_temp
+ 0000012E  2801      CMP         R0,#0x1
+ 00000130  D115      BNE         L_29  ; T=0x0000015E
+  155:                 clrscr();
+ 00000132  F7FF      BL          clrscr?T  ; T=0x0001  (1)
+ 00000134  FF65      BL          clrscr?T  ; T=0x0001  (2)
+  156:                 diallist_first = diallist_first->prev;
+ 00000136  1C30      MOV         R0,R6 ; diallist_first
+ 00000138  6B86      LDR         R6,[R0,#0x38]
+  158:                 uart0_tx_string("\r\n\ndiallist First: ");
+ 0000013A  4800      LDR         R0,=??S_10 ; ??S_10
+ 0000013C  F7FF      BL          uart0_tx_string?T  ; T=0x0001  (1)
+ 0000013E  FF60      BL          uart0_tx_string?T  ; T=0x0001  (2)
+  159:                 uart0_tx_string(diallist_first->no);
+ 00000140  1C30      MOV         R0,R6 ; diallist_first
+ 00000142  3001      ADD         R0,#0x1
+ 00000144  F7FF      BL          uart0_tx_string?T  ; T=0x0001  (1)
+ 00000146  FF5C      BL          uart0_tx_string?T  ; T=0x0001  (2)
+  161:                 temp  = diallist_head->prev;
+ 00000148  4800      LDR         R0,=diallist_head ; diallist_head
+ 0000014A  6800      LDR         R0,[R0,#0x0] ; diallist_head
+ 0000014C  6B85      LDR         R5,[R0,#0x38]
+  162:                 uart0_tx_string("\r\ndiallist Head: ");
+ 0000014E  4800      LDR         R0,=??S_11 ; ??S_11
+ 00000150  F7FF      BL          uart0_tx_string?T  ; T=0x0001  (1)
+ 00000152  FF56      BL          uart0_tx_string?T  ; T=0x0001  (2)
+  163:                 uart0_tx_string(temp->no);
+ 00000154  1C28      MOV         R0,R5 ; temp
+ 00000156  3001      ADD         R0,#0x1
+ 00000158  F7FF      BL          uart0_tx_string?T  ; T=0x0001  (1)
+ 0000015A  FF52      BL          uart0_tx_string?T  ; T=0x0001  (2)
+  164:             }
+ 0000015C  E022      B           L_22  ; T=0x000001A4
+ 0000015E          L_29:
+  167:                 diallist_temp  = diallist_first;    
+ 0000015E  1C37      MOV         R7,R6 ; diallist_first
+  170:         }
+ 00000160  E020      B           L_22  ; T=0x000001A4
+ 00000162          L_28:
+  171:         else if(key_temp == 'B')    // Scroll UP
+ 00000162  A801      ADD         R0,R13,#0x4
+ 00000164  7800      LDRB        R0,[R0,#0x0] ; key_temp
+ 00000166  2842      CMP         R0,#0x42
+ 00000168  D11C      BNE         L_22  ; T=0x000001A4
+  173:             diallist_temp  = diallist_first->next;  
+ 0000016A  1C30      MOV         R0,R6 ; diallist_first
+ARM COMPILER V2.50a,  gsm_app                                                              30/04/13  14:18:14  PAGE 15  
+
+ 0000016C  6B47      LDR         R7,[R0,#0x34]
+  174:             if(diallist_temp->cnt == NOT_FREE)
+ 0000016E  1C38      MOV         R0,R7 ; diallist_temp
+ 00000170  7800      LDRB        R0,[R0,#0x0] ; diallist_temp
+ 00000172  2801      CMP         R0,#0x1
+ 00000174  D115      BNE         L_33  ; T=0x000001A2
+  176:                 clrscr();
+ 00000176  F7FF      BL          clrscr?T  ; T=0x0001  (1)
+ 00000178  FF43      BL          clrscr?T  ; T=0x0001  (2)
+  177:                  diallist_first = diallist_first->next;
+ 0000017A  1C30      MOV         R0,R6 ; diallist_first
+ 0000017C  6B46      LDR         R6,[R0,#0x34]
+  179:                 uart0_tx_string("\r\n\ndiallist First: ");
+ 0000017E  4800      LDR         R0,=??S_10 ; ??S_10
+ 00000180  F7FF      BL          uart0_tx_string?T  ; T=0x0001  (1)
+ 00000182  FF3E      BL          uart0_tx_string?T  ; T=0x0001  (2)
+  180:                 uart0_tx_string(diallist_first->no);
+ 00000184  1C30      MOV         R0,R6 ; diallist_first
+ 00000186  3001      ADD         R0,#0x1
+ 00000188  F7FF      BL          uart0_tx_string?T  ; T=0x0001  (1)
+ 0000018A  FF3A      BL          uart0_tx_string?T  ; T=0x0001  (2)
+  182:                 temp  = diallist_head->prev;
+ 0000018C  4800      LDR         R0,=diallist_head ; diallist_head
+ 0000018E  6800      LDR         R0,[R0,#0x0] ; diallist_head
+ 00000190  6B85      LDR         R5,[R0,#0x38]
+  183:                 uart0_tx_string("\r\ndiallist Head: ");
+ 00000192  4800      LDR         R0,=??S_11 ; ??S_11
+ 00000194  F7FF      BL          uart0_tx_string?T  ; T=0x0001  (1)
+ 00000196  FF34      BL          uart0_tx_string?T  ; T=0x0001  (2)
+  184:                 uart0_tx_string(temp->no);
+ 00000198  1C28      MOV         R0,R5 ; temp
+ 0000019A  3001      ADD         R0,#0x1
+ 0000019C  F7FF      BL          uart0_tx_string?T  ; T=0x0001  (1)
+ 0000019E  FF30      BL          uart0_tx_string?T  ; T=0x0001  (2)
+  185:             }
+ 000001A0  E000      B           L_22  ; T=0x000001A4
+ 000001A2          L_33:
+  188:                 diallist_temp  = diallist_first;    
+ 000001A2  1C37      MOV         R7,R6 ; diallist_first
+  190:         }
+ 000001A4          L_22:
+  192:         diallist_temp  = diallist_first;
+ 000001A4  1C37      MOV         R7,R6 ; diallist_first
+  193:     }
+ 000001A6  E74D      B           L_18  ; T=0x00000044
+ 000001A8            ; SCOPE-END
+  194: }
+ 000001A8          L_21:
+ 000001A8  B00D      ADD         R13,#0x34
+ 000001AA  BCF0      POP         {R4-R7}
+ 000001AC  BC08      POP         {R3}
+ 000001AE  4718      BX          R3
+ 000001B0          ENDP ; 'GSM_APP_diallist_show?T'
+
+
+*** CODE SEGMENT '?PR?GSM_APP_diallist_update?T?gsm_app':
+  203: void GSM_APP_diallist_update(U8 *phone_no, U8 *time)
+ 00000000  B530      PUSH        {R4-R5,LR}
+ 00000002  1C0C      MOV         R4,R1 ; time
+ 00000004  ---- Variable 'time' assigned to Register 'R4' ----
+ 00000004  1C05      MOV         R5,R0 ; phone_no
+ 00000006  ---- Variable 'phone_no' assigned to Register 'R5' ----
+  205:     uart0_tx_string("\r\n\ ");
+ 00000006  4800      LDR         R0,=??S_13 ; ??S_13
+ 00000008  F7FF      BL          uart0_tx_string?T  ; T=0x0001  (1)
+ 0000000A  FFFA      BL          uart0_tx_string?T  ; T=0x0001  (2)
+  206:     LIB_str_copy(phone_no, &diallist_head->no[0], 10);   // Common part for both cases 
+ 0000000C  1C28      MOV         R0,R5 ; phone_no
+ARM COMPILER V2.50a,  gsm_app                                                              30/04/13  14:18:14  PAGE 16  
+
+ 0000000E  4800      LDR         R1,=diallist_head ; diallist_head
+ 00000010  6809      LDR         R1,[R1,#0x0] ; diallist_head
+ 00000012  3101      ADD         R1,#0x1
+ 00000014  220A      MOV         R2,#0xA
+ 00000016  F7FF      BL          LIB_str_copy?T  ; T=0x0001  (1)
+ 00000018  FFF3      BL          LIB_str_copy?T  ; T=0x0001  (2)
+  207:     LIB_str_copy(time, &diallist_head->time[0], 8);      // In any of the case New No is added at the Head of the list
+ 0000001A  1C20      MOV         R0,R4 ; time
+ 0000001C  4800      LDR         R1,=diallist_head ; diallist_head
+ 0000001E  6809      LDR         R1,[R1,#0x0] ; diallist_head
+ 00000020  3129      ADD         R1,#0x29
+ 00000022  2208      MOV         R2,#0x8
+ 00000024  F7FF      BL          LIB_str_copy?T  ; T=0x0001  (1)
+ 00000026  FFEC      BL          LIB_str_copy?T  ; T=0x0001  (2)
+  208:     diallist_head->cnt = NOT_FREE;                       // after asigning Phone no and time stamp, the node is marked as NOT_FREE
+ 00000028  2101      MOV         R1,#0x1
+ 0000002A  4800      LDR         R0,=diallist_head ; diallist_head
+ 0000002C  6800      LDR         R0,[R0,#0x0] ; diallist_head
+ 0000002E  7001      STRB        R1,[R0,#0x0]
+  210:     uart0_tx_string("\r\nDiallist Head: ");
+ 00000030  4800      LDR         R0,=??S_14 ; ??S_14
+ 00000032  F7FF      BL          uart0_tx_string?T  ; T=0x0001  (1)
+ 00000034  FFE5      BL          uart0_tx_string?T  ; T=0x0001  (2)
+  211:     uart0_tx_string(diallist_head->no);
+ 00000036  4800      LDR         R0,=diallist_head ; diallist_head
+ 00000038  6800      LDR         R0,[R0,#0x0] ; diallist_head
+ 0000003A  3001      ADD         R0,#0x1
+ 0000003C  F7FF      BL          uart0_tx_string?T  ; T=0x0001  (1)
+ 0000003E  FFE0      BL          uart0_tx_string?T  ; T=0x0001  (2)
+  212:     uart0_tx_string("   ");
+ 00000040  4800      LDR         R0,=??S_15 ; ??S_15
+ 00000042  F7FF      BL          uart0_tx_string?T  ; T=0x0001  (1)
+ 00000044  FFDD      BL          uart0_tx_string?T  ; T=0x0001  (2)
+  213:     uart0_tx_string(diallist_head->time);
+ 00000046  4800      LDR         R0,=diallist_head ; diallist_head
+ 00000048  6800      LDR         R0,[R0,#0x0] ; diallist_head
+ 0000004A  3029      ADD         R0,#0x29
+ 0000004C  F7FF      BL          uart0_tx_string?T  ; T=0x0001  (1)
+ 0000004E  FFD8      BL          uart0_tx_string?T  ; T=0x0001  (2)
+  215:     uart0_tx_string("\r\nDiallist Tail: ");
+ 00000050  4800      LDR         R0,=??S_16 ; ??S_16
+ 00000052  F7FF      BL          uart0_tx_string?T  ; T=0x0001  (1)
+ 00000054  FFD5      BL          uart0_tx_string?T  ; T=0x0001  (2)
+  216:     uart0_tx_string(diallist_tail->no);
+ 00000056  4800      LDR         R0,=diallist_tail ; diallist_tail
+ 00000058  6800      LDR         R0,[R0,#0x0] ; diallist_tail
+ 0000005A  3001      ADD         R0,#0x1
+ 0000005C  F7FF      BL          uart0_tx_string?T  ; T=0x0001  (1)
+ 0000005E  FFD0      BL          uart0_tx_string?T  ; T=0x0001  (2)
+  217:     uart0_tx_string("   ");
+ 00000060  4800      LDR         R0,=??S_15 ; ??S_15
+ 00000062  F7FF      BL          uart0_tx_string?T  ; T=0x0001  (1)
+ 00000064  FFCD      BL          uart0_tx_string?T  ; T=0x0001  (2)
+  218:     uart0_tx_string(diallist_tail->time);
+ 00000066  4800      LDR         R0,=diallist_tail ; diallist_tail
+ 00000068  6800      LDR         R0,[R0,#0x0] ; diallist_tail
+ 0000006A  3029      ADD         R0,#0x29
+ 0000006C  F7FF      BL          uart0_tx_string?T  ; T=0x0001  (1)
+ 0000006E  FFC8      BL          uart0_tx_string?T  ; T=0x0001  (2)
+  220:     if(diallist_head->next == diallist_tail)            // This is the case when list is full and hence head->next is pointin
+             -g to the tail 
+ 00000070  4800      LDR         R0,=diallist_head ; diallist_head
+ 00000072  6803      LDR         R3,[R0,#0x0] ; diallist_head
+ 00000074  6B59      LDR         R1,[R3,#0x34]
+ 00000076  4800      LDR         R0,=diallist_tail ; diallist_tail
+ 00000078  6800      LDR         R0,[R0,#0x0] ; diallist_tail
+ARM COMPILER V2.50a,  gsm_app                                                              30/04/13  14:18:14  PAGE 17  
+
+ 0000007A  4281      CMP         R1,R0
+ 0000007C  D108      BNE         L_35  ; T=0x00000090
+  222:         diallist_tail = diallist_tail->next;            // Tail & Head are shifted further by one position, and we get new Head 
+             -& Tail for our list
+ 0000007E  6B42      LDR         R2,[R0,#0x34]
+ 00000080  4800      LDR         R0,=diallist_tail ; diallist_tail
+ 00000082  6002      STR         R2,[R0,#0x0] ; diallist_tail
+  223:         diallist_head = diallist_head->next;
+ 00000084  4800      LDR         R0,=diallist_head ; diallist_head
+ 00000086  6001      STR         R1,[R0,#0x0] ; diallist_head
+  224:         uart0_tx_string("\r\ncase 1");
+ 00000088  4800      LDR         R0,=??S_17 ; ??S_17
+ 0000008A  F7FF      BL          uart0_tx_string?T  ; T=0x0001  (1)
+ 0000008C  FFB9      BL          uart0_tx_string?T  ; T=0x0001  (2)
+  225:     }                                       
+ 0000008E  E007      B           L_36  ; T=0x000000A0
+ 00000090          L_35:
+  228:         uart0_tx_string("\r\ncase 2");                  // Head is traversing forward when list is empty or Head->next is not tail
+ 00000090  4800      LDR         R0,=??S_18 ; ??S_18
+ 00000092  F7FF      BL          uart0_tx_string?T  ; T=0x0001  (1)
+ 00000094  FFB5      BL          uart0_tx_string?T  ; T=0x0001  (2)
+  229:         diallist_head = diallist_head->next;            // Tail will not change till the list gets full
+ 00000096  4800      LDR         R0,=diallist_head ; diallist_head
+ 00000098  6800      LDR         R0,[R0,#0x0] ; diallist_head
+ 0000009A  6B41      LDR         R1,[R0,#0x34]
+ 0000009C  4800      LDR         R0,=diallist_head ; diallist_head
+ 0000009E  6001      STR         R1,[R0,#0x0] ; diallist_head
+  230:     }
+ 000000A0          L_36:
+  231: }
+ 000000A0  BC30      POP         {R4-R5}
+ 000000A2  BC08      POP         {R3}
+ 000000A4  4718      BX          R3
+ 000000A6          ENDP ; 'GSM_APP_diallist_update?T'
+
+
+*** CODE SEGMENT '?PR?GSM_APP_diallist_delete?T?gsm_app':
+  240: void GSM_APP_diallist_delete(DIAL *del_node)
+ 00000000  B470      PUSH        {R4-R6}
+ 00000002  1C03      MOV         R3,R0 ; del_node
+ 00000004  ---- Variable 'del_node' assigned to Register 'R3' ----
+  241: {
+ 00000004            ; SCOPE-START
+  245:     if(del_node->cnt == NOT_FREE)                       // The node to be deleted must be a valid node, deleting empty node is usel
+             -ess. 
+ 00000004  1C18      MOV         R0,R3 ; del_node
+ 00000006  7800      LDRB        R0,[R0,#0x0] ; del_node
+ 00000008  2801      CMP         R0,#0x1
+ 0000000A  D135      BNE         L_37  ; T=0x00000078
+  247:         delnext = del_node->next;
+ 0000000C  1C18      MOV         R0,R3 ; del_node
+ 0000000E  6B44      LDR         R4,[R0,#0x34]
+ 00000010  ---- Variable 'delnext' assigned to Register 'R4' ----
+  248:         if(diallist_head->next == diallist_tail)        // if Head->next is tail of list, it means that list is full
+ 00000010  4800      LDR         R0,=diallist_head ; diallist_head
+ 00000012  6806      LDR         R6,[R0,#0x0] ; diallist_head
+ 00000014  6B72      LDR         R2,[R6,#0x34]
+ 00000016  4800      LDR         R0,=diallist_tail ; diallist_tail
+ 00000018  6801      LDR         R1,[R0,#0x0] ; diallist_tail
+ 0000001A  428A      CMP         R2,R1
+ 0000001C  D108      BNE         L_38  ; T=0x00000030
+  250:             if(del_node == diallist_head)               // case1: the deleted node itself is head,
+ 0000001E  1C18      MOV         R0,R3 ; del_node
+ 00000020  42B0      CMP         R0,R6 ; del_node
+ 00000022  D10B      BNE         L_40  ; T=0x0000003C
+  252:                 diallist_tail = diallist_tail->next;    // Tail = Tail->next      New Tail
+ 00000024  6B4D      LDR         R5,[R1,#0x34]
+ 00000026  4800      LDR         R0,=diallist_tail ; diallist_tail
+ARM COMPILER V2.50a,  gsm_app                                                              30/04/13  14:18:14  PAGE 18  
+
+ 00000028  6005      STR         R5,[R0,#0x0] ; diallist_tail
+  253:                  diallist_head = diallist_head->next;    // Head = Head->next      New Head
+ 0000002A  4800      LDR         R0,=diallist_head ; diallist_head
+ 0000002C  6002      STR         R2,[R0,#0x0] ; diallist_head
+  255:         }                                               /*What if list is full & del_node is Tail ?  <------ FIX this */ 
+ 0000002E  E005      B           L_40  ; T=0x0000003C
+ 00000030          L_38:
+  258:             if(del_node == diallist_tail)               // case2: List is not full but del_node is Tail of list
+ 00000030  1C18      MOV         R0,R3 ; del_node
+ 00000032  4288      CMP         R0,R1 ; del_node
+ 00000034  D102      BNE         L_40  ; T=0x0000003C
+  260:                 diallist_tail = diallist_tail->next;    // Tail = Tail->next      New Tail
+ 00000036  6B49      LDR         R1,[R1,#0x34]
+ 00000038  4800      LDR         R0,=diallist_tail ; diallist_tail
+ 0000003A  6001      STR         R1,[R0,#0x0] ; diallist_tail
+  263:         }
+ 0000003C          L_40:
+  265:          delnext->prev = del_node->prev;
+ 0000003C  1C18      MOV         R0,R3 ; del_node
+ 0000003E  6B80      LDR         R0,[R0,#0x38]
+ 00000040  1C21      MOV         R1,R4 ; delnext
+ 00000042  6388      STR         R0,[R1,#0x38]
+  266:          temp = del_node->prev;
+ 00000044  1C18      MOV         R0,R3 ; del_node
+ 00000046  6B82      LDR         R2,[R0,#0x38]
+ 00000048  ---- Variable 'temp' assigned to Register 'R2' ----
+  267:         temp->next = delnext; 
+ 00000048  1C20      MOV         R0,R4 ; delnext
+ 0000004A  1C11      MOV         R1,R2 ; temp
+ 0000004C  6348      STR         R0,[R1,#0x34]
+  268:         del_node->cnt  = FREE;
+ 0000004E  2100      MOV         R1,#0x0
+ 00000050  1C18      MOV         R0,R3 ; del_node
+ 00000052  7001      STRB        R1,[R0,#0x0] ; del_node
+  272:         del_node->next = diallist_head->next;            // Copying head->next link to del->next        
+ 00000054  4800      LDR         R0,=diallist_head ; diallist_head
+ 00000056  6800      LDR         R0,[R0,#0x0] ; diallist_head
+ 00000058  6B41      LDR         R1,[R0,#0x34]
+ 0000005A  1C18      MOV         R0,R3 ; del_node
+ 0000005C  6341      STR         R1,[R0,#0x34]
+  273:         del_node->prev = diallist_head;                  // del's backlink will be Head
+ 0000005E  4800      LDR         R0,=diallist_head ; diallist_head
+ 00000060  6801      LDR         R1,[R0,#0x0] ; diallist_head
+ 00000062  1C18      MOV         R0,R3 ; del_node
+ 00000064  6381      STR         R1,[R0,#0x38]
+  274:         diallist_head->next = del_node;                  // Now head->next will be del (new node)
+ 00000066  1C18      MOV         R0,R3 ; del_node
+ 00000068  4800      LDR         R1,=diallist_head ; diallist_head
+ 0000006A  6809      LDR         R1,[R1,#0x0] ; diallist_head
+ 0000006C  6348      STR         R0,[R1,#0x34]
+  275:         temp = del_node->next;                           // Assigning backlink of node next to del (new node) 
+ 0000006E  1C18      MOV         R0,R3 ; del_node
+ 00000070  6B42      LDR         R2,[R0,#0x34]
+  276:         temp->prev = del_node;                            
+ 00000072  1C18      MOV         R0,R3 ; del_node
+ 00000074  1C11      MOV         R1,R2 ; temp
+ 00000076  6388      STR         R0,[R1,#0x38]
+  277:     }
+ 00000078          L_37:
+ 00000078            ; SCOPE-END
+  278: }
+ 00000078  BC70      POP         {R4-R6}
+ 0000007A  4770      BX          R14
+ 0000007C          ENDP ; 'GSM_APP_diallist_delete?T'
+
+
+*** CODE SEGMENT '?PR?GSM_APP_options?T?gsm_app':
+  287: U8 GSM_APP_options(U8 **opt_disp, U8 opt_cnt)           // *opt_disp is an array of pointers, were each pointer will poin
+ARM COMPILER V2.50a,  gsm_app                                                              30/04/13  14:18:14  PAGE 19  
+
+             -t  
+ 00000000  B5F0      PUSH        {R4-R7,LR}
+ 00000002  1C0F      MOV         R7,R1 ; opt_cnt
+ 00000004  ---- Variable 'opt_cnt' assigned to Register 'R7' ----
+ 00000004  1C06      MOV         R6,R0 ; opt_disp
+ 00000006  ---- Variable 'opt_disp' assigned to Register 'R6' ----
+ 00000006  B081      SUB         R13,#0x4
+  288: {                                                        // to the option menu to be displayed
+ 00000008            ; SCOPE-START
+  289:     U8 temp_key = 0;    
+ 00000008  2500      MOV         R5,#0x0
+ 0000000A  ---- Variable 'temp_key' assigned to Register 'R5' ----
+  290:     U8 uc_cnt = 1;
+ 0000000A  2401      MOV         R4,#0x1
+ 0000000C  ---- Variable 'uc_cnt' assigned to Register 'R4' ----
+  293:     while(temp_key != 'D')
+ 0000000C  E050      B           L_42  ; T=0x000000B0
+ 0000000E          L_44:
+  295:          lcd_line_disp("                    ", 0, 3);
+ 0000000E  4800      LDR         R0,=??S_19 ; ??S_19
+ 00000010  2100      MOV         R1,#0x0
+ 00000012  2203      MOV         R2,#0x3
+ 00000014  F7FF      BL          lcd_line_disp?T  ; T=0x0001  (1)
+ 00000016  FFF4      BL          lcd_line_disp?T  ; T=0x0001  (2)
+  296:         lcd_line_disp("                    ", 0, 4);
+ 00000018  4800      LDR         R0,=??S_19 ; ??S_19
+ 0000001A  2100      MOV         R1,#0x0
+ 0000001C  2204      MOV         R2,#0x4
+ 0000001E  F7FF      BL          lcd_line_disp?T  ; T=0x0001  (1)
+ 00000020  FFEF      BL          lcd_line_disp?T  ; T=0x0001  (2)
+  297:         temp_ptr = opt_disp + (uc_cnt - 1);
+ 00000022  1C20      MOV         R0,R4 ; uc_cnt
+ 00000024  0601      LSL         R1,R0,#0x18 ; uc_cnt
+ 00000026  0E09      LSR         R1,R1,#0x18
+ 00000028  0089      LSL         R1,R1,#0x2
+ 0000002A  1C30      MOV         R0,R6 ; opt_disp
+ 0000002C  1840      ADD         R0,R1 ; opt_disp
+ 0000002E  4800      LDR         R1,=0xFFFFFFFC
+ 00000030  1840      ADD         R0,R1
+ 00000032  9000      STR         R0,[R13,#0x0] ; temp_ptr
+  298:         lcd_line_disp(*temp_ptr, 0, 3);
+ 00000034  9800      LDR         R0,[R13,#0x0] ; temp_ptr
+ 00000036  6800      LDR         R0,[R0,#0x0]
+ 00000038  2100      MOV         R1,#0x0
+ 0000003A  2203      MOV         R2,#0x3
+ 0000003C  F7FF      BL          lcd_line_disp?T  ; T=0x0001  (1)
+ 0000003E  FFE0      BL          lcd_line_disp?T  ; T=0x0001  (2)
+  299:         temp_ptr++;
+ 00000040  9800      LDR         R0,[R13,#0x0] ; temp_ptr
+ 00000042  3004      ADD         R0,#0x4
+ 00000044  9000      STR         R0,[R13,#0x0] ; temp_ptr
+  300:         lcd_line_disp(*temp_ptr, 0, 4);
+ 00000046  9800      LDR         R0,[R13,#0x0] ; temp_ptr
+ 00000048  6800      LDR         R0,[R0,#0x0]
+ 0000004A  2100      MOV         R1,#0x0
+ 0000004C  2204      MOV         R2,#0x4
+ 0000004E  F7FF      BL          lcd_line_disp?T  ; T=0x0001  (1)
+ 00000050  FFD7      BL          lcd_line_disp?T  ; T=0x0001  (2)
+  302:          temp_key = get_key(1);
+ 00000052  2001      MOV         R0,#0x1
+ 00000054  F7FF      BL          get_key?T  ; T=0x0001  (1)
+ 00000056  FFD4      BL          get_key?T  ; T=0x0001  (2)
+ 00000058  1C05      MOV         R5,R0 ; temp_key
+  303:         ms_delay(200);
+ 0000005A  20C8      MOV         R0,#0xC8
+ 0000005C  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ARM COMPILER V2.50a,  gsm_app                                                              30/04/13  14:18:14  PAGE 20  
+
+ 0000005E  FFD0      BL          ms_delay?T  ; T=0x0001  (2)
+  304:         if(temp_key == 'B')
+ 00000060  1C28      MOV         R0,R5 ; temp_key
+ 00000062  0600      LSL         R0,R0,#0x18 ; temp_key
+ 00000064  0E00      LSR         R0,R0,#0x18
+ 00000066  2842      CMP         R0,#0x42
+ 00000068  D108      BNE         L_46  ; T=0x0000007C
+  306:             if(uc_cnt >1)
+ 0000006A  1C20      MOV         R0,R4 ; uc_cnt
+ 0000006C  0600      LSL         R0,R0,#0x18 ; uc_cnt
+ 0000006E  0E00      LSR         R0,R0,#0x18
+ 00000070  2801      CMP         R0,#0x1
+ 00000072  DD1D      BLE         L_42  ; T=0x000000B0
+  308:                 uc_cnt -= 1;
+ 00000074  3C01      SUB         R4,#0x1
+ 00000076  0624      LSL         R4,R4,#0x18
+ 00000078  0E24      LSR         R4,R4,#0x18
+  310:         }
+ 0000007A  E019      B           L_42  ; T=0x000000B0
+ 0000007C          L_46:
+  311:         else if(temp_key == 'C')
+ 0000007C  1C28      MOV         R0,R5 ; temp_key
+ 0000007E  0600      LSL         R0,R0,#0x18 ; temp_key
+ 00000080  0E00      LSR         R0,R0,#0x18
+ 00000082  2843      CMP         R0,#0x43
+ 00000084  D10B      BNE         L_49  ; T=0x0000009E
+  313:             if(uc_cnt < opt_cnt)
+ 00000086  1C38      MOV         R0,R7 ; opt_cnt
+ 00000088  0601      LSL         R1,R0,#0x18 ; opt_cnt
+ 0000008A  0E09      LSR         R1,R1,#0x18
+ 0000008C  1C20      MOV         R0,R4 ; uc_cnt
+ 0000008E  0600      LSL         R0,R0,#0x18 ; uc_cnt
+ 00000090  0E00      LSR         R0,R0,#0x18
+ 00000092  4288      CMP         R0,R1
+ 00000094  D20C      BCS         L_42  ; T=0x000000B0
+  315:                 uc_cnt += 1;
+ 00000096  3401      ADD         R4,#0x1
+ 00000098  0624      LSL         R4,R4,#0x18
+ 0000009A  0E24      LSR         R4,R4,#0x18
+  317:         }  
+ 0000009C  E008      B           L_42  ; T=0x000000B0
+ 0000009E          L_49:
+  318:         else if(temp_key == 'E')
+ 0000009E  1C28      MOV         R0,R5 ; temp_key
+ 000000A0  0600      LSL         R0,R0,#0x18 ; temp_key
+ 000000A2  0E00      LSR         R0,R0,#0x18
+ 000000A4  2845      CMP         R0,#0x45
+ 000000A6  D103      BNE         L_42  ; T=0x000000B0
+  320:             return uc_cnt;
+ 000000A8  1C20      MOV         R0,R4 ; uc_cnt
+ 000000AA  0600      LSL         R0,R0,#0x18 ; uc_cnt
+ 000000AC  0E00      LSR         R0,R0,#0x18
+ 000000AE  E007      B           L_53  ; T=0x000000C0
+  322:       }
+ 000000B0          L_42:
+ 000000B0  1C28      MOV         R0,R5 ; temp_key
+ 000000B2  0600      LSL         R0,R0,#0x18 ; temp_key
+ 000000B4  0E00      LSR         R0,R0,#0x18
+ 000000B6  2844      CMP         R0,#0x44
+ 000000B8  D1A9      BNE         L_44  ; T=0x0000000E
+  323:     clrscr();
+ 000000BA  F7FF      BL          clrscr?T  ; T=0x0001  (1)
+ 000000BC  FFA1      BL          clrscr?T  ; T=0x0001  (2)
+  324:     return 0;       
+ 000000BE  2000      MOV         R0,#0x0
+ 000000C0            ; SCOPE-END
+ARM COMPILER V2.50a,  gsm_app                                                              30/04/13  14:18:14  PAGE 21  
+
+  325: }
+ 000000C0          L_53:
+ 000000C0  B001      ADD         R13,#0x4
+ 000000C2  BCF0      POP         {R4-R7}
+ 000000C4  BC08      POP         {R3}
+ 000000C6  4718      BX          R3
+ 000000C8          ENDP ; 'GSM_APP_options?T'
+
+
+
+Module Information          Static
+----------------------------------
+  code size            =    ------
+  data size            =      1208
+  const size           =       254
+End of Module Information.
+
+
+ARM COMPILATION COMPLETE.  30 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,394 @@
+LARM LINKER/LOCATER V2.50a                                                              01/16/2013  18:23:35  PAGE 1
+
+
+LARM LINKER/LOCATER V2.50a, INVOKED BY:
+C:\KEIL\ARM\BIN\LA.EXE Startup.obj, adc.obj, app.obj, dac.obj, key.obj, lcd.obj, lib.obj, main.obj, pwm.obj, rtc.obj, ti
+>> mer.obj, uart.obj, wdt.obj, zigbee.obj TO Xbee_settings CASE CLASSES (DATA (0X40000000-0X40007FFF), CODE (0X0-0X7FFFF
+>> ), CONST (0X0-0X7FFFF))
+
+
+CPU MODE: LITTLE ENDIAN
+
+
+INPUT MODULES INCLUDED:
+  Startup.obj (STARTUP)
+         COMMENT TYPE 0: AA V2.50
+  adc.obj (adc)
+         COMMENT TYPE 0: CARM V2.50a
+  app.obj (app)
+         COMMENT TYPE 0: CARM V2.50a
+  dac.obj (dac)
+         COMMENT TYPE 0: CARM V2.50a
+  key.obj (key)
+         COMMENT TYPE 0: CARM V2.50a
+  lcd.obj (lcd)
+         COMMENT TYPE 0: CARM V2.50a
+  lib.obj (lib)
+         COMMENT TYPE 0: CARM V2.50a
+  main.obj (main)
+         COMMENT TYPE 0: CARM V2.50a
+  pwm.obj (pwm)
+         COMMENT TYPE 0: CARM V2.50a
+  rtc.obj (rtc)
+         COMMENT TYPE 0: CARM V2.50a
+  timer.obj (timer)
+         COMMENT TYPE 0: CARM V2.50a
+  uart.obj (uart)
+         COMMENT TYPE 0: CARM V2.50a
+  wdt.obj (wdt)
+         COMMENT TYPE 0: CARM V2.50a
+  zigbee.obj (zigbee)
+         COMMENT TYPE 0: CARM V2.50a
+  C:\KEIL\ARM\LIB\CAL.LIB (FIQ)
+         COMMENT TYPE 0: AA V2.50
+  C:\KEIL\ARM\LIB\CAL.LIB (IRQ)
+         COMMENT TYPE 0: AA V2.50
+  C:\KEIL\ARM\LIB\CAL.LIB (DABT)
+         COMMENT TYPE 0: AA V2.50
+  C:\KEIL\ARM\LIB\CAL.LIB (PABT)
+         COMMENT TYPE 0: AA V2.50
+  C:\KEIL\ARM\LIB\CAL.LIB (SWI)
+         COMMENT TYPE 0: AA V2.50
+  C:\KEIL\ARM\LIB\CAL.LIB (UNDEF)
+         COMMENT TYPE 0: AA V2.50
+  C:\KEIL\ARM\LIB\CAL.LIB (UDIV)
+         COMMENT TYPE 0: AA V2.50
+  C:\KEIL\ARM\LIB\CAL.LIB (SDIV)
+         COMMENT TYPE 0: AA V2.50
+
+
+ACTIVE MEMORY CLASSES OF MODULE:  Xbee_settings (STARTUP)
+
+BASE       START      END        USED       MEMORY CLASS
+========================================================
+00000000H  40000000H  40007FFFH  00000870H  DATA
+00000000H  00000000H  0007FFFFH  0000175CH  CODE
+00000000H  00000000H  0007FFFFH  0000050DH  CONST
+
+
+INTERRUPT FUNCTIONS
+LARM LINKER/LOCATER V2.50a                                                            01/16/2013  18:23:35  PAGE 2
+
+
+
+TYPE  STACK SIZE    FUNCTION NAME
+=================================
+irq                 uart0_ISR?A
+irq                 uart1_ISR?A
+irq                 rtc_ISR?A
+irq                 timer1_ISR?A
+irq                 wdt_ISR?A
+
+
+
+
+MEMORY MAP OF MODULE:  Xbee_settings (STARTUP)
+
+START      STOP       LENGTH    ALIGN  RELOC  MEMORY CLASS   SEGMENT NAME
+=========================================================================
+00000000H  0000010FH  00000110H     4  AT..   CODE           STARTUPCODE
+00000110H  000001B9H  000000AAH     4  UNIT   CONST          ?CON?app
+000001BAH  000001BBH  00000002H   ---  ---    **GAP**
+000001BCH  000001CFH  00000014H     4  UNIT   CONST          ?CON?key
+000001D0H  000001E4H  00000015H     4  UNIT   CONST          ?CON?rtc
+000001E5H  000001E7H  00000003H   ---  ---    **GAP**
+000001E8H  000001F9H  00000012H     4  UNIT   CONST          ?CON?timer
+000001FAH  000001FBH  00000002H   ---  ---    **GAP**
+000001FCH  000003C7H  000001CCH     4  UNIT   CONST          ?CON?zigbee
+000003C8H  0000040FH  00000048H     4  UNIT   CONST          ?C_CLRSEG
+00000410H  00000623H  00000214H     4  UNIT   CONST          ?C_INITSEG
+00000624H  00000647H  00000024H     4  UNIT   CODE           ?PR?adc_init?T?adc
+00000648H  00000663H  0000001CH     4  UNIT   CODE           ?PR?uart0_ISR?A?app
+00000664H  000006EFH  0000008CH     4  UNIT   CODE           ?PR?uart1_ISR?A?app
+000006F0H  0000070FH  00000020H     4  UNIT   CODE           ?PR?default_page?T?app
+00000710H  0000075BH  0000004CH     4  UNIT   CODE           ?PR?user_temp_conv?T?app
+0000075CH  000007EBH  00000090H     4  UNIT   CODE           ?PR?user_time_conv?T?app
+000007ECH  000008C7H  000000DCH     4  UNIT   CODE           ?PR?scancode?T?key
+000008C8H  000009C7H  00000100H     4  UNIT   CODE           ?PR?get_key?T?key
+000009C8H  00000AEFH  00000128H     4  UNIT   CODE           ?PR?key_usr_ip?T?key
+00000AF0H  00000B23H  00000034H     4  UNIT   CODE           ?PR?lcd_init?T?lcd
+00000B24H  00000B33H  00000010H     4  UNIT   CODE           ?PR?clrscr?T?lcd
+00000B34H  00000B7FH  0000004CH     4  UNIT   CODE           ?PR?datar?T?lcd
+00000B80H  00000BCBH  0000004CH     4  UNIT   CODE           ?PR?comdr?T?lcd
+00000BCCH  00000C0BH  00000040H     4  UNIT   CODE           ?PR?lcd_line1_disp?T?lcd
+00000C0CH  00000C4BH  00000040H     4  UNIT   CODE           ?PR?lcd_line2_disp?T?lcd
+00000C4CH  00000C8BH  00000040H     4  UNIT   CODE           ?PR?lcd_line3_disp?T?lcd
+00000C8CH  00000CCBH  00000040H     4  UNIT   CODE           ?PR?lcd_line4_disp?T?lcd
+00000CCCH  00000CF7H  0000002CH     4  UNIT   CODE           ?PR?lcd_line1_ch_disp?T?lcd
+00000CF8H  00000D27H  00000030H     4  UNIT   CODE           ?PR?str_copy?T?lib
+00000D28H  00000D63H  0000003CH     4  UNIT   CODE           ?PR?str_cmp?T?lib
+00000D64H  00000E83H  00000120H     4  UNIT   CODE           ?PR?main?main
+00000E84H  00000EEFH  0000006CH     4  UNIT   CODE           ?PR?pwm5_init?T?pwm
+00000EF0H  00000F2BH  0000003CH     4  UNIT   CODE           ?PR?pwm5_pulse_width?T?pwm
+00000F2CH  00000F4BH  00000020H     4  UNIT   CODE           ?PR?pwm_disable?T?pwm
+00000F4CH  00000F93H  00000048H     4  UNIT   CODE           ?PR?rtc_init_interrupt?T?rtc
+00000F94H  000011DFH  0000024CH     4  UNIT   CODE           ?PR?rtc_get_time?T?rtc
+000011E0H  000012A7H  000000C8H     4  UNIT   CODE           ?PR?set_alarm?T?rtc
+000012A8H  0000135FH  000000B8H     4  UNIT   CODE           ?PR?rtc_ISR?A?rtc
+00001360H  00001393H  00000034H     4  UNIT   CODE           ?PR?ms_delay?T?timer
+00001394H  000013E7H  00000054H     4  UNIT   CODE           ?PR?timer1_init_interrupt?T?timer
+000013E8H  000013FBH  00000014H     4  UNIT   CODE           ?PR?timer1_on?T?timer
+000013FCH  00001407H  0000000CH     4  UNIT   CODE           ?PR?timer1_off?T?timer
+00001408H  0000143BH  00000034H     4  UNIT   CODE           ?PR?key_delay?T?timer
+0000143CH  000014A7H  0000006CH     4  UNIT   CODE           ?PR?timer1_ISR?A?timer
+000014A8H  000014FFH  00000058H     4  UNIT   CODE           ?PR?uart_init?T?uart
+00001500H  0000151BH  0000001CH     4  UNIT   CODE           ?PR?uart1_send_byte?T?uart
+0000151CH  00001557H  0000003CH     4  UNIT   CODE           ?PR?uart0_send_string?T?uart
+00001558H  00001587H  00000030H     4  UNIT   CODE           ?PR?uart1_send_string?T?uart
+LARM LINKER/LOCATER V2.50a                                                            01/16/2013  18:23:35  PAGE 3
+
+
+00001588H  000015D3H  0000004CH     4  UNIT   CODE           ?PR?wdt_init?T?wdt
+000015D4H  000015EFH  0000001CH     4  UNIT   CODE           ?PR?wdt_feed?T?wdt
+000015F0H  0000162BH  0000003CH     4  UNIT   CODE           ?PR?wdt_ISR?A?wdt
+0000162CH  0000168FH  00000064H     4  UNIT   CODE           ?PR?ZIGB_cmd_mode?T?zigbee
+00001690H  000016D3H  00000044H     4  UNIT   CODE           ?PR?ZIGB_exit_cmd?T?zigbee
+000016D4H  00001727H  00000054H     4  UNIT   CODE           ?PR?ZIGB_dl_wrt?T?zigbee
+00001728H  00001793H  0000006CH     4  UNIT   CODE           ?PR?ZIGB_setting?T?zigbee
+00001794H  000017D7H  00000044H     4  UNIT   CODE           ?PR?ZIGB_wr_cmd?T?zigbee
+000017D8H  0000182BH  00000054H     4  UNIT   CODE           ?PR?ZIGB_pan_wrt?T?zigbee
+0000182CH  0000187FH  00000054H     4  UNIT   CODE           ?PR?ZIGB_my_wrt?T?zigbee
+00001880H  000018D3H  00000054H     4  UNIT   CODE           ?PR?ZIGB_ch_wrt?T?zigbee
+000018D4H  00001973H  000000A0H     4  UNIT   CODE           ?PR?ZIGB_my_read?T?zigbee
+00001974H  00001AA3H  00000130H     4  UNIT   CODE           ?PR?ZIGB_write?T?zigbee
+00001AA4H  00001AB3H  00000010H     4  UNIT   CODE           ?PR?ZIGB_read?T?zigbee
+00001AB4H  00001AEBH  00000038H     4  UNIT   CODE           ?PR?ZIGB_wr_page?T?zigbee
+00001AECH  00001B23H  00000038H     4  UNIT   CODE           ?PR?ZIGB_menu_page?T?zigbee
+00001B24H  00001BAFH  0000008CH     4  UNIT   CODE           ?PR?ZIGB_responce?T?zigbee
+00001BB0H  00001BB3H  00000004H     4  UNIT   CODE           ?C?FIQ
+00001BB4H  00001BB7H  00000004H     4  UNIT   CODE           ?C?IRQ
+00001BB8H  00001BBBH  00000004H     4  UNIT   CODE           ?C?DABT
+00001BBCH  00001BBFH  00000004H     4  UNIT   CODE           ?C?PABT
+00001BC0H  00001BC7H  00000008H     4  UNIT   CODE           ?C?UNDEF
+00001BC8H  00001C0FH  00000048H     4  UNIT   CODE           ?PR?C?UDIV
+00001C10H  00001C6FH  00000060H     4  UNIT   CODE           ?PR?C?SDIV
+00001C70H  3FFFFFFFH  3FFFE390H   ---  ---    **GAP**
+40000000H  4000048FH  00000490H     4  UNIT   DATA           STACK
+40000490H  40000746H  000002B7H     4  UNIT   DATA           ?DT0?app
+40000747H  40000747H  00000001H   ---  ---    **GAP**
+40000748H  40000759H  00000012H     4  UNIT   DATA           ?DT0?key
+4000075AH  4000075BH  00000002H   ---  ---    **GAP**
+4000075CH  40000765H  0000000AH     4  UNIT   DATA           ?DT0?lcd
+40000766H  40000767H  00000002H   ---  ---    **GAP**
+40000768H  4000081DH  000000B6H     4  UNIT   DATA           ?DT0?main
+4000081EH  4000081FH  00000002H   ---  ---    **GAP**
+40000820H  40000836H  00000017H     4  UNIT   DATA           ?DT0?rtc
+40000837H  40000837H  00000001H   ---  ---    **GAP**
+40000838H  4000084DH  00000016H     4  UNIT   DATA           ?DT0?timer
+4000084EH  4000084FH  00000002H   ---  ---    **GAP**
+40000850H  40000850H  00000001H     4  UNIT   DATA           ?DT0?wdt
+40000851H  40000853H  00000003H   ---  ---    **GAP**
+40000854H  4000087CH  00000029H     4  UNIT   DATA           ?DT0?zigbee
+
+
+
+REMOVED FUNCTIONS OF MODULE:  Xbee_settings (STARTUP)
+
+      ATTRIBUTE  FUNCTION NAME
+      ========================
+       unused    adc1_getval?T
+       unused    adc2_getval?T
+       unused    adc3_getval?T
+       unused    adc0_1_soc?T
+       unused    adc0_1_eoc?T
+       unused    adc0_3_soc?T
+       unused    adc0_3_eoc?T
+       unused    irq_init?T
+       unused    get_user_time?T
+       unused    temp_ctrl?T
+       unused    adc_val_conv?T
+       unused    dac_val?T
+       unused    cursur_on?T
+       unused    cursur_off?T
+       unused    lcd_line2_ch_disp?T
+       unused    lcd_line3_ch_disp?T
+       unused    lcd_line4_ch_disp?T
+LARM LINKER/LOCATER V2.50a                                                            01/16/2013  18:23:35  PAGE 4
+
+
+       unused    lcd_scroll_disp?T
+       unused    display_dots?T
+       unused    hex_dec?T
+       unused    hex_dec1?T
+       unused    pwm_enable?T
+       unused    rtc_init?T
+       unused    rtc_change_time?T
+       unused    timer1_init?T
+       unused    time1_measure?T
+       unused    uart0_send_byte?T
+       unused    ZIGB_pan_read?T
+
+
+
+PUBLIC SYMBOLS OF MODULE:  Xbee_settings (STARTUP)
+
+      VALUE      CLASS    TYPE      PUBLIC SYMBOL NAME
+      ================================================
+      000003C8H  ---      ---       ?C?CLRTAB
+      00000D64H  ---      ---       ?C?INIT
+      00000410H  ---      ---       ?C?INITTAB
+      00001C14H  CODE     ---       ?C?SDIV?A
+      00001C10H  CODE     ---       ?C?SDIV?T
+      00001BCCH  CODE     ---       ?C?UDIV?A
+      00001BC8H  CODE     ---       ?C?UDIV?T
+      00001BB8H  CODE     ---       DAbt_Handler?A
+      00001BB0H  CODE     ---       FIQ_Handler?A
+      00001BB4H  CODE     ---       IRQ_Handler?A
+      00001BBCH  CODE     ---       PAbt_Handler?A
+      00001BC0H  CODE     ---       SWI_Handler?A
+      4000084CH  DATA     BYTE      Uc_T1MR0
+      400006C4H  DATA     BYTE      Uc_adc_time_out_flag
+      40000836H  DATA     BYTE      Uc_alrm
+      40000744H  DATA     BYTE      Uc_byte_count
+      400006C5H  DATA     ---       Uc_cr_lf
+      4000082BH  DATA     ---       Uc_date
+      400004B8H  DATA     ---       Uc_dec_arr
+      40000748H  DATA     BYTE      Uc_key_temp
+      40000822H  DATA     ---       Uc_real_time
+      4000065DH  DATA     ---       Uc_recv_data
+      400006D2H  DATA     ---       Uc_set_temp
+      400004C3H  DATA     ---       Uc_set_user_time
+      40000746H  DATA     BYTE      Uc_temp_high
+      400006CDH  DATA     ---       Uc_temp_high_lcd
+      400006C8H  DATA     ---       Uc_temp_low_lcd
+      40000838H  DATA     ---       Uc_time1_arr
+      40000820H  DATA     WORD      Uc_time_sec
+      400006C1H  DATA     BYTE      Uc_user_dwn_hr
+      400006C2H  DATA     BYTE      Uc_user_dwn_min
+      400006C3H  DATA     BYTE      Uc_user_dwn_sec
+      4000081DH  DATA     BYTE      Uc_user_mode_flag
+      4000087CH  DATA     BYTE      Uc_zb_cmd
+      4000084DH  DATA     BYTE      Uc_zb_tout
+      4000085EH  DATA     ---       Uc_zigb_ch
+      40000872H  DATA     ---       Uc_zigb_dl
+      40000868H  DATA     ---       Uc_zigb_my
+      40000854H  DATA     ---       Uc_zigb_pan
+      40000809H  DATA     ---       Uc_zigb_para
+      40000768H  DATA     ---       Ui_sample1
+      4000076CH  DATA     ---       Ui_sample2
+      40000770H  DATA     ---       Ui_sample3
+      40000774H  DATA     ---       Ui_sample4
+      40000778H  DATA     ---       Ui_sample5
+      4000077CH  DATA     ---       Ui_sample6
+      40000780H  DATA     ---       Ui_sample7
+LARM LINKER/LOCATER V2.50a                                                            01/16/2013  18:23:35  PAGE 5
+
+
+      40000784H  DATA     ---       Ui_sample8
+      40000788H  DATA     ---       Ui_sample9
+      40000490H  DATA     ---       Ui_temp_set_val
+      00001BC4H  CODE     ---       Undef_Handler?A
+      00001880H  CODE     ---       ZIGB_ch_wrt?T
+      0000162CH  CODE     ---       ZIGB_cmd_mode?T
+      000016D4H  CODE     ---       ZIGB_dl_wrt?T
+      00001690H  CODE     ---       ZIGB_exit_cmd?T
+      00001AECH  CODE     ---       ZIGB_menu_page?T
+      000018D4H  CODE     ---       ZIGB_my_read?T
+      0000182CH  CODE     ---       ZIGB_my_wrt?T
+      00000000H  CODE     ---       ZIGB_pan_read?T
+      000017D8H  CODE     ---       ZIGB_pan_wrt?T
+      00001AA4H  CODE     ---       ZIGB_read?T
+      00001B24H  CODE     ---       ZIGB_responce?T
+      00001728H  CODE     ---       ZIGB_setting?T
+      00001794H  CODE     ---       ZIGB_wr_cmd?T
+      00001AB4H  CODE     ---       ZIGB_wr_page?T
+      00001974H  CODE     ---       ZIGB_write?T
+      00000000H  CODE     ---       __startup
+      00000000H  CODE     ---       adc0_1_eoc?T
+      00000000H  CODE     ---       adc0_1_soc?T
+      00000000H  CODE     ---       adc0_3_eoc?T
+      00000000H  CODE     ---       adc0_3_soc?T
+      00000000H  CODE     ---       adc1_getval?T
+      00000000H  CODE     ---       adc2_getval?T
+      00000000H  CODE     ---       adc3_getval?T
+      00000624H  CODE     ---       adc_init?T
+      00000000H  CODE     ---       adc_val_conv?T
+      400006D9H  DATA     ---       ascii_arr
+      40000759H  DATA     BYTE      ch
+      00000B24H  CODE     ---       clrscr?T
+      00000B80H  CODE     ---       comdr?T
+      00000000H  CODE     ---       cursur_off?T
+      00000000H  CODE     ---       cursur_on?T
+      00000000H  CODE     ---       dac_val?T
+      40000765H  DATA     BYTE      data_ptr
+      00000B34H  CODE     ---       datar?T
+      000006F0H  CODE     ---       default_page?T
+      00000000H  CODE     ---       display_dots?T
+      00001C14H  CODE     ---       div?A
+      00001C10H  CODE     ---       div?T
+      000000F0H  CODE     ---       exit?A
+      000000F4H  CODE     ---       exit?T
+      40000745H  DATA     BYTE      frame_chk_cnt
+      000008C8H  CODE     ---       get_key?T
+      00000000H  CODE     ---       get_user_time?T
+      00000000H  CODE     ---       hex_dec1?T
+      00000000H  CODE     ---       hex_dec?T
+      00000000H  CODE     ---       irq_init?T
+      40000764H  DATA     BYTE      k
+      00001408H  CODE     ---       key_delay?T
+      000009C8H  CODE     ---       key_usr_ip?T
+      40000749H  DATA     ---       keyboard
+      400007F5H  DATA     ---       lcd_data_sys_chk
+      00000AF0H  CODE     ---       lcd_init?T
+      00000CCCH  CODE     ---       lcd_line1_ch_disp?T
+      00000BCCH  CODE     ---       lcd_line1_disp?T
+      00000000H  CODE     ---       lcd_line2_ch_disp?T
+      00000C0CH  CODE     ---       lcd_line2_disp?T
+      00000000H  CODE     ---       lcd_line3_ch_disp?T
+      00000C4CH  CODE     ---       lcd_line3_disp?T
+      00000000H  CODE     ---       lcd_line4_ch_disp?T
+      00000C8CH  CODE     ---       lcd_line4_disp?T
+      00000000H  CODE     ---       lcd_scroll_disp?T
+LARM LINKER/LOCATER V2.50a                                                            01/16/2013  18:23:35  PAGE 6
+
+
+      00001C14H  CODE     ---       ldiv?A
+      00001C10H  CODE     ---       ldiv?T
+      00000D98H  CODE     ---       main
+      00001360H  CODE     ---       ms_delay?T
+      40000494H  DATA     ---       node_01
+      4000073DH  DATA     ---       node_addr_arr
+      4000073FH  DATA     ---       node_ascii_arr
+      4000075CH  DATA     ---       p
+      00000E84H  CODE     ---       pwm5_init?T
+      00000EF0H  CODE     ---       pwm5_pulse_width?T
+      00000F2CH  CODE     ---       pwm_disable?T
+      00000000H  CODE     ---       pwm_enable?T
+      000012A8H  CODE     ---       rtc_ISR?A
+      00000000H  CODE     ---       rtc_change_time?T
+      00000F94H  CODE     ---       rtc_get_time?T
+      00000000H  CODE     ---       rtc_init?T
+      00000F4CH  CODE     ---       rtc_init_interrupt?T
+      40000760H  DATA     ---       s
+      000007ECH  CODE     ---       scancode?T
+      000011E0H  CODE     ---       set_alarm?T
+      400004CDH  DATA     ---       space
+      00000D28H  CODE     ---       str_cmp?T
+      00000CF8H  CODE     ---       str_copy?T
+      00000000H  CODE     ---       temp_ctrl?T
+      00000000H  CODE     ---       time1_measure?T
+      0000143CH  CODE     ---       timer1_ISR?A
+      00000000H  CODE     ---       timer1_init?T
+      00001394H  CODE     ---       timer1_init_interrupt?T
+      000013FCH  CODE     ---       timer1_off?T
+      000013E8H  CODE     ---       timer1_on?T
+      00000648H  CODE     ---       uart0_ISR?A
+      00000000H  CODE     ---       uart0_send_byte?T
+      0000151CH  CODE     ---       uart0_send_string?A
+      00001528H  CODE     ---       uart0_send_string?T
+      400007AAH  DATA     ---       uart0_set
+      00000664H  CODE     ---       uart1_ISR?A
+      00001500H  CODE     ---       uart1_send_byte?T
+      00001558H  CODE     ---       uart1_send_string?T
+      4000078CH  DATA     ---       uart1_set
+      000014A8H  CODE     ---       uart_init?T
+      00000710H  CODE     ---       user_temp_conv?T
+      0000075CH  CODE     ---       user_time_conv?T
+      000015F0H  CODE     ---       wdt_ISR?A
+      000015D4H  CODE     ---       wdt_feed?T
+      00001588H  CODE     ---       wdt_init?T
+      40000850H  DATA     BYTE      wdt_timeout
+      400007C8H  DATA     ---       welcome_note1
+      400007E1H  DATA     ---       welcome_note2
+
+Progra

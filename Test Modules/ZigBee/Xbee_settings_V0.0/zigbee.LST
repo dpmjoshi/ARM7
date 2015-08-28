@@ -1,0 +1,1492 @@
+ARM COMPILER V2.50a,  zigbee                                                               16/01/13  17:05:50  PAGE 1   
+
+
+ARM COMPILER V2.50a, COMPILATION OF MODULE zigbee
+OBJECT MODULE PLACED IN zigbee.OBJ
+COMPILER INVOKED BY: C:\Keil\ARM\BIN\CA.exe zigbee.c THUMB BROWSE DEBUG TABS(4) 
+
+stmt  level    source
+
+    1          #include "includes.h"    
+    2          
+    3          #define RESP_ON_UART0 1
+    4          
+    5          void ZIGB_cmd_mode();
+    6          void ZIGB_wr_cmd();
+    7          void ZIGB_exit_cmd();
+    8          void ZIGB_dl_wrt(U8*);
+    9          void ZIGB_pan_wrt(U8*);
+   10          void ZIGB_my_wrt(U8*);
+   11          void ZIGB_ch_wrt(U8*);
+   12          void ZIGB_setting();
+   13          void ZIGB_my_read();
+   14          void ZIGB_write();
+   15          void ZIGB_read();
+   16          void ZIGB_wr_page();
+   17          void ZIGB_menu_page();
+   18          
+   19          
+   20          U8 Uc_zigb_pan[10] = {"0000"};
+   21          U8 Uc_zigb_ch[10]  = {"0C"};
+   22          U8 Uc_zigb_my[10]  = {"0000"};
+   23          U8 Uc_zigb_dl[10]  = {"0000"};
+   24          
+   25          U8 ZIGB_responce(U8, U8*);  
+   26               
+   27          /**********************************************************************************/
+   28          /* Function Name: ZIGB_cmd_mode()                                                 */
+   29          /* Arguments    : NONE                                                            */
+   30          /* Return Types : NONE                                                            */
+   31          /* Description  : The function enters into the command mode.                      */
+   32          /**********************************************************************************/
+   33          
+   34          void ZIGB_cmd_mode()
+   35          {
+   36   1       uart1_send_string("+++");
+   37   1       clrscr();
+   38   1       lcd_line1_disp("CMD Mode",0);
+   39   1      
+   40   1       if(ZIGB_responce(3,"OK\r"))
+   41   1        {
+   42   2         #if RESP_ON_UART0 == 1
+   43   2         uart0_send_string("\n\n\rCMD: OK ");
+   44   2         #endif
+   45   2         ms_delay(10000);
+   46   2        }
+   47   1       else
+   48   1        {
+   49   2         #if RESP_ON_UART0 == 1
+   50   2         uart0_send_string("\n\n\rCMD: ERROR ");
+   51   2         #endif
+   52   2         ms_delay(10000);
+   53   2        }
+   54   1      }
+   55          
+   56          /**********************************************************************************/
+   57          /* Function Name: ZIGB_wr_cmd()                                                   */
+   58          /* Arguments    : NONE                                                            */
+   59          /* Return Types : NONE                                                            */
+ARM COMPILER V2.50a,  zigbee                                                               16/01/13  17:05:50  PAGE 2   
+
+   60          /* Description  : The function sends wr cmd to ZigBee module.                     */
+   61          /**********************************************************************************/
+   62          
+   63          void ZIGB_wr_cmd()
+   64          {
+   65   1       uart1_send_string("ATWR\r");
+   66   1       if(ZIGB_responce(3,"OK\r"))
+   67   1        {
+   68   2         #if RESP_ON_UART0 == 1
+   69   2          uart0_send_string("\n\n\rWR CMD: OK ");
+   70   2         #endif
+   71   2         ms_delay(10000);
+   72   2        }
+   73   1       else
+   74   1        {
+   75   2         #if RESP_ON_UART0 == 1
+   76   2          uart0_send_string("\n\n\rWR CMD: ERROR ");
+   77   2         #endif
+   78   2         ms_delay(10000);
+   79   2        }
+   80   1      }
+   81           
+   82          /**********************************************************************************/
+   83          /* Function Name: ZIGB_exit_cmd()                                                 */
+   84          /* Arguments    : NONE                                                            */
+   85          /* Return Types : NONE                                                            */
+   86          /* Description  : The function exits from the command mode.                       */
+   87          /**********************************************************************************/
+   88          
+   89          void ZIGB_exit_cmd()
+   90          {
+   91   1       uart1_send_string("ATCN\r");
+   92   1       if(ZIGB_responce(3,"OK\r"))
+   93   1        {
+   94   2         #if RESP_ON_UART0 == 1
+   95   2         uart0_send_string("\n\n\rExit CMD: OK ");
+   96   2         #endif
+   97   2         ms_delay(10000);
+   98   2        }
+   99   1       else
+  100   1        {
+  101   2         #if RESP_ON_UART0 == 1
+  102   2         uart0_send_string("\n\n\rExit CMD: ERROR ");
+  103   2         #endif
+  104   2         ms_delay(10000);
+  105   2        }
+  106   1      }
+  107          
+  108          
+  109          /**********************************************************************************/
+  110          /* Function Name: ZIGB_dl_wrt()                                                   */
+  111          /* Arguments    : U8 *dest_add(pointer to the array which will hold the           */
+  112          /*                destination add )                                               */
+  113          /* Return Types : NONE                                                            */
+  114          /* Description  : The function writes destination add. to ZigBee.                 */
+  115          /**********************************************************************************/
+  116          
+  117          void ZIGB_dl_wrt(U8 *dest_add)
+  118          {
+  119   1        uart1_send_string("ATDL");
+  120   1        uart1_send_string(dest_add);
+  121   1        uart1_send_byte('\r');
+  122   1        if(ZIGB_responce(3,"OK\r"))
+  123   1        {
+  124   2         #if RESP_ON_UART0 == 1
+  125   2         uart0_send_string("\n\n\rDL: OK ");
+ARM COMPILER V2.50a,  zigbee                                                               16/01/13  17:05:50  PAGE 3   
+
+  126   2         #endif
+  127   2         ms_delay(10000);
+  128   2        }
+  129   1       else
+  130   1        {
+  131   2         #if RESP_ON_UART0 == 1
+  132   2         uart0_send_string("\n\n\rDL: ERROR ");
+  133   2         #endif
+  134   2         ms_delay(10000);
+  135   2        }
+  136   1      
+  137   1      }
+  138          
+  139          
+  140          /**********************************************************************************/
+  141          /* Function Name: ZIGB_pan_wrt()                                                  */
+  142          /* Arguments    : U8 *pan_add(pointer to the array which will hold the PAN add )  */                                                      
+  143          /* Return Types : NONE                                                            */
+  144          /* Description  : The function writes PAN add. to ZigBee.                         */
+  145          /**********************************************************************************/
+  146          
+  147          void ZIGB_pan_wrt(U8 *pan_add)
+  148          {
+  149   1        uart1_send_string("ATID");
+  150   1        uart1_send_string(pan_add);
+  151   1        uart1_send_byte('\r');
+  152   1      
+  153   1         if(ZIGB_responce(3,"OK\r"))
+  154   1        {
+  155   2         #if RESP_ON_UART0 == 1
+  156   2         uart0_send_string("\n\n\rPAN: OK ");
+  157   2         #endif
+  158   2         ms_delay(10000);
+  159   2        }
+  160   1       else
+  161   1        {
+  162   2         #if RESP_ON_UART0 == 1
+  163   2         uart0_send_string("\n\n\rPAN: ERROR ");
+  164   2         #endif
+  165   2         ms_delay(10000);
+  166   2        }
+  167   1      }
+  168          
+  169          /**********************************************************************************/
+  170          /* Function Name: ZIGB_my_wrt()                                                   */
+  171          /* Arguments    : U8 *my_add(pointer to the array which will hold the MY add )    */                                                      
+  172          /* Return Types : NONE                                                            */
+  173          /* Description  : The function writes MY add. to ZigBee.                          */
+  174          /**********************************************************************************/
+  175          
+  176          void ZIGB_my_wrt(U8 *my_add)
+  177          {
+  178   1        uart1_send_string("ATMY");
+  179   1        uart1_send_string(my_add);
+  180   1        uart1_send_byte('\r');
+  181   1      
+  182   1         if(ZIGB_responce(3,"OK\r"))
+  183   1        {
+  184   2         #if RESP_ON_UART0 == 1
+  185   2         uart0_send_string("\n\n\rMY: OK ");
+  186   2         #endif
+  187   2         ms_delay(10000);
+  188   2        }
+  189   1       else
+  190   1        {
+  191   2         #if RESP_ON_UART0 == 1
+ARM COMPILER V2.50a,  zigbee                                                               16/01/13  17:05:50  PAGE 4   
+
+  192   2         uart0_send_string("\n\n\rMY: ERROR ");
+  193   2         #endif
+  194   2         ms_delay(10000);                   
+  195   2        }
+  196   1      }
+  197          
+  198          
+  199          /**********************************************************************************/
+  200          /* Function Name: ZIGB_ch_wrt()                                                   */
+  201          /* Arguments    : U8 *ch_no(pointer to the array which will hold the MY add )     */                                                      
+  202          /* Return Types : NONE                                                            */
+  203          /* Description  : The function writes MY add. to ZigBee.                          */
+  204          /**********************************************************************************/
+  205          
+  206          void ZIGB_ch_wrt(U8 *ch_no)
+  207          {
+  208   1        uart1_send_string("ATCH");
+  209   1        uart1_send_string(ch_no);
+  210   1        uart1_send_byte('\r');
+  211   1      
+  212   1         if(ZIGB_responce(3,"OK\r"))
+  213   1        {
+  214   2         #if RESP_ON_UART0 == 1
+  215   2         uart0_send_string("\n\n\rCH: OK ");
+  216   2         #endif
+  217   2         ms_delay(10000);
+  218   2        }
+  219   1       else
+  220   1        {
+  221   2         #if RESP_ON_UART0 == 1
+  222   2         uart0_send_string("\n\n\rCH: ERROR ");
+  223   2         #endif
+  224   2         ms_delay(10000);
+  225   2        }
+  226   1      }
+  227          
+  228          /**********************************************************************************/
+  229          /* Function Name: ZIGB_responce()                                                 */
+  230          /* Arguments    : U8 resp_cnt(defines the responce count)                         */
+  231          /*                U8 *resp (pointer to array containning expected responce)       */
+  232          /* Return Types : NONE                                                            */
+  233          /* Description  : This function waits for ZigBee to respond on the entered        */
+  234          /*                AT commands.                                                    */
+  235          /**********************************************************************************/
+  236          
+  237          U8 ZIGB_responce(U8 resp_cnt, U8 *resp)
+  238          {
+  239   1        U8 temp_arr[20]= "000";
+  240   1        U8 temp_cnt ;
+  241   1        for(temp_cnt = 0; temp_cnt < resp_cnt; temp_cnt++)
+  242   1         {
+  243   2          while((U1LSR & 0x01) == 0);
+  244   2          temp_arr[temp_cnt] = U1RBR;
+  245   2         }    
+  246   1        if(str_cmp(&temp_arr[0],resp))
+  247   1         {
+  248   2           return 1;
+  249   2         }
+  250   1        else
+  251   1         {
+  252   2          return 0;
+  253   2         }
+  254   1      }
+  255          
+  256          /**********************************************************************************/
+  257          /* Function Name: ZIGB_setting()                                                  */
+ARM COMPILER V2.50a,  zigbee                                                               16/01/13  17:05:50  PAGE 5   
+
+  258          /* Arguments    : NONE                                                            */
+  259          /* Return Types : NONE                                                            */
+  260          /* Description  : This function provides an interface for ZigBee settings through */
+  261          /*                AT Commands. This fn is divided into two parts:                 */
+  262          /*                a) Read   b) Write                                              */
+  263          /**********************************************************************************/
+  264          
+  265          void ZIGB_setting()
+  266          {
+  267   1       ZIGB_menu_page();
+  268   1       
+  269   1       while((Uc_key_temp = get_key(1)) != 'A')
+  270   1       {
+  271   2        if(Uc_key_temp == '1')
+  272   2        {
+  273   3          Uc_key_temp = 0;
+  274   3      
+  275   3          #if RESP_ON_UART0 == 1
+  276   3          uart0_send_string("\n\n\rReading ZigBee Parameters...");
+  277   3          #endif
+  278   3          ZIGB_read();
+  279   3          ZIGB_menu_page();
+  280   3        }
+  281   2        else if(Uc_key_temp == '2')
+  282   2        {
+  283   3          Uc_key_temp = 0;
+  284   3          ms_delay(1000);
+  285   3          #if RESP_ON_UART0 == 1
+  286   3          uart0_send_string("\n\n\rWritting ZigBee Parameters...");
+  287   3          #endif
+  288   3          ZIGB_write();
+  289   3          ZIGB_menu_page();
+  290   3        }
+  291   2       }
+  292   1      }
+  293          
+  294          /**********************************************************************************/
+  295          /* Function Name: ZIGB_my_read()                                                  */
+  296          /* Arguments    : NONE                                                            */
+  297          /* Return Types : NONE (Stores MY add. in a Global array Uc_zigb_my[])            */
+  298          /* Description  : AT command function to read MY address of ZigBee                */
+  299          /*                                                                                */
+  300          /**********************************************************************************/
+  301          
+  302          void ZIGB_my_read()
+  303          {
+  304   1        U8 temp_arr[20]= "000";
+  305   1        U8 temp_cnt;
+  306   1        
+  307   1        uart1_send_string("ATMY");
+  308   1        uart1_send_byte('\r');
+  309   1      
+  310   1        for(temp_cnt = 0; Uc_zigb_my[temp_cnt - 1] != '\r'; temp_cnt++)
+  311   1        {
+  312   2          while((U1LSR & 0x01) == 0);
+  313   2          Uc_zigb_my[temp_cnt] = U1RBR;
+  314   2        }
+  315   1      
+  316   1        Uc_zigb_my[temp_cnt - 1] = '\0';
+  317   1      
+  318   1        uart0_send_string("\n\n\rMY Address: ");
+  319   1        uart0_send_string(&Uc_zigb_my[0]);
+  320   1      
+  321   1       
+  322   1      
+  323   1      }
+ARM COMPILER V2.50a,  zigbee                                                               16/01/13  17:05:50  PAGE 6   
+
+  324          
+  325          /**********************************************************************************/
+  326          /* Function Name: ZIGB_read()                                                     */
+  327          /* Arguments    : NONE                                                            */
+  328          /* Return Types : NONE                                                            */
+  329          /* Description  : reads all the basic parameters of Zigbee                        */
+  330          /*                                                                                */
+  331          /**********************************************************************************/
+  332          
+  333          void ZIGB_read()
+  334          {
+  335   1       ZIGB_cmd_mode();
+  336   1       ZIGB_my_read(); 
+  337   1       ZIGB_exit_cmd();
+  338   1      }
+  339          
+  340          
+  341          /**********************************************************************************/
+  342          /* Function Name: ZIGB_write()                                                    */
+  343          /* Arguments    : NONE                                                            */
+  344          /* Return Types : NONE                                                            */
+  345          /* Description  : writes all the basic parameters of Zigbee                       */
+  346          /*                PAN, DL, CH, MY                                                 */
+  347          /**********************************************************************************/
+  348          
+  349          void ZIGB_write()
+  350          {
+  351   1       ZIGB_read();
+  352   1      
+  353   1       ZIGB_wr_page();
+  354   1       
+  355   1       Uc_key_temp = get_key(0);
+  356   1       while(Uc_key_temp != 'D')
+  357   1       {
+  358   2        Uc_key_temp = get_key(0);
+  359   2        wdt_feed(0x03ffffff);
+  360   2        lcd_line1_disp(&Uc_zigb_pan[0],10);
+  361   2        lcd_line2_disp(&Uc_zigb_ch[0],10);
+  362   2        lcd_line3_disp(&Uc_zigb_my[0],10);
+  363   2        lcd_line4_disp(&Uc_zigb_dl[0],10);
+  364   2        
+  365   2      
+  366   2        if(Uc_key_temp == '1')
+  367   2        { 
+  368   3          clrscr();
+  369   3          lcd_line1_disp("PAN",0);
+  370   3          key_usr_ip(4,&Uc_zigb_pan[0],1,10);
+  371   3          ZIGB_wr_page();
+  372   3        }
+  373   2        else if(Uc_key_temp == '2')
+  374   2         {
+  375   3          clrscr();
+  376   3          lcd_line1_disp("CH",0);
+  377   3          key_usr_ip(2,&Uc_zigb_ch[0],1,10);
+  378   3          ZIGB_wr_page();
+  379   3         }
+  380   2        else if(Uc_key_temp == '3')
+  381   2         {
+  382   3          clrscr();
+  383   3          lcd_line1_disp("MY",0);
+  384   3          key_usr_ip(4,&Uc_zigb_my[0],1,10);
+  385   3          ZIGB_wr_page();
+  386   3         }
+  387   2        else if(Uc_key_temp == '4')
+  388   2         {
+  389   3          clrscr();
+ARM COMPILER V2.50a,  zigbee                                                               16/01/13  17:05:50  PAGE 7   
+
+  390   3          lcd_line1_disp("DL",0);
+  391   3          key_usr_ip(4,&Uc_zigb_dl[0],1,10);
+  392   3          ZIGB_wr_page();
+  393   3         }
+  394   2       }
+  395   1      
+  396   1       ms_delay(500);
+  397   1      
+  398   1       // Writing to ZigBee //
+  399   1       
+  400   1       ZIGB_cmd_mode();
+  401   1       
+  402   1       ZIGB_dl_wrt(&Uc_zigb_dl[0]);
+  403   1       ZIGB_pan_wrt(&Uc_zigb_pan[0]);
+  404   1       ZIGB_my_wrt(&Uc_zigb_my[0]);
+  405   1       ZIGB_ch_wrt(&Uc_zigb_ch[0]);
+  406   1      
+  407   1       ZIGB_wr_cmd();
+  408   1      
+  409   1       ZIGB_exit_cmd();
+  410   1      
+  411   1      }
+  412          
+  413          /**********************************************************************************/
+  414          /* Function Name: ZIGB_wr_page()                                                  */
+  415          /* Arguments    : NONE                                                            */
+  416          /* Return Types : NONE                                                            */
+  417          /* Description  : Static content displayed on 3rd page for Zigbee settings        */
+  418          /*                This page is related  with the Writing to ZigBee                */
+  419          /**********************************************************************************/
+  420          
+  421          void ZIGB_wr_page()
+  422          {
+  423   1       clrscr();
+  424   1       lcd_line1_disp("PAN",0);
+  425   1       lcd_line2_disp("CH",0);
+  426   1       lcd_line3_disp("MY",0);
+  427   1       lcd_line4_disp("DL",0);
+  428   1      }
+  429          
+  430          /**********************************************************************************/
+  431          /* Function Name: ZIGB_menu_page()                                                */
+  432          /* Arguments    : NONE                                                            */
+  433          /* Return Types : NONE                                                            */
+  434          /* Description  : Static content displayed on 2nd page for Zigbee settings        */
+  435          /*                                                                                */
+  436          /**********************************************************************************/
+  437          
+  438          void ZIGB_menu_page()
+  439          {
+  440   1       clrscr();
+  441   1       lcd_line1_disp("ZigBee Settings",2);
+  442   1       lcd_line2_disp("Read    [1]",0);
+  443   1       lcd_line3_disp("Write   [2]",0);
+  444   1       ms_delay(1000);
+  445   1      }
+  446          
+ARM COMPILER V2.50a,  zigbee                                                               16/01/13  17:05:50  PAGE 8   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+
+*** EXTERNALS:
+ EXTERN CODE16 (uart1_send_byte?T)
+ EXTERN CODE16 (uart0_send_string?T)
+ EXTERN CODE16 (uart1_send_string?T)
+ EXTERN CODE16 (clrscr?T)
+ EXTERN CODE16 (ms_delay?T)
+ EXTERN CODE16 (lcd_line1_disp?T)
+ EXTERN CODE16 (lcd_line2_disp?T)
+ EXTERN CODE16 (lcd_line3_disp?T)
+ EXTERN CODE16 (lcd_line4_disp?T)
+ EXTERN CODE16 (get_key?T)
+ EXTERN DATA (Uc_key_temp)
+ EXTERN CODE16 (key_usr_ip?T)
+ EXTERN CODE16 (wdt_feed?T)
+ EXTERN CODE16 (str_cmp?T)
+
+
+
+*** PUBLICS:
+ PUBLIC         ZIGB_cmd_mode?T
+ PUBLIC         ZIGB_exit_cmd?T
+ PUBLIC         ZIGB_dl_wrt?T
+ PUBLIC         ZIGB_setting?T
+ PUBLIC         ZIGB_wr_cmd?T
+ PUBLIC         ZIGB_pan_wrt?T
+ PUBLIC         ZIGB_my_wrt?T
+ PUBLIC         ZIGB_ch_wrt?T
+ PUBLIC         ZIGB_my_read?T
+ PUBLIC         ZIGB_write?T
+ PUBLIC         ZIGB_read?T
+ PUBLIC         ZIGB_wr_page?T
+ PUBLIC         ZIGB_menu_page?T
+ PUBLIC         ZIGB_responce?T
+ PUBLIC         Uc_zigb_pan
+ PUBLIC         Uc_zigb_ch
+ PUBLIC         Uc_zigb_my
+ PUBLIC         Uc_zigb_dl
+
+
+
+*** DATA SEGMENT '?CON?zigbee':
+ 00000000          ??S_36:
+ 00000000            DB          'Write   [2]',0x00
+ 0000000C          ??S_35:
+ 0000000C            DB          'Read    [1]',0x00
+ 00000018          ??S_34:
+ 00000018            DB          'ZigBee Settings',0x00
+ 00000028          ??S_33:
+ 00000028            DB          'DL',0x00
+ 0000002B          ??S_32:
+ 0000002B            DB          'MY',0x00
+ 0000002E          ??S_31:
+ 0000002E            DB          'CH',0x00
+ 00000031          ??S_30:
+ 00000031            DB          'PAN',0x00
+ 00000035          ??S_29:
+ 00000035            DB          0x0A,0x0A,0x0D,'MY Address: ',0x00
+ 00000045          ??S_28:
+ 00000045            DB          0x0A,0x0A,0x0D,'Writting ZigBee Paramet'
+ 0000005F            DB          'ers...',0x00
+ 00000066          ??S_27:
+ 00000066            DB          0x0A,0x0A,0x0D,'Reading ZigBee Paramete'
+ 00000080            DB          'rs...',0x00
+ 00000086          ??S_25:
+ 00000086            DB          0x0A,0x0A,0x0D,'CH: ERROR ',0x00
+ 00000094          ??S_24:
+ 00000094            DB          0x0A,0x0A,0x0D,'CH: OK ',0x00
+ARM COMPILER V2.50a,  zigbee                                                               16/01/13  17:05:50  PAGE 9   
+
+ 0000009F          ??S_23:
+ 0000009F            DB          'ATCH',0x00
+ 000000A4          ??S_22:
+ 000000A4            DB          0x0A,0x0A,0x0D,'MY: ERROR ',0x00
+ 000000B2          ??S_21:
+ 000000B2            DB          0x0A,0x0A,0x0D,'MY: OK ',0x00
+ 000000BD          ??S_20:
+ 000000BD            DB          'ATMY',0x00
+ 000000C2          ??S_19:
+ 000000C2            DB          0x0A,0x0A,0x0D,'PAN: ERROR ',0x00
+ 000000D1          ??S_18:
+ 000000D1            DB          0x0A,0x0A,0x0D,'PAN: OK ',0x00
+ 000000DD          ??S_17:
+ 000000DD            DB          'ATID',0x00
+ 000000E2          ??S_16:
+ 000000E2            DB          0x0A,0x0A,0x0D,'DL: ERROR ',0x00
+ 000000F0          ??S_15:
+ 000000F0            DB          0x0A,0x0A,0x0D,'DL: OK ',0x00
+ 000000FB          ??S_14:
+ 000000FB            DB          'ATDL',0x00
+ 00000100          ??S_13:
+ 00000100            DB          0x0A,0x0A,0x0D,'Exit CMD: ERROR ',0x00
+ 00000114          ??S_12:
+ 00000114            DB          0x0A,0x0A,0x0D,'Exit CMD: OK ',0x00
+ 00000125          ??S_11:
+ 00000125            DB          'ATCN',0x0D,0x00
+ 0000012B          ??S_10:
+ 0000012B            DB          0x0A,0x0A,0x0D,'WR CMD: ERROR ',0x00
+ 0000013D          ??S_9:
+ 0000013D            DB          0x0A,0x0A,0x0D,'WR CMD: OK ',0x00
+ 0000014C          ??S_8:
+ 0000014C            DB          'ATWR',0x0D,0x00
+ 00000152          ??S_7:
+ 00000152            DB          0x0A,0x0A,0x0D,'CMD: ERROR ',0x00
+ 00000161          ??S_6:
+ 00000161            DB          0x0A,0x0A,0x0D,'CMD: OK ',0x00
+ 0000016D          ??S_5:
+ 0000016D            DB          'OK',0x0D,0x00
+ 00000171          ??S_4:
+ 00000171            DB          'CMD Mode',0x00
+ 0000017A          ??S_3:
+ 0000017A            DB          '+++',0x00
+ 0000017E            ALIGN       4
+ 00000180          ?tpl?0001:
+ 00000180           BEGIN_INIT
+ 00000180            DB          '000',0x00
+ 00000184            SPACE       16
+ 00000194           END_INIT
+ 00000194          ?tpl?0002:
+ 00000194           BEGIN_INIT
+ 00000194            DB          '000',0x00
+ 00000198            SPACE       16
+ 000001A8           END_INIT
+
+*** DATA SEGMENT '?DT0?zigbee':
+ 00000000          Uc_zigb_pan:
+ 00000000           BEGIN_INIT
+ 00000000            DB          '0000',0x00
+ 00000005            SPACE       5
+ 0000000A           END_INIT
+ 0000000A          Uc_zigb_ch:
+ 0000000A           BEGIN_INIT
+ 0000000A            DB          '0C',0x00
+ 0000000D            SPACE       7
+ 00000014           END_INIT
+ 00000014          Uc_zigb_my:
+ 00000014           BEGIN_INIT
+ARM COMPILER V2.50a,  zigbee                                                               16/01/13  17:05:50  PAGE 10  
+
+ 00000014            DB          '0000',0x00
+ 00000019            SPACE       5
+ 0000001E           END_INIT
+ 0000001E          Uc_zigb_dl:
+ 0000001E           BEGIN_INIT
+ 0000001E            DB          '0000',0x00
+ 00000023            SPACE       5
+ 00000028           END_INIT
+
+
+
+*** CODE SEGMENT '?PR?ZIGB_cmd_mode?T?zigbee':
+   34: void ZIGB_cmd_mode()
+ 00000000  B500      PUSH        {LR}
+   36:  uart1_send_string("+++");
+ 00000002  4800      LDR         R0,=??S_3 ; ??S_3
+ 00000004  F7FF      BL          uart1_send_string?T  ; T=0x0001  (1)
+ 00000006  FFFC      BL          uart1_send_string?T  ; T=0x0001  (2)
+   37:  clrscr();
+ 00000008  F7FF      BL          clrscr?T  ; T=0x0001  (1)
+ 0000000A  FFFA      BL          clrscr?T  ; T=0x0001  (2)
+   38:  lcd_line1_disp("CMD Mode",0);
+ 0000000C  4800      LDR         R0,=??S_4 ; ??S_4
+ 0000000E  2100      MOV         R1,#0x0
+ 00000010  F7FF      BL          lcd_line1_disp?T  ; T=0x0001  (1)
+ 00000012  FFF6      BL          lcd_line1_disp?T  ; T=0x0001  (2)
+   40:  if(ZIGB_responce(3,"OK\r"))
+ 00000014  4800      LDR         R1,=??S_5 ; ??S_5
+ 00000016  2003      MOV         R0,#0x3
+ 00000018  F7FF      BL          ZIGB_responce?T  ; T=0x0001  (1)
+ 0000001A  FFF2      BL          ZIGB_responce?T  ; T=0x0001  (2)
+ 0000001C  2800      CMP         R0,#0x0 ; ZIGB_responce?T
+ 0000001E  D006      BEQ         L_1  ; T=0x0000002E
+   43:    uart0_send_string("\n\n\rCMD: OK ");
+ 00000020  4800      LDR         R0,=??S_6 ; ??S_6
+ 00000022  F7FF      BL          uart0_send_string?T  ; T=0x0001  (1)
+ 00000024  FFED      BL          uart0_send_string?T  ; T=0x0001  (2)
+   45:    ms_delay(10000);
+ 00000026  4800      LDR         R0,=0x2710
+ 00000028  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000002A  FFEA      BL          ms_delay?T  ; T=0x0001  (2)
+   46:   }
+ 0000002C  E005      B           L_2  ; T=0x0000003A
+ 0000002E          L_1:
+   50:    uart0_send_string("\n\n\rCMD: ERROR ");
+ 0000002E  4800      LDR         R0,=??S_7 ; ??S_7
+ 00000030  F7FF      BL          uart0_send_string?T  ; T=0x0001  (1)
+ 00000032  FFE6      BL          uart0_send_string?T  ; T=0x0001  (2)
+   52:    ms_delay(10000);
+ 00000034  4800      LDR         R0,=0x2710
+ 00000036  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000038  FFE3      BL          ms_delay?T  ; T=0x0001  (2)
+   53:   }
+ 0000003A          L_2:
+   54: }
+ 0000003A  BC08      POP         {R3}
+ 0000003C  4718      BX          R3
+ 0000003E          ENDP ; 'ZIGB_cmd_mode?T'
+
+
+*** CODE SEGMENT '?PR?ZIGB_wr_cmd?T?zigbee':
+   63: void ZIGB_wr_cmd()
+ 00000000  B500      PUSH        {LR}
+   65:  uart1_send_string("ATWR\r");
+ 00000002  4800      LDR         R0,=??S_8 ; ??S_8
+ 00000004  F7FF      BL          uart1_send_string?T  ; T=0x0001  (1)
+ 00000006  FFFC      BL          uart1_send_string?T  ; T=0x0001  (2)
+   66:  if(ZIGB_responce(3,"OK\r"))
+ 00000008  4800      LDR         R1,=??S_5 ; ??S_5
+ 0000000A  2003      MOV         R0,#0x3
+ARM COMPILER V2.50a,  zigbee                                                               16/01/13  17:05:50  PAGE 11  
+
+ 0000000C  F7FF      BL          ZIGB_responce?T  ; T=0x0001  (1)
+ 0000000E  FFF8      BL          ZIGB_responce?T  ; T=0x0001  (2)
+ 00000010  2800      CMP         R0,#0x0 ; ZIGB_responce?T
+ 00000012  D006      BEQ         L_3  ; T=0x00000022
+   69:      uart0_send_string("\n\n\rWR CMD: OK ");
+ 00000014  4800      LDR         R0,=??S_9 ; ??S_9
+ 00000016  F7FF      BL          uart0_send_string?T  ; T=0x0001  (1)
+ 00000018  FFF3      BL          uart0_send_string?T  ; T=0x0001  (2)
+   71:    ms_delay(10000);
+ 0000001A  4800      LDR         R0,=0x2710
+ 0000001C  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000001E  FFF0      BL          ms_delay?T  ; T=0x0001  (2)
+   72:   }
+ 00000020  E005      B           L_4  ; T=0x0000002E
+ 00000022          L_3:
+   76:     uart0_send_string("\n\n\rWR CMD: ERROR ");
+ 00000022  4800      LDR         R0,=??S_10 ; ??S_10
+ 00000024  F7FF      BL          uart0_send_string?T  ; T=0x0001  (1)
+ 00000026  FFEC      BL          uart0_send_string?T  ; T=0x0001  (2)
+   78:    ms_delay(10000);
+ 00000028  4800      LDR         R0,=0x2710
+ 0000002A  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000002C  FFE9      BL          ms_delay?T  ; T=0x0001  (2)
+   79:   }
+ 0000002E          L_4:
+   80: }
+ 0000002E  BC08      POP         {R3}
+ 00000030  4718      BX          R3
+ 00000032          ENDP ; 'ZIGB_wr_cmd?T'
+
+
+*** CODE SEGMENT '?PR?ZIGB_exit_cmd?T?zigbee':
+   89: void ZIGB_exit_cmd()
+ 00000000  B500      PUSH        {LR}
+   91:  uart1_send_string("ATCN\r");
+ 00000002  4800      LDR         R0,=??S_11 ; ??S_11
+ 00000004  F7FF      BL          uart1_send_string?T  ; T=0x0001  (1)
+ 00000006  FFFC      BL          uart1_send_string?T  ; T=0x0001  (2)
+   92:  if(ZIGB_responce(3,"OK\r"))
+ 00000008  4800      LDR         R1,=??S_5 ; ??S_5
+ 0000000A  2003      MOV         R0,#0x3
+ 0000000C  F7FF      BL          ZIGB_responce?T  ; T=0x0001  (1)
+ 0000000E  FFF8      BL          ZIGB_responce?T  ; T=0x0001  (2)
+ 00000010  2800      CMP         R0,#0x0 ; ZIGB_responce?T
+ 00000012  D006      BEQ         L_5  ; T=0x00000022
+   95:    uart0_send_string("\n\n\rExit CMD: OK ");
+ 00000014  4800      LDR         R0,=??S_12 ; ??S_12
+ 00000016  F7FF      BL          uart0_send_string?T  ; T=0x0001  (1)
+ 00000018  FFF3      BL          uart0_send_string?T  ; T=0x0001  (2)
+   97:    ms_delay(10000);
+ 0000001A  4800      LDR         R0,=0x2710
+ 0000001C  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000001E  FFF0      BL          ms_delay?T  ; T=0x0001  (2)
+   98:   }
+ 00000020  E005      B           L_6  ; T=0x0000002E
+ 00000022          L_5:
+  102:    uart0_send_string("\n\n\rExit CMD: ERROR ");
+ 00000022  4800      LDR         R0,=??S_13 ; ??S_13
+ 00000024  F7FF      BL          uart0_send_string?T  ; T=0x0001  (1)
+ 00000026  FFEC      BL          uart0_send_string?T  ; T=0x0001  (2)
+  104:    ms_delay(10000);
+ 00000028  4800      LDR         R0,=0x2710
+ 0000002A  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000002C  FFE9      BL          ms_delay?T  ; T=0x0001  (2)
+  105:   }
+ 0000002E          L_6:
+  106: }
+ 0000002E  BC08      POP         {R3}
+ARM COMPILER V2.50a,  zigbee                                                               16/01/13  17:05:50  PAGE 12  
+
+ 00000030  4718      BX          R3
+ 00000032          ENDP ; 'ZIGB_exit_cmd?T'
+
+
+*** CODE SEGMENT '?PR?ZIGB_dl_wrt?T?zigbee':
+  117: void ZIGB_dl_wrt(U8 *dest_add)
+ 00000000  B510      PUSH        {R4,LR}
+ 00000002  1C04      MOV         R4,R0 ; dest_add
+ 00000004  ---- Variable 'dest_add' assigned to Register 'R4' ----
+  119:   uart1_send_string("ATDL");
+ 00000004  4800      LDR         R0,=??S_14 ; ??S_14
+ 00000006  F7FF      BL          uart1_send_string?T  ; T=0x0001  (1)
+ 00000008  FFFB      BL          uart1_send_string?T  ; T=0x0001  (2)
+  120:   uart1_send_string(dest_add);
+ 0000000A  1C20      MOV         R0,R4 ; dest_add
+ 0000000C  F7FF      BL          uart1_send_string?T  ; T=0x0001  (1)
+ 0000000E  FFF8      BL          uart1_send_string?T  ; T=0x0001  (2)
+  121:   uart1_send_byte('\r');
+ 00000010  200D      MOV         R0,#0xD
+ 00000012  F7FF      BL          uart1_send_byte?T  ; T=0x0001  (1)
+ 00000014  FFF5      BL          uart1_send_byte?T  ; T=0x0001  (2)
+  122:   if(ZIGB_responce(3,"OK\r"))
+ 00000016  4800      LDR         R1,=??S_5 ; ??S_5
+ 00000018  2003      MOV         R0,#0x3
+ 0000001A  F7FF      BL          ZIGB_responce?T  ; T=0x0001  (1)
+ 0000001C  FFF1      BL          ZIGB_responce?T  ; T=0x0001  (2)
+ 0000001E  2800      CMP         R0,#0x0 ; ZIGB_responce?T
+ 00000020  D006      BEQ         L_7  ; T=0x00000030
+  125:    uart0_send_string("\n\n\rDL: OK ");
+ 00000022  4800      LDR         R0,=??S_15 ; ??S_15
+ 00000024  F7FF      BL          uart0_send_string?T  ; T=0x0001  (1)
+ 00000026  FFEC      BL          uart0_send_string?T  ; T=0x0001  (2)
+  127:    ms_delay(10000);
+ 00000028  4800      LDR         R0,=0x2710
+ 0000002A  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000002C  FFE9      BL          ms_delay?T  ; T=0x0001  (2)
+  128:   }
+ 0000002E  E005      B           L_8  ; T=0x0000003C
+ 00000030          L_7:
+  132:    uart0_send_string("\n\n\rDL: ERROR ");
+ 00000030  4800      LDR         R0,=??S_16 ; ??S_16
+ 00000032  F7FF      BL          uart0_send_string?T  ; T=0x0001  (1)
+ 00000034  FFE5      BL          uart0_send_string?T  ; T=0x0001  (2)
+  134:    ms_delay(10000);
+ 00000036  4800      LDR         R0,=0x2710
+ 00000038  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000003A  FFE2      BL          ms_delay?T  ; T=0x0001  (2)
+  135:   }
+ 0000003C          L_8:
+  137: }
+ 0000003C  BC10      POP         {R4}
+ 0000003E  BC08      POP         {R3}
+ 00000040  4718      BX          R3
+ 00000042          ENDP ; 'ZIGB_dl_wrt?T'
+
+
+*** CODE SEGMENT '?PR?ZIGB_pan_wrt?T?zigbee':
+  147: void ZIGB_pan_wrt(U8 *pan_add)
+ 00000000  B510      PUSH        {R4,LR}
+ 00000002  1C04      MOV         R4,R0 ; pan_add
+ 00000004  ---- Variable 'pan_add' assigned to Register 'R4' ----
+  149:   uart1_send_string("ATID");
+ 00000004  4800      LDR         R0,=??S_17 ; ??S_17
+ 00000006  F7FF      BL          uart1_send_string?T  ; T=0x0001  (1)
+ 00000008  FFFB      BL          uart1_send_string?T  ; T=0x0001  (2)
+  150:   uart1_send_string(pan_add);
+ 0000000A  1C20      MOV         R0,R4 ; pan_add
+ 0000000C  F7FF      BL          uart1_send_string?T  ; T=0x0001  (1)
+ 0000000E  FFF8      BL          uart1_send_string?T  ; T=0x0001  (2)
+  151:   uart1_send_byte('\r');
+ARM COMPILER V2.50a,  zigbee                                                               16/01/13  17:05:50  PAGE 13  
+
+ 00000010  200D      MOV         R0,#0xD
+ 00000012  F7FF      BL          uart1_send_byte?T  ; T=0x0001  (1)
+ 00000014  FFF5      BL          uart1_send_byte?T  ; T=0x0001  (2)
+  153:    if(ZIGB_responce(3,"OK\r"))
+ 00000016  4800      LDR         R1,=??S_5 ; ??S_5
+ 00000018  2003      MOV         R0,#0x3
+ 0000001A  F7FF      BL          ZIGB_responce?T  ; T=0x0001  (1)
+ 0000001C  FFF1      BL          ZIGB_responce?T  ; T=0x0001  (2)
+ 0000001E  2800      CMP         R0,#0x0 ; ZIGB_responce?T
+ 00000020  D006      BEQ         L_9  ; T=0x00000030
+  156:    uart0_send_string("\n\n\rPAN: OK ");
+ 00000022  4800      LDR         R0,=??S_18 ; ??S_18
+ 00000024  F7FF      BL          uart0_send_string?T  ; T=0x0001  (1)
+ 00000026  FFEC      BL          uart0_send_string?T  ; T=0x0001  (2)
+  158:    ms_delay(10000);
+ 00000028  4800      LDR         R0,=0x2710
+ 0000002A  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000002C  FFE9      BL          ms_delay?T  ; T=0x0001  (2)
+  159:   }
+ 0000002E  E005      B           L_10  ; T=0x0000003C
+ 00000030          L_9:
+  163:    uart0_send_string("\n\n\rPAN: ERROR ");
+ 00000030  4800      LDR         R0,=??S_19 ; ??S_19
+ 00000032  F7FF      BL          uart0_send_string?T  ; T=0x0001  (1)
+ 00000034  FFE5      BL          uart0_send_string?T  ; T=0x0001  (2)
+  165:    ms_delay(10000);
+ 00000036  4800      LDR         R0,=0x2710
+ 00000038  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000003A  FFE2      BL          ms_delay?T  ; T=0x0001  (2)
+  166:   }
+ 0000003C          L_10:
+  167: }
+ 0000003C  BC10      POP         {R4}
+ 0000003E  BC08      POP         {R3}
+ 00000040  4718      BX          R3
+ 00000042          ENDP ; 'ZIGB_pan_wrt?T'
+
+
+*** CODE SEGMENT '?PR?ZIGB_my_wrt?T?zigbee':
+  176: void ZIGB_my_wrt(U8 *my_add)
+ 00000000  B510      PUSH        {R4,LR}
+ 00000002  1C04      MOV         R4,R0 ; my_add
+ 00000004  ---- Variable 'my_add' assigned to Register 'R4' ----
+  178:   uart1_send_string("ATMY");
+ 00000004  4800      LDR         R0,=??S_20 ; ??S_20
+ 00000006  F7FF      BL          uart1_send_string?T  ; T=0x0001  (1)
+ 00000008  FFFB      BL          uart1_send_string?T  ; T=0x0001  (2)
+  179:   uart1_send_string(my_add);
+ 0000000A  1C20      MOV         R0,R4 ; my_add
+ 0000000C  F7FF      BL          uart1_send_string?T  ; T=0x0001  (1)
+ 0000000E  FFF8      BL          uart1_send_string?T  ; T=0x0001  (2)
+  180:   uart1_send_byte('\r');
+ 00000010  200D      MOV         R0,#0xD
+ 00000012  F7FF      BL          uart1_send_byte?T  ; T=0x0001  (1)
+ 00000014  FFF5      BL          uart1_send_byte?T  ; T=0x0001  (2)
+  182:    if(ZIGB_responce(3,"OK\r"))
+ 00000016  4800      LDR         R1,=??S_5 ; ??S_5
+ 00000018  2003      MOV         R0,#0x3
+ 0000001A  F7FF      BL          ZIGB_responce?T  ; T=0x0001  (1)
+ 0000001C  FFF1      BL          ZIGB_responce?T  ; T=0x0001  (2)
+ 0000001E  2800      CMP         R0,#0x0 ; ZIGB_responce?T
+ 00000020  D006      BEQ         L_11  ; T=0x00000030
+  185:    uart0_send_string("\n\n\rMY: OK ");
+ 00000022  4800      LDR         R0,=??S_21 ; ??S_21
+ 00000024  F7FF      BL          uart0_send_string?T  ; T=0x0001  (1)
+ 00000026  FFEC      BL          uart0_send_string?T  ; T=0x0001  (2)
+  187:    ms_delay(10000);
+ 00000028  4800      LDR         R0,=0x2710
+ARM COMPILER V2.50a,  zigbee                                                               16/01/13  17:05:50  PAGE 14  
+
+ 0000002A  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000002C  FFE9      BL          ms_delay?T  ; T=0x0001  (2)
+  188:   }
+ 0000002E  E005      B           L_12  ; T=0x0000003C
+ 00000030          L_11:
+  192:    uart0_send_string("\n\n\rMY: ERROR ");
+ 00000030  4800      LDR         R0,=??S_22 ; ??S_22
+ 00000032  F7FF      BL          uart0_send_string?T  ; T=0x0001  (1)
+ 00000034  FFE5      BL          uart0_send_string?T  ; T=0x0001  (2)
+  194:    ms_delay(10000);                   
+ 00000036  4800      LDR         R0,=0x2710
+ 00000038  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000003A  FFE2      BL          ms_delay?T  ; T=0x0001  (2)
+  195:   }
+ 0000003C          L_12:
+  196: }
+ 0000003C  BC10      POP         {R4}
+ 0000003E  BC08      POP         {R3}
+ 00000040  4718      BX          R3
+ 00000042          ENDP ; 'ZIGB_my_wrt?T'
+
+
+*** CODE SEGMENT '?PR?ZIGB_ch_wrt?T?zigbee':
+  206: void ZIGB_ch_wrt(U8 *ch_no)
+ 00000000  B510      PUSH        {R4,LR}
+ 00000002  1C04      MOV         R4,R0 ; ch_no
+ 00000004  ---- Variable 'ch_no' assigned to Register 'R4' ----
+  208:   uart1_send_string("ATCH");
+ 00000004  4800      LDR         R0,=??S_23 ; ??S_23
+ 00000006  F7FF      BL          uart1_send_string?T  ; T=0x0001  (1)
+ 00000008  FFFB      BL          uart1_send_string?T  ; T=0x0001  (2)
+  209:   uart1_send_string(ch_no);
+ 0000000A  1C20      MOV         R0,R4 ; ch_no
+ 0000000C  F7FF      BL          uart1_send_string?T  ; T=0x0001  (1)
+ 0000000E  FFF8      BL          uart1_send_string?T  ; T=0x0001  (2)
+  210:   uart1_send_byte('\r');
+ 00000010  200D      MOV         R0,#0xD
+ 00000012  F7FF      BL          uart1_send_byte?T  ; T=0x0001  (1)
+ 00000014  FFF5      BL          uart1_send_byte?T  ; T=0x0001  (2)
+  212:    if(ZIGB_responce(3,"OK\r"))
+ 00000016  4800      LDR         R1,=??S_5 ; ??S_5
+ 00000018  2003      MOV         R0,#0x3
+ 0000001A  F7FF      BL          ZIGB_responce?T  ; T=0x0001  (1)
+ 0000001C  FFF1      BL          ZIGB_responce?T  ; T=0x0001  (2)
+ 0000001E  2800      CMP         R0,#0x0 ; ZIGB_responce?T
+ 00000020  D006      BEQ         L_13  ; T=0x00000030
+  215:    uart0_send_string("\n\n\rCH: OK ");
+ 00000022  4800      LDR         R0,=??S_24 ; ??S_24
+ 00000024  F7FF      BL          uart0_send_string?T  ; T=0x0001  (1)
+ 00000026  FFEC      BL          uart0_send_string?T  ; T=0x0001  (2)
+  217:    ms_delay(10000);
+ 00000028  4800      LDR         R0,=0x2710
+ 0000002A  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000002C  FFE9      BL          ms_delay?T  ; T=0x0001  (2)
+  218:   }
+ 0000002E  E005      B           L_14  ; T=0x0000003C
+ 00000030          L_13:
+  222:    uart0_send_string("\n\n\rCH: ERROR ");
+ 00000030  4800      LDR         R0,=??S_25 ; ??S_25
+ 00000032  F7FF      BL          uart0_send_string?T  ; T=0x0001  (1)
+ 00000034  FFE5      BL          uart0_send_string?T  ; T=0x0001  (2)
+  224:    ms_delay(10000);
+ 00000036  4800      LDR         R0,=0x2710
+ 00000038  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 0000003A  FFE2      BL          ms_delay?T  ; T=0x0001  (2)
+  225:   }
+ 0000003C          L_14:
+  226: }
+ARM COMPILER V2.50a,  zigbee                                                               16/01/13  17:05:50  PAGE 15  
+
+ 0000003C  BC10      POP         {R4}
+ 0000003E  BC08      POP         {R3}
+ 00000040  4718      BX          R3
+ 00000042          ENDP ; 'ZIGB_ch_wrt?T'
+
+
+*** CODE SEGMENT '?PR?ZIGB_responce?T?zigbee':
+  237: U8 ZIGB_responce(U8 resp_cnt, U8 *resp)
+ 00000000  B530      PUSH        {R4-R5,LR}
+ 00000002  1C0C      MOV         R4,R1 ; resp
+ 00000004  ---- Variable 'resp' assigned to Register 'R4' ----
+ 00000004  1C05      MOV         R5,R0 ; resp_cnt
+ 00000006  ---- Variable 'resp_cnt' assigned to Register 'R5' ----
+ 00000006  B085      SUB         R13,#0x14
+  238: {
+ 00000008            ; SCOPE-START
+  239:   U8 temp_arr[20]= "000";
+ 00000008  4800      LDR         R1,=?tpl?0001 ; ?tpl?0001
+ 0000000A  A800      ADD         R0,R13,#0x0
+ 0000000C  2214      MOV         R2,#0x14
+ 0000000E          L_55:
+ 0000000E  780B      LDRB        R3,[R1,#0x0]
+ 00000010  7003      STRB        R3,[R0,#0x0]
+ 00000012  1C49      ADD         R1,R1,#0x1
+ 00000014  1C40      ADD         R0,R0,#0x1
+ 00000016  1E52      SUB         R2,R2,#0x1
+ 00000018  D1F9      BNE         L_55  ; T=0x0000000E
+  241:   for(temp_cnt = 0; temp_cnt < resp_cnt; temp_cnt++)
+ 0000001A  2100      MOV         R1,#0x0
+ 0000001C  ---- Variable 'temp_cnt' assigned to Register 'R1' ----
+ 0000001C  E00E      B           L_17  ; T=0x0000003C
+  243:        while((U1LSR & 0x01) == 0);
+ 0000001E          L_23:
+ 0000001E          L_20:
+ 0000001E  4800      LDR         R0,=0xE0010014
+ 00000020  7800      LDRB        R0,[R0,#0x0]
+ 00000022  2201      MOV         R2,#0x1
+ 00000024  4210      TST         R0,R2
+ 00000026  D0FA      BEQ         L_20  ; T=0x0000001E
+  244:        temp_arr[temp_cnt] = U1RBR;
+ 00000028  4800      LDR         R0,=0xE0010000
+ 0000002A  7800      LDRB        R0,[R0,#0x0]
+ 0000002C  1C0A      MOV         R2,R1 ; temp_cnt
+ 0000002E  0613      LSL         R3,R2,#0x18 ; temp_cnt
+ 00000030  0E1B      LSR         R3,R3,#0x18
+ 00000032  AA00      ADD         R2,R13,#0x0
+ 00000034  54D0      STRB        R0,[R2,R3]
+  245:    }    
+ 00000036  3101      ADD         R1,#0x1
+ 00000038  0609      LSL         R1,R1,#0x18
+ 0000003A  0E09      LSR         R1,R1,#0x18
+ 0000003C          L_17:
+ 0000003C  1C28      MOV         R0,R5 ; resp_cnt
+ 0000003E  0602      LSL         R2,R0,#0x18 ; resp_cnt
+ 00000040  0E12      LSR         R2,R2,#0x18
+ 00000042  1C08      MOV         R0,R1 ; temp_cnt
+ 00000044  0600      LSL         R0,R0,#0x18 ; temp_cnt
+ 00000046  0E00      LSR         R0,R0,#0x18
+ 00000048  4290      CMP         R0,R2
+ 0000004A  D3E8      BCC         L_23  ; T=0x0000001E
+  246:   if(str_cmp(&temp_arr[0],resp))
+ 0000004C  A800      ADD         R0,R13,#0x0
+ 0000004E  1C21      MOV         R1,R4 ; resp
+ 00000050  F7FF      BL          str_cmp?T  ; T=0x0001  (1)
+ 00000052  FFD6      BL          str_cmp?T  ; T=0x0001  (2)
+ 00000054  2800      CMP         R0,#0x0 ; str_cmp?T
+ 00000056  D001      BEQ         L_24  ; T=0x0000005C
+  248:      return 1;
+ARM COMPILER V2.50a,  zigbee                                                               16/01/13  17:05:50  PAGE 16  
+
+ 00000058  2001      MOV         R0,#0x1
+ 0000005A  E000      B           L_25  ; T=0x0000005E
+  249:    }
+ 0000005C          L_24:
+  252:     return 0;
+ 0000005C  2000      MOV         R0,#0x0
+  253:    }
+ 0000005E            ; SCOPE-END
+  254: }
+ 0000005E          L_25:
+ 0000005E  B005      ADD         R13,#0x14
+ 00000060  BC30      POP         {R4-R5}
+ 00000062  BC08      POP         {R3}
+ 00000064  4718      BX          R3
+ 00000066          ENDP ; 'ZIGB_responce?T'
+
+
+*** CODE SEGMENT '?PR?ZIGB_setting?T?zigbee':
+  265: void ZIGB_setting()
+ 00000000  B510      PUSH        {R4,LR}
+  267:  ZIGB_menu_page();
+ 00000002  F7FF      BL          ZIGB_menu_page?T  ; T=0x0001  (1)
+ 00000004  FFFD      BL          ZIGB_menu_page?T  ; T=0x0001  (2)
+  269:  while((Uc_key_temp = get_key(1)) != 'A')
+ 00000006  E01E      B           L_27  ; T=0x00000046
+ 00000008          L_29:
+  271:   if(Uc_key_temp == '1')
+ 00000008  4800      LDR         R0,=Uc_key_temp ; Uc_key_temp
+ 0000000A  7800      LDRB        R0,[R0,#0x0] ; Uc_key_temp
+ 0000000C  1C04      MOV         R4,R0
+ 0000000E  2C31      CMP         R4,#0x31
+ 00000010  D10A      BNE         L_31  ; T=0x00000028
+  273:       Uc_key_temp = 0;
+ 00000012  2100      MOV         R1,#0x0
+ 00000014  4800      LDR         R0,=Uc_key_temp ; Uc_key_temp
+ 00000016  7001      STRB        R1,[R0,#0x0] ; Uc_key_temp
+  276:     uart0_send_string("\n\n\rReading ZigBee Parameters...");
+ 00000018  4800      LDR         R0,=??S_27 ; ??S_27
+ 0000001A  F7FF      BL          uart0_send_string?T  ; T=0x0001  (1)
+ 0000001C  FFF1      BL          uart0_send_string?T  ; T=0x0001  (2)
+  278:     ZIGB_read();
+ 0000001E  F7FF      BL          ZIGB_read?T  ; T=0x0001  (1)
+ 00000020  FFEF      BL          ZIGB_read?T  ; T=0x0001  (2)
+  279:     ZIGB_menu_page();
+ 00000022  F7FF      BL          ZIGB_menu_page?T  ; T=0x0001  (1)
+ 00000024  FFED      BL          ZIGB_menu_page?T  ; T=0x0001  (2)
+  280:   }
+ 00000026  E00E      B           L_27  ; T=0x00000046
+ 00000028          L_31:
+  281:   else if(Uc_key_temp == '2')
+ 00000028  2C32      CMP         R4,#0x32
+ 0000002A  D10C      BNE         L_27  ; T=0x00000046
+  283:        Uc_key_temp = 0;
+ 0000002C  2100      MOV         R1,#0x0
+ 0000002E  4800      LDR         R0,=Uc_key_temp ; Uc_key_temp
+ 00000030  7001      STRB        R1,[R0,#0x0] ; Uc_key_temp
+  284:     ms_delay(1000);
+ 00000032  48FA      LDR         R0,=0x3E8
+ 00000034  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000036  FFE4      BL          ms_delay?T  ; T=0x0001  (2)
+  286:     uart0_send_string("\n\n\rWritting ZigBee Parameters...");
+ 00000038  4800      LDR         R0,=??S_28 ; ??S_28
+ 0000003A  F7FF      BL          uart0_send_string?T  ; T=0x0001  (1)
+ 0000003C  FFE1      BL          uart0_send_string?T  ; T=0x0001  (2)
+  288:     ZIGB_write();
+ 0000003E  F7FF      BL          ZIGB_write?T  ; T=0x0001  (1)
+ 00000040  FFDF      BL          ZIGB_write?T  ; T=0x0001  (2)
+  289:     ZIGB_menu_page();
+ARM COMPILER V2.50a,  zigbee                                                               16/01/13  17:05:50  PAGE 17  
+
+ 00000042  F7FF      BL          ZIGB_menu_page?T  ; T=0x0001  (1)
+ 00000044  FFDD      BL          ZIGB_menu_page?T  ; T=0x0001  (2)
+  291:  }
+ 00000046          L_27:
+ 00000046  2001      MOV         R0,#0x1
+ 00000048  F7FF      BL          get_key?T  ; T=0x0001  (1)
+ 0000004A  FFDA      BL          get_key?T  ; T=0x0001  (2)
+ 0000004C  4800      LDR         R1,=Uc_key_temp ; Uc_key_temp
+ 0000004E  7008      STRB        R0,[R1,#0x0] ; Uc_key_temp
+ 00000050  0600      LSL         R0,R0,#0x18 ; get_key?T
+ 00000052  0E00      LSR         R0,R0,#0x18
+ 00000054  2841      CMP         R0,#0x41
+ 00000056  D1D7      BNE         L_29  ; T=0x00000008
+  292: }
+ 00000058  BC10      POP         {R4}
+ 0000005A  BC08      POP         {R3}
+ 0000005C  4718      BX          R3
+ 0000005E          ENDP ; 'ZIGB_setting?T'
+
+
+*** CODE SEGMENT '?PR?ZIGB_my_read?T?zigbee':
+  302: void ZIGB_my_read()
+ 00000000  B500      PUSH        {LR}
+ 00000002  B085      SUB         R13,#0x14
+  303: {
+ 00000004            ; SCOPE-START
+  304:   U8 temp_arr[20]= "000";
+ 00000004  4800      LDR         R1,=?tpl?0002 ; ?tpl?0002
+ 00000006  A800      ADD         R0,R13,#0x0
+ 00000008  2214      MOV         R2,#0x14
+ 0000000A          L_57:
+ 0000000A  780B      LDRB        R3,[R1,#0x0]
+ 0000000C  7003      STRB        R3,[R0,#0x0]
+ 0000000E  1C49      ADD         R1,R1,#0x1
+ 00000010  1C40      ADD         R0,R0,#0x1
+ 00000012  1E52      SUB         R2,R2,#0x1
+ 00000014  D1F9      BNE         L_57  ; T=0x0000000A
+  307:   uart1_send_string("ATMY");
+ 00000016  4800      LDR         R0,=??S_20 ; ??S_20
+ 00000018  F7FF      BL          uart1_send_string?T  ; T=0x0001  (1)
+ 0000001A  FFF2      BL          uart1_send_string?T  ; T=0x0001  (2)
+  308:   uart1_send_byte('\r');
+ 0000001C  200D      MOV         R0,#0xD
+ 0000001E  F7FF      BL          uart1_send_byte?T  ; T=0x0001  (1)
+ 00000020  FFEF      BL          uart1_send_byte?T  ; T=0x0001  (2)
+  310:   for(temp_cnt = 0; Uc_zigb_my[temp_cnt - 1] != '\r'; temp_cnt++)
+ 00000022  2200      MOV         R2,#0x0
+ 00000024  ---- Variable 'temp_cnt' assigned to Register 'R2' ----
+ 00000024  E00E      B           L_36  ; T=0x00000044
+  312:        while((U1LSR & 0x01) == 0);
+ 00000026          L_42:
+ 00000026          L_39:
+ 00000026  4800      LDR         R0,=0xE0010014
+ 00000028  7800      LDRB        R0,[R0,#0x0]
+ 0000002A  2101      MOV         R1,#0x1
+ 0000002C  4208      TST         R0,R1
+ 0000002E  D0FA      BEQ         L_39  ; T=0x00000026
+  313:        Uc_zigb_my[temp_cnt] = U1RBR;
+ 00000030  4800      LDR         R0,=0xE0010000
+ 00000032  7800      LDRB        R0,[R0,#0x0]
+ 00000034  1C11      MOV         R1,R2 ; temp_cnt
+ 00000036  060B      LSL         R3,R1,#0x18 ; temp_cnt
+ 00000038  0E1B      LSR         R3,R3,#0x18
+ 0000003A  4800      LDR         R1,=Uc_zigb_my ; Uc_zigb_my
+ 0000003C  54C8      STRB        R0,[R1,R3]
+  314:   }
+ 0000003E  3201      ADD         R2,#0x1
+ 00000040  0612      LSL         R2,R2,#0x18
+ARM COMPILER V2.50a,  zigbee                                                               16/01/13  17:05:50  PAGE 18  
+
+ 00000042  0E12      LSR         R2,R2,#0x18
+ 00000044          L_36:
+ 00000044  1C10      MOV         R0,R2 ; temp_cnt
+ 00000046  0601      LSL         R1,R0,#0x18 ; temp_cnt
+ 00000048  0E09      LSR         R1,R1,#0x18
+ 0000004A  4800      LDR         R0,=Uc_zigb_my + 0xFFFFFFFF ; Uc_zigb_my-1
+ 0000004C  5C40      LDRB        R0,[R0,R1]
+ 0000004E  280D      CMP         R0,#0xD
+ 00000050  D1E9      BNE         L_42  ; T=0x00000026
+  316:   Uc_zigb_my[temp_cnt - 1] = '\0';
+ 00000052  2000      MOV         R0,#0x0
+ 00000054  1C11      MOV         R1,R2 ; temp_cnt
+ 00000056  060A      LSL         R2,R1,#0x18 ; temp_cnt
+ 00000058  0E12      LSR         R2,R2,#0x18
+ 0000005A  4800      LDR         R1,=Uc_zigb_my + 0xFFFFFFFF ; Uc_zigb_my-1
+ 0000005C  5488      STRB        R0,[R1,R2]
+  318:   uart0_send_string("\n\n\rMY Address: ");
+ 0000005E  4800      LDR         R0,=??S_29 ; ??S_29
+ 00000060  F7FF      BL          uart0_send_string?T  ; T=0x0001  (1)
+ 00000062  FFCE      BL          uart0_send_string?T  ; T=0x0001  (2)
+  319:   uart0_send_string(&Uc_zigb_my[0]);
+ 00000064  4800      LDR         R0,=Uc_zigb_my ; Uc_zigb_my
+ 00000066  F7FF      BL          uart0_send_string?T  ; T=0x0001  (1)
+ 00000068  FFCB      BL          uart0_send_string?T  ; T=0x0001  (2)
+ 0000006A            ; SCOPE-END
+  323: }
+ 0000006A  B005      ADD         R13,#0x14
+ 0000006C  BC08      POP         {R3}
+ 0000006E  4718      BX          R3
+ 00000070          ENDP ; 'ZIGB_my_read?T'
+
+
+*** CODE SEGMENT '?PR?ZIGB_read?T?zigbee':
+  333: void ZIGB_read()
+ 00000000  B500      PUSH        {LR}
+  335:  ZIGB_cmd_mode();
+ 00000002  F7FF      BL          ZIGB_cmd_mode?T  ; T=0x0001  (1)
+ 00000004  FFFD      BL          ZIGB_cmd_mode?T  ; T=0x0001  (2)
+  336:  ZIGB_my_read(); 
+ 00000006  F7FF      BL          ZIGB_my_read?T  ; T=0x0001  (1)
+ 00000008  FFFB      BL          ZIGB_my_read?T  ; T=0x0001  (2)
+  337:  ZIGB_exit_cmd();
+ 0000000A  F7FF      BL          ZIGB_exit_cmd?T  ; T=0x0001  (1)
+ 0000000C  FFF9      BL          ZIGB_exit_cmd?T  ; T=0x0001  (2)
+  338: }
+ 0000000E  BC08      POP         {R3}
+ 00000010  4718      BX          R3
+ 00000012          ENDP ; 'ZIGB_read?T'
+
+
+*** CODE SEGMENT '?PR?ZIGB_write?T?zigbee':
+  349: void ZIGB_write()
+ 00000000  B510      PUSH        {R4,LR}
+  351:  ZIGB_read();
+ 00000002  F7FF      BL          ZIGB_read?T  ; T=0x0001  (1)
+ 00000004  FFFD      BL          ZIGB_read?T  ; T=0x0001  (2)
+  353:  ZIGB_wr_page();
+ 00000006  F7FF      BL          ZIGB_wr_page?T  ; T=0x0001  (1)
+ 00000008  FFFB      BL          ZIGB_wr_page?T  ; T=0x0001  (2)
+  355:  Uc_key_temp = get_key(0);
+ 0000000A  2000      MOV         R0,#0x0
+ 0000000C  F7FF      BL          get_key?T  ; T=0x0001  (1)
+ 0000000E  FFF8      BL          get_key?T  ; T=0x0001  (2)
+ 00000010  4800      LDR         R1,=Uc_key_temp ; Uc_key_temp
+ 00000012  7008      STRB        R0,[R1,#0x0] ; Uc_key_temp
+  356:  while(Uc_key_temp != 'D')
+ 00000014  E05D      B           L_43  ; T=0x000000D2
+ 00000016          L_45:
+  358:   Uc_key_temp = get_key(0);
+ 00000016  2000      MOV         R0,#0x0
+ARM COMPILER V2.50a,  zigbee                                                               16/01/13  17:05:50  PAGE 19  
+
+ 00000018  F7FF      BL          get_key?T  ; T=0x0001  (1)
+ 0000001A  FFF2      BL          get_key?T  ; T=0x0001  (2)
+ 0000001C  4800      LDR         R1,=Uc_key_temp ; Uc_key_temp
+ 0000001E  7008      STRB        R0,[R1,#0x0] ; Uc_key_temp
+  359:   wdt_feed(0x03ffffff);
+ 00000020  4800      LDR         R0,=0x3FFFFFF
+ 00000022  F7FF      BL          wdt_feed?T  ; T=0x0001  (1)
+ 00000024  FFED      BL          wdt_feed?T  ; T=0x0001  (2)
+  360:   lcd_line1_disp(&Uc_zigb_pan[0],10);
+ 00000026  4800      LDR         R0,=Uc_zigb_pan ; Uc_zigb_pan
+ 00000028  210A      MOV         R1,#0xA
+ 0000002A  F7FF      BL          lcd_line1_disp?T  ; T=0x0001  (1)
+ 0000002C  FFE9      BL          lcd_line1_disp?T  ; T=0x0001  (2)
+  361:   lcd_line2_disp(&Uc_zigb_ch[0],10);
+ 0000002E  4800      LDR         R0,=Uc_zigb_ch ; Uc_zigb_ch
+ 00000030  210A      MOV         R1,#0xA
+ 00000032  F7FF      BL          lcd_line2_disp?T  ; T=0x0001  (1)
+ 00000034  FFE5      BL          lcd_line2_disp?T  ; T=0x0001  (2)
+  362:   lcd_line3_disp(&Uc_zigb_my[0],10);
+ 00000036  4800      LDR         R0,=Uc_zigb_my ; Uc_zigb_my
+ 00000038  210A      MOV         R1,#0xA
+ 0000003A  F7FF      BL          lcd_line3_disp?T  ; T=0x0001  (1)
+ 0000003C  FFE1      BL          lcd_line3_disp?T  ; T=0x0001  (2)
+  363:   lcd_line4_disp(&Uc_zigb_dl[0],10);
+ 0000003E  4800      LDR         R0,=Uc_zigb_dl ; Uc_zigb_dl
+ 00000040  210A      MOV         R1,#0xA
+ 00000042  F7FF      BL          lcd_line4_disp?T  ; T=0x0001  (1)
+ 00000044  FFDD      BL          lcd_line4_disp?T  ; T=0x0001  (2)
+  366:   if(Uc_key_temp == '1')
+ 00000046  4800      LDR         R0,=Uc_key_temp ; Uc_key_temp
+ 00000048  7800      LDRB        R0,[R0,#0x0] ; Uc_key_temp
+ 0000004A  1C04      MOV         R4,R0
+ 0000004C  2C31      CMP         R4,#0x31
+ 0000004E  D10E      BNE         L_47  ; T=0x0000006E
+  368:      clrscr();
+ 00000050  F7FF      BL          clrscr?T  ; T=0x0001  (1)
+ 00000052  FFD6      BL          clrscr?T  ; T=0x0001  (2)
+  369:     lcd_line1_disp("PAN",0);
+ 00000054  4800      LDR         R0,=??S_30 ; ??S_30
+ 00000056  2100      MOV         R1,#0x0
+ 00000058  F7FF      BL          lcd_line1_disp?T  ; T=0x0001  (1)
+ 0000005A  FFD2      BL          lcd_line1_disp?T  ; T=0x0001  (2)
+  370:      key_usr_ip(4,&Uc_zigb_pan[0],1,10);
+ 0000005C  4800      LDR         R1,=Uc_zigb_pan ; Uc_zigb_pan
+ 0000005E  2004      MOV         R0,#0x4
+ 00000060  2201      MOV         R2,#0x1
+ 00000062  230A      MOV         R3,#0xA
+ 00000064  F7FF      BL          key_usr_ip?T  ; T=0x0001  (1)
+ 00000066  FFCC      BL          key_usr_ip?T  ; T=0x0001  (2)
+  371:     ZIGB_wr_page();
+ 00000068  F7FF      BL          ZIGB_wr_page?T  ; T=0x0001  (1)
+ 0000006A  FFCA      BL          ZIGB_wr_page?T  ; T=0x0001  (2)
+  372:   }
+ 0000006C  E031      B           L_43  ; T=0x000000D2
+ 0000006E          L_47:
+  373:   else if(Uc_key_temp == '2')
+ 0000006E  2C32      CMP         R4,#0x32
+ 00000070  D10E      BNE         L_49  ; T=0x00000090
+  375:     clrscr();
+ 00000072  F7FF      BL          clrscr?T  ; T=0x0001  (1)
+ 00000074  FFC5      BL          clrscr?T  ; T=0x0001  (2)
+  376:     lcd_line1_disp("CH",0);
+ 00000076  4800      LDR         R0,=??S_31 ; ??S_31
+ 00000078  2100      MOV         R1,#0x0
+ 0000007A  F7FF      BL          lcd_line1_disp?T  ; T=0x0001  (1)
+ 0000007C  FFC1      BL          lcd_line1_disp?T  ; T=0x0001  (2)
+ARM COMPILER V2.50a,  zigbee                                                               16/01/13  17:05:50  PAGE 20  
+
+  377:     key_usr_ip(2,&Uc_zigb_ch[0],1,10);
+ 0000007E  4800      LDR         R1,=Uc_zigb_ch ; Uc_zigb_ch
+ 00000080  2002      MOV         R0,#0x2
+ 00000082  2201      MOV         R2,#0x1
+ 00000084  230A      MOV         R3,#0xA
+ 00000086  F7FF      BL          key_usr_ip?T  ; T=0x0001  (1)
+ 00000088  FFBB      BL          key_usr_ip?T  ; T=0x0001  (2)
+  378:     ZIGB_wr_page();
+ 0000008A  F7FF      BL          ZIGB_wr_page?T  ; T=0x0001  (1)
+ 0000008C  FFB9      BL          ZIGB_wr_page?T  ; T=0x0001  (2)
+  379:    }
+ 0000008E  E020      B           L_43  ; T=0x000000D2
+ 00000090          L_49:
+  380:   else if(Uc_key_temp == '3')
+ 00000090  2C33      CMP         R4,#0x33
+ 00000092  D10E      BNE         L_51  ; T=0x000000B2
+  382:      clrscr();
+ 00000094  F7FF      BL          clrscr?T  ; T=0x0001  (1)
+ 00000096  FFB4      BL          clrscr?T  ; T=0x0001  (2)
+  383:     lcd_line1_disp("MY",0);
+ 00000098  4800      LDR         R0,=??S_32 ; ??S_32
+ 0000009A  2100      MOV         R1,#0x0
+ 0000009C  F7FF      BL          lcd_line1_disp?T  ; T=0x0001  (1)
+ 0000009E  FFB0      BL          lcd_line1_disp?T  ; T=0x0001  (2)
+  384:      key_usr_ip(4,&Uc_zigb_my[0],1,10);
+ 000000A0  4800      LDR         R1,=Uc_zigb_my ; Uc_zigb_my
+ 000000A2  2004      MOV         R0,#0x4
+ 000000A4  2201      MOV         R2,#0x1
+ 000000A6  230A      MOV         R3,#0xA
+ 000000A8  F7FF      BL          key_usr_ip?T  ; T=0x0001  (1)
+ 000000AA  FFAA      BL          key_usr_ip?T  ; T=0x0001  (2)
+  385:     ZIGB_wr_page();
+ 000000AC  F7FF      BL          ZIGB_wr_page?T  ; T=0x0001  (1)
+ 000000AE  FFA8      BL          ZIGB_wr_page?T  ; T=0x0001  (2)
+  386:    }
+ 000000B0  E00F      B           L_43  ; T=0x000000D2
+ 000000B2          L_51:
+  387:   else if(Uc_key_temp == '4')
+ 000000B2  2C34      CMP         R4,#0x34
+ 000000B4  D10D      BNE         L_43  ; T=0x000000D2
+  389:      clrscr();
+ 000000B6  F7FF      BL          clrscr?T  ; T=0x0001  (1)
+ 000000B8  FFA3      BL          clrscr?T  ; T=0x0001  (2)
+  390:     lcd_line1_disp("DL",0);
+ 000000BA  4800      LDR         R0,=??S_33 ; ??S_33
+ 000000BC  2100      MOV         R1,#0x0
+ 000000BE  F7FF      BL          lcd_line1_disp?T  ; T=0x0001  (1)
+ 000000C0  FF9F      BL          lcd_line1_disp?T  ; T=0x0001  (2)
+  391:      key_usr_ip(4,&Uc_zigb_dl[0],1,10);
+ 000000C2  4800      LDR         R1,=Uc_zigb_dl ; Uc_zigb_dl
+ 000000C4  2004      MOV         R0,#0x4
+ 000000C6  2201      MOV         R2,#0x1
+ 000000C8  230A      MOV         R3,#0xA
+ 000000CA  F7FF      BL          key_usr_ip?T  ; T=0x0001  (1)
+ 000000CC  FF99      BL          key_usr_ip?T  ; T=0x0001  (2)
+  392:     ZIGB_wr_page();
+ 000000CE  F7FF      BL          ZIGB_wr_page?T  ; T=0x0001  (1)
+ 000000D0  FF97      BL          ZIGB_wr_page?T  ; T=0x0001  (2)
+  394:  }
+ 000000D2          L_43:
+ 000000D2  4800      LDR         R0,=Uc_key_temp ; Uc_key_temp
+ 000000D4  7800      LDRB        R0,[R0,#0x0] ; Uc_key_temp
+ 000000D6  2844      CMP         R0,#0x44
+ 000000D8  D19D      BNE         L_45  ; T=0x00000016
+  396:  ms_delay(500);
+ 000000DA  487D      LDR         R0,=0x1F4
+ARM COMPILER V2.50a,  zigbee                                                               16/01/13  17:05:50  PAGE 21  
+
+ 000000DC  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 000000DE  FF90      BL          ms_delay?T  ; T=0x0001  (2)
+  400:  ZIGB_cmd_mode();
+ 000000E0  F7FF      BL          ZIGB_cmd_mode?T  ; T=0x0001  (1)
+ 000000E2  FF8E      BL          ZIGB_cmd_mode?T  ; T=0x0001  (2)
+  402:  ZIGB_dl_wrt(&Uc_zigb_dl[0]);
+ 000000E4  4800      LDR         R0,=Uc_zigb_dl ; Uc_zigb_dl
+ 000000E6  F7FF      BL          ZIGB_dl_wrt?T  ; T=0x0001  (1)
+ 000000E8  FF8B      BL          ZIGB_dl_wrt?T  ; T=0x0001  (2)
+  403:  ZIGB_pan_wrt(&Uc_zigb_pan[0]);
+ 000000EA  4800      LDR         R0,=Uc_zigb_pan ; Uc_zigb_pan
+ 000000EC  F7FF      BL          ZIGB_pan_wrt?T  ; T=0x0001  (1)
+ 000000EE  FF88      BL          ZIGB_pan_wrt?T  ; T=0x0001  (2)
+  404:  ZIGB_my_wrt(&Uc_zigb_my[0]);
+ 000000F0  4800      LDR         R0,=Uc_zigb_my ; Uc_zigb_my
+ 000000F2  F7FF      BL          ZIGB_my_wrt?T  ; T=0x0001  (1)
+ 000000F4  FF85      BL          ZIGB_my_wrt?T  ; T=0x0001  (2)
+  405:  ZIGB_ch_wrt(&Uc_zigb_ch[0]);
+ 000000F6  4800      LDR         R0,=Uc_zigb_ch ; Uc_zigb_ch
+ 000000F8  F7FF      BL          ZIGB_ch_wrt?T  ; T=0x0001  (1)
+ 000000FA  FF82      BL          ZIGB_ch_wrt?T  ; T=0x0001  (2)
+  407:  ZIGB_wr_cmd();
+ 000000FC  F7FF      BL          ZIGB_wr_cmd?T  ; T=0x0001  (1)
+ 000000FE  FF80      BL          ZIGB_wr_cmd?T  ; T=0x0001  (2)
+  409:  ZIGB_exit_cmd();
+ 00000100  F7FF      BL          ZIGB_exit_cmd?T  ; T=0x0001  (1)
+ 00000102  FF7E      BL          ZIGB_exit_cmd?T  ; T=0x0001  (2)
+  411: }
+ 00000104  BC10      POP         {R4}
+ 00000106  BC08      POP         {R3}
+ 00000108  4718      BX          R3
+ 0000010A          ENDP ; 'ZIGB_write?T'
+
+
+*** CODE SEGMENT '?PR?ZIGB_wr_page?T?zigbee':
+  421: void ZIGB_wr_page()
+ 00000000  B500      PUSH        {LR}
+  423:  clrscr();
+ 00000002  F7FF      BL          clrscr?T  ; T=0x0001  (1)
+ 00000004  FFFD      BL          clrscr?T  ; T=0x0001  (2)
+  424:  lcd_line1_disp("PAN",0);
+ 00000006  4800      LDR         R0,=??S_30 ; ??S_30
+ 00000008  2100      MOV         R1,#0x0
+ 0000000A  F7FF      BL          lcd_line1_disp?T  ; T=0x0001  (1)
+ 0000000C  FFF9      BL          lcd_line1_disp?T  ; T=0x0001  (2)
+  425:  lcd_line2_disp("CH",0);
+ 0000000E  4800      LDR         R0,=??S_31 ; ??S_31
+ 00000010  2100      MOV         R1,#0x0
+ 00000012  F7FF      BL          lcd_line2_disp?T  ; T=0x0001  (1)
+ 00000014  FFF5      BL          lcd_line2_disp?T  ; T=0x0001  (2)
+  426:  lcd_line3_disp("MY",0);
+ 00000016  4800      LDR         R0,=??S_32 ; ??S_32
+ 00000018  2100      MOV         R1,#0x0
+ 0000001A  F7FF      BL          lcd_line3_disp?T  ; T=0x0001  (1)
+ 0000001C  FFF1      BL          lcd_line3_disp?T  ; T=0x0001  (2)
+  427:  lcd_line4_disp("DL",0);
+ 0000001E  4800      LDR         R0,=??S_33 ; ??S_33
+ 00000020  2100      MOV         R1,#0x0
+ 00000022  F7FF      BL          lcd_line4_disp?T  ; T=0x0001  (1)
+ 00000024  FFED      BL          lcd_line4_disp?T  ; T=0x0001  (2)
+  428: }
+ 00000026  BC08      POP         {R3}
+ 00000028  4718      BX          R3
+ 0000002A          ENDP ; 'ZIGB_wr_page?T'
+
+
+*** CODE SEGMENT '?PR?ZIGB_menu_page?T?zigbee':
+  438: void ZIGB_menu_page()
+ 00000000  B500      PUSH        {LR}
+  440:  clrscr();
+ARM COMPILER V2.50a,  zigbee                                                               16/01/13  17:05:50  PAGE 22  
+
+ 00000002  F7FF      BL          clrscr?T  ; T=0x0001  (1)
+ 00000004  FFFD      BL          clrscr?T  ; T=0x0001  (2)
+  441:  lcd_line1_disp("ZigBee Settings",2);
+ 00000006  4800      LDR         R0,=??S_34 ; ??S_34
+ 00000008  2102      MOV         R1,#0x2
+ 0000000A  F7FF      BL          lcd_line1_disp?T  ; T=0x0001  (1)
+ 0000000C  FFF9      BL          lcd_line1_disp?T  ; T=0x0001  (2)
+  442:  lcd_line2_disp("Read    [1]",0);
+ 0000000E  4800      LDR         R0,=??S_35 ; ??S_35
+ 00000010  2100      MOV         R1,#0x0
+ 00000012  F7FF      BL          lcd_line2_disp?T  ; T=0x0001  (1)
+ 00000014  FFF5      BL          lcd_line2_disp?T  ; T=0x0001  (2)
+  443:  lcd_line3_disp("Write   [2]",0);
+ 00000016  4800      LDR         R0,=??S_36 ; ??S_36
+ 00000018  2100      MOV         R1,#0x0
+ 0000001A  F7FF      BL          lcd_line3_disp?T  ; T=0x0001  (1)
+ 0000001C  FFF1      BL          lcd_line3_disp?T  ; T=0x0001  (2)
+  444:  ms_delay(1000);
+ 0000001E  48FA      LDR         R0,=0x3E8
+ 00000020  F7FF      BL          ms_delay?T  ; T=0x0001  (1)
+ 00000022  FFEE      BL          ms_delay?T  ; T=0x0001  (2)
+  445: }
+ 00000024  BC08      POP         {R3}
+ 00000026  4718      BX          R3
+ 00000028          ENDP ; 'ZIGB_menu_page?T'
+
+
+
+Module Information          Static
+----------------------------------
+  code size            =    ------
+  data size            =        40
+  const size           =       424
+End of Module Information.
+
+
+ARM COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

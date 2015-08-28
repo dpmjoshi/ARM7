@@ -1,0 +1,210 @@
+ARM COMPILER V2.50a,  pwm                                                                  23/01/13  15:03:57  PAGE 1   
+
+
+ARM COMPILER V2.50a, COMPILATION OF MODULE pwm
+OBJECT MODULE PLACED IN pwm.OBJ
+COMPILER INVOKED BY: C:\Keil\ARM\BIN\CA.exe pwm.c THUMB BROWSE DEBUG TABS(4) 
+
+stmt  level    source
+
+    1          #include"includes.h"
+    2          
+    3          void pwm5_init(void);
+    4          void pwm5_pulse_width5(U8, U8);
+    5          void pwm_enable(void);
+    6          void pwm_disable(void);
+    7          //**********************************************************************************//
+    8          // Function Name: pwm5_init                                                         //
+    9          // Arguments    : NONE                                                              //
+   10          // Return Types : NONE                                                              //
+   11          // Description  : PWM channel 5, Single edge control,On match reset PWMTC .         //
+   12          //                                                                                  //
+   13          //**********************************************************************************//
+   14          void pwm5_init(void)
+   15          {
+   16   1          PINSEL1 |= 0x00000400;          //Enable pin 0.7   as PWM2 
+   17   1          PWMPR    = 15000;   //Load prescaler
+   18   1      
+   19   1          PWMPCR   = 0x00002000;              //PWM channel 5 single edge control, output enabled
+   20   1          PWMMCR   = 0x00000002;              //On match with timer reset the counter
+   21   1          
+   22   1          PWMMR0   = 1000;                //set cycle rate to sixteen ticks
+   23   1          PWMMR5   = 100;             //set rising edge of PWM2 to 2 ticks
+   24   1          PWMLER   = 0x00000021;              //enable shadow latch for match 0 - 2 
+   25   1          
+   26   1          PWMTCR   = 0x00000002;              //Reset counter and prescaler 
+   27   1          PWMTCR   = 0x00000008;  //0x09  enable counter and PWM, release counter from reset
+   28   1      }
+   29          //**********************************************************************************//
+   30          // Function Name: pwm5_pulse_width                                                  //
+   31          // Arguments    : mr0, mr5                                                          //
+   32          // Return Types : NONE                                                              //
+   33          // Description  : mr0 signifies to cycle length and mr5 corresponds to ON time      //
+   34          //                pulse width                                                       //
+   35          //**********************************************************************************//
+   36          void pwm5_pulse_width(U8 mr0, U8 mr5)
+   37          {
+   38   1          
+   39   1          PWMMR0   = mr0;             //set cycle rate to sixteen ticks
+   40   1          PWMMR5   = mr5;             //set rising edge of PWM2 to 2 ticks
+   41   1          PWMLER   = 0x00000021;
+   42   1          PWMTCR   = 2;
+   43   1          PWMTCR   = 9;
+   44   1          
+   45   1      }
+   46          //**********************************************************************************//
+   47          // Function Name: pwm_enable                                                        //
+   48          // Arguments    : NONE                                                              //
+   49          // Return Types : NONE                                                              //
+   50          // Description  : Enables PWMTCR                                                    //
+   51          //**********************************************************************************//
+   52          void pwm_enable(void)
+   53          {
+   54   1          PWMTCR   = 9;
+   55   1      }
+   56          //**********************************************************************************//
+   57          // Function Name: pwm_disable                                                       //
+   58          // Arguments    : NONE                                                              //
+   59          // Return Types : NONE                                                              //
+ARM COMPILER V2.50a,  pwm                                                                  23/01/13  15:03:57  PAGE 2   
+
+   60          // Description  : Disable PWMTCR                                                    //
+   61          //**********************************************************************************//
+   62          void pwm_disable(void)
+   63          {
+   64   1          while(PWMTC < PWMMR5 );
+   65   1          PWMTCR   = 2;
+   66   1      }
+   67          
+   68          
+ARM COMPILER V2.50a,  pwm                                                                  23/01/13  15:03:57  PAGE 3   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+
+*** PUBLICS:
+ PUBLIC         pwm5_init?T
+ PUBLIC         pwm5_pulse_width?T
+ PUBLIC         pwm_enable?T
+ PUBLIC         pwm_disable?T
+
+
+
+*** CODE SEGMENT '?PR?pwm5_init?T?pwm':
+   16:     PINSEL1 |= 0x00000400;          //Enable pin 0.7   as PWM2 
+ 00000000  4800      LDR         R2,=0x400
+ 00000002  4800      LDR         R0,=0xE002C004
+ 00000004  6801      LDR         R1,[R0,#0x0]
+ 00000006  4311      ORR         R1,R2
+ 00000008  6001      STR         R1,[R0,#0x0]
+   17:     PWMPR    = 15000;   //Load prescaler
+ 0000000A  4800      LDR         R1,=0x3A98
+ 0000000C  4800      LDR         R0,=0xE001400C
+ 0000000E  6001      STR         R1,[R0,#0x0]
+   19:     PWMPCR   = 0x00002000;              //PWM channel 5 single edge control, output enabled
+ 00000010  4800      LDR         R1,=0x2000
+ 00000012  4800      LDR         R0,=0xE001404C
+ 00000014  6001      STR         R1,[R0,#0x0]
+   20:     PWMMCR   = 0x00000002;              //On match with timer reset the counter
+ 00000016  2102      MOV         R1,#0x2
+ 00000018  4800      LDR         R0,=0xE0014014
+ 0000001A  6001      STR         R1,[R0,#0x0]
+   22:     PWMMR0   = 1000;                //set cycle rate to sixteen ticks
+ 0000001C  4AFA      LDR         R2,=0x3E8
+ 0000001E  4800      LDR         R0,=0xE0014018
+ 00000020  6002      STR         R2,[R0,#0x0]
+   23:     PWMMR5   = 100;             //set rising edge of PWM2 to 2 ticks
+ 00000022  2264      MOV         R2,#0x64
+ 00000024  4800      LDR         R0,=0xE0014044
+ 00000026  6002      STR         R2,[R0,#0x0]
+   24:     PWMLER   = 0x00000021;              //enable shadow latch for match 0 - 2 
+ 00000028  2221      MOV         R2,#0x21
+ 0000002A  4800      LDR         R0,=0xE0014050
+ 0000002C  6002      STR         R2,[R0,#0x0]
+   26:     PWMTCR   = 0x00000002;              //Reset counter and prescaler 
+ 0000002E  4800      LDR         R0,=0xE0014004
+ 00000030  6001      STR         R1,[R0,#0x0]
+   27:     PWMTCR   = 0x00000008;  //0x09  enable counter and PWM, release counter from reset
+ 00000032  2108      MOV         R1,#0x8
+ 00000034  4800      LDR         R0,=0xE0014004
+ 00000036  6001      STR         R1,[R0,#0x0]
+   28: }
+ 00000038  4770      BX          R14
+ 0000003A          ENDP ; 'pwm5_init?T'
+
+
+*** CODE SEGMENT '?PR?pwm5_pulse_width?T?pwm':
+   36: void pwm5_pulse_width(U8 mr0, U8 mr5)
+ 00000000  ---- Variable 'mr5' assigned to Register 'R1' ----
+ 00000000  1C02      MOV         R2,R0 ; mr0
+ 00000002  ---- Variable 'mr0' assigned to Register 'R2' ----
+   39:     PWMMR0   = mr0;             //set cycle rate to sixteen ticks
+ 00000002  1C10      MOV         R0,R2 ; mr0
+ 00000004  0602      LSL         R2,R0,#0x18 ; mr0
+ 00000006  0E12      LSR         R2,R2,#0x18
+ 00000008  4800      LDR         R0,=0xE0014018
+ 0000000A  6002      STR         R2,[R0,#0x0]
+   40:     PWMMR5   = mr5;             //set rising edge of PWM2 to 2 ticks
+ 0000000C  1C08      MOV         R0,R1 ; mr5
+ 0000000E  0601      LSL         R1,R0,#0x18 ; mr5
+ 00000010  0E09      LSR         R1,R1,#0x18
+ 00000012  4800      LDR         R0,=0xE0014044
+ARM COMPILER V2.50a,  pwm                                                                  23/01/13  15:03:57  PAGE 4   
+
+ 00000014  6001      STR         R1,[R0,#0x0]
+   41:     PWMLER   = 0x00000021;
+ 00000016  2121      MOV         R1,#0x21
+ 00000018  4800      LDR         R0,=0xE0014050
+ 0000001A  6001      STR         R1,[R0,#0x0]
+   42:     PWMTCR   = 2;
+ 0000001C  2102      MOV         R1,#0x2
+ 0000001E  4800      LDR         R0,=0xE0014004
+ 00000020  6001      STR         R1,[R0,#0x0]
+   43:     PWMTCR   = 9;
+ 00000022  2109      MOV         R1,#0x9
+ 00000024  4800      LDR         R0,=0xE0014004
+ 00000026  6001      STR         R1,[R0,#0x0]
+   45: }
+ 00000028  4770      BX          R14
+ 0000002A          ENDP ; 'pwm5_pulse_width?T'
+
+
+*** CODE SEGMENT '?PR?pwm_enable?T?pwm':
+   54:     PWMTCR   = 9;
+ 00000000  2109      MOV         R1,#0x9
+ 00000002  4800      LDR         R0,=0xE0014004
+ 00000004  6001      STR         R1,[R0,#0x0]
+   55: }
+ 00000006  4770      BX          R14
+ 00000008          ENDP ; 'pwm_enable?T'
+
+
+*** CODE SEGMENT '?PR?pwm_disable?T?pwm':
+   64:     while(PWMTC < PWMMR5 );
+ 00000000          L_1:
+ 00000000  4800      LDR         R0,=0xE0014044
+ 00000002  6801      LDR         R1,[R0,#0x0]
+ 00000004  4800      LDR         R0,=0xE0014008
+ 00000006  6800      LDR         R0,[R0,#0x0]
+ 00000008  4288      CMP         R0,R1
+ 0000000A  D3F9      BCC         L_1  ; T=0x00000000
+   65:     PWMTCR   = 2;
+ 0000000C  2102      MOV         R1,#0x2
+ 0000000E  4800      LDR         R0,=0xE0014004
+ 00000010  6001      STR         R1,[R0,#0x0]
+   66: }
+ 00000012  4770      BX          R14
+ 00000014          ENDP ; 'pwm_disable?T'
+
+
+
+Module Information          Static
+----------------------------------
+  code size            =    ------
+  data size            =    ------
+  const size           =    ------
+End of Module Information.
+
+
+ARM COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
